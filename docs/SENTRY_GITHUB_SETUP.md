@@ -39,6 +39,19 @@ Then rebuild:
 Sentry Project Setup
 --------------------
 
+You can create the project manually in the Sentry UI or with the helper script:
+
+```
+export SENTRY_AUTH_TOKEN=...
+export SENTRY_ORG_SLUG=...
+export SENTRY_TEAM_SLUG=...
+./scripts/create_sentry_project.sh soft-braille-keyboard "Soft Braille Keyboard"
+```
+
+The script creates the Android project if needed and prints the public DSN.
+
+Manual setup:
+
 1. Create an Android project in Sentry.
 2. Add the GitHub integration in Sentry and connect it to:
 
