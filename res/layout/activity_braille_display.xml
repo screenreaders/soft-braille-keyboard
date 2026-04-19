@@ -176,6 +176,12 @@
             android:onClick="onExportBrailleDiagnostics"
             android:text="@string/braille_export_diagnostics" />
 
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="onReportBrailleIssue"
+            android:text="@string/button_report_issue" />
+
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

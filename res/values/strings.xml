@@ -236,6 +236,7 @@ Device table: %3$s</string>
     <string name="button_accessibility_settings">Open accessibility settings for braille display output</string>
     <string name="button_braille_displays">Braille display diagnostics</string>
     <string name="button_check_updates">Check for updates on GitHub</string>
+    <string name="button_report_issue">Send support report</string>
     <string name="button_choose_default_keyboard">Set Soft Braille Keyboard as the default keyboard</string>
     <string name="button_keyboard_settings">Enable Soft Braille Keyboard</string>
     <string name="button_more_info">Read the quick start guide</string>
@@ -334,9 +335,25 @@ Device table: %3$s</string>
     <string name="pref_text_to_speech_engine_auto">Auto - use system default</string>
     <string name="pref_text_to_speech_title">Text To Speech Settings</string>
   <string name="pref_quick_start_guide_key" translatable="false">QUICK_START_GUIDE</string>
-    <string name="pref_quick_start_guide_title">Quick start guide</string>
-    <string name="pref_quick_start_guide_summary">Open the bundled offline guide for setup, typing and braille displays.</string>
-    <string name="pref_two_hand_calibration_summary">Allow calibrating the keyboard with two touch points.</string>
+  <string name="pref_quick_start_guide_title">Quick start guide</string>
+  <string name="pref_quick_start_guide_summary">Open the bundled offline guide for setup, typing and braille displays.</string>
+  <string name="github_issue_clip_label">Support diagnostics</string>
+  <string name="report_issue_title">Support report</string>
+  <string name="report_issue_intro">Use this form to send a crash or hardware report. When Sentry is configured, reports are sent automatically and can be turned into GitHub issues. Otherwise the app opens a prefilled GitHub issue and copies diagnostics to the clipboard.</string>
+  <string name="report_issue_subject_hint">Short title of the problem</string>
+  <string name="report_issue_message_hint">Describe what happened, which device you used and how to reproduce it.</string>
+  <string name="report_issue_name_hint">Your name (optional)</string>
+  <string name="report_issue_email_hint">Your email (optional)</string>
+  <string name="report_issue_include_diagnostics">Include app, IME and braille diagnostics</string>
+  <string name="report_issue_send">Send report</string>
+  <string name="report_issue_sentry_ready">Remote reporting is configured. Reports will be sent to Sentry with diagnostics attached.</string>
+  <string name="report_issue_github_fallback">Remote reporting is not configured yet. The app will open a GitHub issue draft and copy diagnostics to the clipboard.</string>
+  <string name="report_issue_subject_required">Enter a short problem title.</string>
+  <string name="report_issue_message_required">Describe the problem before sending the report.</string>
+  <string name="report_issue_sent_remote">Report queued for upload. Event ID: %1$s</string>
+  <string name="report_issue_sent_github">Diagnostics copied. Opening a GitHub issue draft.</string>
+  <string name="report_issue_failed">The report could not be prepared.</string>
+  <string name="pref_two_hand_calibration_summary">Allow calibrating the keyboard with two touch points.</string>
     <string name="pref_two_hand_calibration_title">Two-touch calibration</string>
     <string name="pref_use_eight_dots_summary">When enabled shows dots 7 and 8.</string>
     <string name="pref_use_eight_dots_title">Show eight dot keyboard</string>

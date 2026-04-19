@@ -62,9 +62,27 @@ Notes
 * The app now includes a bundled offline quick start guide and direct entry
   points to braille diagnostics and Android accessibility settings from the
   main screen and settings UI.
+* The app also includes an in-app support report screen. With Sentry configured
+  at build time, crashes and manual reports can be sent remotely and routed to
+  GitHub issues. Without Sentry, the app falls back to opening a prefilled
+  GitHub issue and copying diagnostics to the clipboard.
 * Some historical source files for the old Ant/Eclipse build were intentionally
   left in the repository for reference, but they are no longer used by the
   Gradle build.
+
+Crash Reporting And GitHub Issue Automation
+-------------------------------------------
+
+See:
+
+* `docs/SENTRY_GITHUB_SETUP.md`
+
+The short version:
+
+* provide `sentryDsn` or `SENTRY_DSN` at build time,
+* connect the Sentry project to `screenreaders/soft-braille-keyboard`,
+* create Sentry issue alert rules that open GitHub issues for crashes and
+  manual hardware reports.
 
 Braille Display Scope
 ---------------------

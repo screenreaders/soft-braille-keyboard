@@ -187,6 +187,13 @@ public class MainActivity extends Activity {
         }).start();
     }
 
+    public void onReportIssue(View view) {
+        Intent intent = new Intent(this, SupportReportActivity.class);
+        if (canStartActivity(intent)) {
+            startActivity(intent);
+        }
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -223,6 +230,10 @@ public class MainActivity extends Activity {
         }
         if (id == R.id.action_check_updates) {
             onCheckForUpdates(null);
+            return true;
+        }
+        if (id == R.id.action_report_issue) {
+            onReportIssue(null);
             return true;
         }
         if (id == R.id.action_settings) {

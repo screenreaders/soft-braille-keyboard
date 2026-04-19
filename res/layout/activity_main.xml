@@ -39,6 +39,11 @@
         android:layout_height="wrap_content"
         android:onClick="onCheckForUpdates"
         android:text="@string/button_check_updates" />
+    <Button style="@android:style/TextAppearance.Large"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="onReportIssue"
+        android:text="@string/button_report_issue" />
     <Button style="@android:style/TextAppearance.Large" 
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

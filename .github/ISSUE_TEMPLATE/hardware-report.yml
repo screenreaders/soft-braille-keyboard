@@ -1,0 +1,58 @@
+name: Hardware Or Braille Report
+description: Report a braille display, Android device, or input issue
+title: "[hardware] "
+labels:
+  - hardware
+  - needs-triage
+body:
+  - type: markdown
+    attributes:
+      value: |
+        If you opened this issue from inside the app, paste the copied diagnostics first.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: Short description of the problem
+    validations:
+      required: true
+  - type: input
+    id: android
+    attributes:
+      label: Android version
+      placeholder: "Android 16 / SDK 36"
+  - type: input
+    id: phone
+    attributes:
+      label: Phone or tablet
+      placeholder: "Google Pixel 8"
+  - type: input
+    id: display
+    attributes:
+      label: Braille display
+      placeholder: "Brailliant BI 40X over Bluetooth"
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Exact steps that trigger the problem
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual result
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics
+      description: Paste the diagnostics copied from the app here
+      render: text
