@@ -27,6 +27,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.hardware.usb.UsbDevice;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -45,6 +46,7 @@ import com.googlecode.eyesfree.braille.display.BrailleKeyBinding;
 import com.googlecode.eyesfree.braille.display.Display;
 import com.googlecode.eyesfree.braille.display.DisplayClient;
 import com.googlecode.eyesfree.braille.service.display.DeviceFinder;
+import org.json.JSONException;
 import org.a11y.brltty.android.UsbHelper;
 
 import java.io.File;
@@ -56,6 +58,8 @@ import java.util.List;
 
 public class BrailleDisplayActivity extends Activity {
     private static final int BLUETOOTH_CONNECT_REQUEST = 2;
+    private static final int REQUEST_EXPORT_PROFILES_FILE = 3;
+    private static final int REQUEST_IMPORT_PROFILES_FILE = 4;
     private static final int MAX_LOG_LINES = 60;
 
     private final StringBuilder eventLog = new StringBuilder();
@@ -255,6 +259,120 @@ public class BrailleDisplayActivity extends Activity {
         BrailleDisplayPreferences.clearDeviceTable(this, address);
         appendLog(getString(R.string.braille_log_profile_table_global, address));
         refreshAll();
+    }
+
+    public void onExportBrailleProfiles(View view) {
+        ClipboardManager clipboard = (ClipboardManager) getSystemService(
+                Context.CLIPBOARD_SERVICE);
+        if (clipboard == null) {
+            appendLog(getString(R.string.braille_log_profiles_import_failed));
+            return;
+        }
+        try {
+            String export = BrailleDisplayPreferences.exportProfileBundle(this);
+            clipboard.setPrimaryClip(ClipData.newPlainText(
+                    getString(R.string.braille_profiles_clip_label), export));
+            appendLog(getString(R.string.braille_log_profiles_exported));
+        } catch (JSONException e) {
+            appendLog(getString(R.string.braille_log_profiles_import_failed));
+        }
+    }
+
+    public void onImportBrailleProfiles(View view) {
+        ClipboardManager clipboard = (ClipboardManager) getSystemService(
+                Context.CLIPBOARD_SERVICE);
+        if (clipboard == null || !clipboard.hasPrimaryClip()) {
+            appendLog(getString(R.string.braille_log_profiles_import_empty));
+            return;
+        }
+        CharSequence importedText = null;
+        ClipData clip = clipboard.getPrimaryClip();
+        if (clip != null && clip.getItemCount() > 0) {
+            ClipData.Item item = clip.getItemAt(0);
+            if (item != null) {
+                importedText = item.coerceToText(this);
+            }
+        }
+        if (TextUtils.isEmpty(importedText)) {
+            appendLog(getString(R.string.braille_log_profiles_import_empty));
+            return;
+        }
+        try {
+            BrailleDisplayPreferences.ImportResult result =
+                    BrailleDisplayPreferences.importProfileBundle(this,
+                            importedText.toString());
+            if (!result.hadContent) {
+                appendLog(getString(R.string.braille_log_profiles_import_empty));
+                return;
+            }
+            appendLog(getString(R.string.braille_log_profiles_imported,
+                    result.restoredEntries));
+            refreshAll();
+        } catch (JSONException e) {
+            appendLog(getString(R.string.braille_log_profiles_import_failed));
+        }
+    }
+
+    public void onShareBrailleProfiles(View view) {
+        try {
+            String export = BrailleDisplayPreferences.exportProfileBundle(this);
+            Intent intent = new Intent(Intent.ACTION_SEND);
+            intent.setType("application/json");
+            intent.putExtra(Intent.EXTRA_SUBJECT,
+                    getString(R.string.braille_profiles_clip_label));
+            intent.putExtra(Intent.EXTRA_TEXT, export);
+            Intent chooser = Intent.createChooser(intent,
+                    getString(R.string.braille_share_profiles));
+            if (canStartActivity(chooser)) {
+                startActivity(chooser);
+            } else if (canStartActivity(intent)) {
+                startActivity(intent);
+            } else {
+                appendLog(getString(R.string.braille_log_profiles_share_failed));
+            }
+        } catch (JSONException e) {
+            appendLog(getString(R.string.braille_log_profiles_share_failed));
+        }
+    }
+
+    public void onExportBrailleProfilesToFile(View view) {
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("application/json");
+        intent.putExtra(Intent.EXTRA_TITLE, "braille-display-profiles.json");
+        if (canStartActivity(intent)) {
+            startActivityForResult(intent, REQUEST_EXPORT_PROFILES_FILE);
+        } else {
+            appendLog(getString(R.string.braille_log_profiles_file_export_failed));
+        }
+    }
+
+    public void onImportBrailleProfilesFromFile(View view) {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("application/json");
+        if (canStartActivity(intent)) {
+            startActivityForResult(intent, REQUEST_IMPORT_PROFILES_FILE);
+        } else {
+            appendLog(getString(R.string.braille_log_profiles_file_import_failed));
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode != RESULT_OK || data == null) {
+            return;
+        }
+        Uri uri = data.getData();
+        if (uri == null) {
+            return;
+        }
+        if (requestCode == REQUEST_EXPORT_PROFILES_FILE) {
+            exportProfilesToUri(uri);
+        } else if (requestCode == REQUEST_IMPORT_PROFILES_FILE) {
+            importProfilesFromUri(uri);
+        }
     }
 
     public void onCycleRemapBinding(View view) {
@@ -1024,5 +1142,71 @@ public class BrailleDisplayActivity extends Activity {
     private boolean canStartActivity(Intent intent) {
         return intent != null && getPackageManager() != null
                 && intent.resolveActivity(getPackageManager()) != null;
+    }
+
+    private void exportProfilesToUri(Uri uri) {
+        java.io.OutputStream stream = null;
+        try {
+            String export = BrailleDisplayPreferences.exportProfileBundle(this);
+            stream = getContentResolver().openOutputStream(uri);
+            if (stream == null) {
+                appendLog(getString(R.string.braille_log_profiles_file_export_failed));
+                return;
+            }
+            stream.write(export.getBytes(StandardCharsets.UTF_8));
+            appendLog(getString(R.string.braille_log_profiles_file_exported,
+                    uri.toString()));
+        } catch (IOException e) {
+            appendLog(getString(R.string.braille_log_profiles_file_export_failed));
+        } catch (JSONException e) {
+            appendLog(getString(R.string.braille_log_profiles_file_export_failed));
+        } finally {
+            if (stream != null) {
+                try {
+                    stream.close();
+                } catch (IOException e) {
+                    // Ignore close failure after export.
+                }
+            }
+        }
+    }
+
+    private void importProfilesFromUri(Uri uri) {
+        java.io.InputStream stream = null;
+        try {
+            stream = getContentResolver().openInputStream(uri);
+            if (stream == null) {
+                appendLog(getString(R.string.braille_log_profiles_file_import_failed));
+                return;
+            }
+            java.io.ByteArrayOutputStream output = new java.io.ByteArrayOutputStream();
+            byte[] buffer = new byte[4096];
+            int read;
+            while ((read = stream.read(buffer)) >= 0) {
+                output.write(buffer, 0, read);
+            }
+            BrailleDisplayPreferences.ImportResult result =
+                    BrailleDisplayPreferences.importProfileBundle(this,
+                            output.toString(StandardCharsets.UTF_8.name()));
+            if (!result.hadContent) {
+                appendLog(getString(R.string.braille_log_profiles_import_empty));
+                return;
+            }
+            appendLog(getString(R.string.braille_log_profiles_file_imported,
+                    result.restoredEntries, uri.toString()));
+            refreshAll();
+        } catch (IOException e) {
+            appendLog(getString(R.string.braille_log_profiles_file_import_failed));
+        } catch (JSONException e) {
+            appendLog(getString(R.string.braille_log_profiles_file_import_failed));
+        } finally {
+            if (stream != null) {
+                try {
+                    stream.close();
+                } catch (IOException e) {
+                    // Ignore close failure after import.
+                }
+            }
+        }
     }
 }

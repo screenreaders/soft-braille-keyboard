@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/braille_learn_intro" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:onClick="onCycleLessonCategory"
+            android:text="@string/braille_learn_change_category" />
+
+        <TextView
+            android:id="@+id/braille_learn_mode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:textStyle="bold" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:onClick="onCycleLessonMode"
+            android:text="@string/braille_learn_change_mode" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:onClick="onCycleLessonOrder"
+            android:text="@string/braille_learn_change_order" />
+
+        <TextView
+            android:id="@+id/braille_learn_category"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/braille_learn_progress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp" />
+
+        <TextView
+            android:id="@+id/braille_learn_table"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp" />
+
+        <TextView
+            android:id="@+id/braille_learn_prompt"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:textAppearance="@android:style/TextAppearance.Large" />
+
+        <TextView
+            android:id="@+id/braille_learn_selected_dots"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp" />
+
+        <LinearLayout
+            android:id="@+id/braille_learn_dots_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/braille_learn_dot_1"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:onClick="onToggleDot"
+                    android:tag="1" />
+
+                <Button
+                    android:id="@+id/braille_learn_dot_2"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:onClick="onToggleDot"
+                    android:tag="2" />
+
+                <Button
+                    android:id="@+id/braille_learn_dot_3"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:onClick="onToggleDot"
+                    android:tag="3" />
+
+                <Button
+                    android:id="@+id/braille_learn_dot_4"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:onClick="onToggleDot"
+                    android:tag="4" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/braille_learn_dot_5"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:onClick="onToggleDot"
+                    android:tag="5" />
+
+                <Button
+                    android:id="@+id/braille_learn_dot_6"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:onClick="onToggleDot"
+                    android:tag="6" />
+
+                <Button
+                    android:id="@+id/braille_learn_dot_7"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:onClick="onToggleDot"
+                    android:tag="7" />
+
+                <Button
+                    android:id="@+id/braille_learn_dot_8"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:onClick="onToggleDot"
+                    android:tag="8" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/braille_learn_choices"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <Button
+                android:id="@+id/braille_learn_choice_1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="onChooseSymbol"
+                android:tag="0" />
+
+            <Button
+                android:id="@+id/braille_learn_choice_2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="onChooseSymbol"
+                android:tag="1" />
+
+            <Button
+                android:id="@+id/braille_learn_choice_3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="onChooseSymbol"
+                android:tag="2" />
+
+            <Button
+                android:id="@+id/braille_learn_choice_4"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="onChooseSymbol"
+                android:tag="3" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:onClick="onCheckAnswer"
+                android:text="@string/braille_learn_check" />
+
+            <Button
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:onClick="onShowHint"
+                android:text="@string/braille_learn_hint_button" />
+
+            <Button
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:onClick="onNextChallenge"
+                android:text="@string/braille_learn_next" />
+        </LinearLayout>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:onClick="onClearDots"
+            android:text="@string/braille_learn_clear" />
+
+        <TextView
+            android:id="@+id/braille_learn_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:textIsSelectable="true" />
+
+        <TextView
+            android:id="@+id/braille_learn_score"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/braille_learn_keyboard_intro" />
+
+        <EditText
+            android:id="@+id/braille_learn_keyboard_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:hint="@string/braille_learn_keyboard_hint"
+            android:inputType="textVisiblePassword"
+            android:maxLines="1" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:onClick="onShowTextKeyboard"
+            android:text="@string/braille_learn_keyboard_text_mode" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="onShowNumberKeyboard"
+            android:text="@string/braille_learn_keyboard_number_mode" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="onShowSymbolKeyboard"
+            android:text="@string/braille_learn_keyboard_symbol_mode" />
+
+        <TextView
+            android:id="@+id/braille_learn_keyboard_result"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textIsSelectable="true" />
+    </LinearLayout>
+</ScrollView>

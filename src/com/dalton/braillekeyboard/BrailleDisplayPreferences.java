@@ -22,6 +22,11 @@ import android.preference.PreferenceManager;
 
 import com.googlecode.eyesfree.braille.display.BrailleInputEvent;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.Map;
+
 public final class BrailleDisplayPreferences {
     private static final String PREF_LAST_CONNECTED_DEVICE =
             "lastBluetoothDevice";
@@ -39,8 +44,20 @@ public final class BrailleDisplayPreferences {
             "brailleDisplayServiceContent";
     private static final String PREF_SERVICE_COMMAND =
             "brailleDisplayServiceCommand";
+    private static final String EXPORT_VERSION_KEY = "version";
+    private static final String EXPORT_PREFERENCES_KEY = "preferences";
 
     private BrailleDisplayPreferences() {
+    }
+
+    public static final class ImportResult {
+        public final int restoredEntries;
+        public final boolean hadContent;
+
+        ImportResult(int restoredEntries, boolean hadContent) {
+            this.restoredEntries = restoredEntries;
+            this.hadContent = hadContent;
+        }
     }
 
     public static String getLastConnectedDeviceAddress(Context context) {
@@ -322,9 +339,93 @@ public final class BrailleDisplayPreferences {
         editor.apply();
     }
 
+    public static String exportProfileBundle(Context context) throws JSONException {
+        SharedPreferences preferences = getPreferences(context);
+        JSONObject root = new JSONObject();
+        JSONObject exported = new JSONObject();
+        root.put(EXPORT_VERSION_KEY, 1);
+        for (Map.Entry<String, ?> entry : preferences.getAll().entrySet()) {
+            if (entry == null || !isProfilePreferenceKey(entry.getKey())) {
+                continue;
+            }
+            Object value = entry.getValue();
+            if (value instanceof String || value instanceof Integer
+                    || value instanceof Boolean || value == null) {
+                exported.put(entry.getKey(), value);
+            }
+        }
+        root.put(EXPORT_PREFERENCES_KEY, exported);
+        return root.toString(2);
+    }
+
+    public static ImportResult importProfileBundle(Context context,
+            String serialized) throws JSONException {
+        if (serialized == null || serialized.trim().length() == 0) {
+            return new ImportResult(0, false);
+        }
+        JSONObject root = new JSONObject(serialized);
+        JSONObject preferencesObject = root.optJSONObject(EXPORT_PREFERENCES_KEY);
+        if (preferencesObject == null) {
+            return new ImportResult(0, false);
+        }
+
+        SharedPreferences preferences = getPreferences(context);
+        SharedPreferences.Editor editor = preferences.edit();
+        clearProfileKeys(preferences, editor);
+
+        int restored = 0;
+        java.util.Iterator<String> keys = preferencesObject.keys();
+        while (keys.hasNext()) {
+            String key = keys.next();
+            if (!isProfilePreferenceKey(key)) {
+                continue;
+            }
+            Object value = preferencesObject.opt(key);
+            if (value == null || JSONObject.NULL.equals(value)) {
+                editor.remove(key);
+                continue;
+            }
+            if (value instanceof Integer) {
+                editor.putInt(key, ((Integer) value).intValue());
+                restored++;
+            } else if (value instanceof Number) {
+                editor.putInt(key, ((Number) value).intValue());
+                restored++;
+            } else if (value instanceof Boolean) {
+                editor.putBoolean(key, ((Boolean) value).booleanValue());
+                restored++;
+            } else {
+                editor.putString(key, String.valueOf(value));
+                restored++;
+            }
+        }
+        editor.apply();
+        return new ImportResult(restored, restored > 0);
+    }
+
     private static SharedPreferences getPreferences(Context context) {
         return PreferenceManager.getDefaultSharedPreferences(
                 context.getApplicationContext());
+    }
+
+    private static void clearProfileKeys(SharedPreferences preferences,
+            SharedPreferences.Editor editor) {
+        for (String key : preferences.getAll().keySet()) {
+            if (isProfilePreferenceKey(key)) {
+                editor.remove(key);
+            }
+        }
+    }
+
+    private static boolean isProfilePreferenceKey(String key) {
+        if (key == null) {
+            return false;
+        }
+        return PREF_LAST_CONNECTED_DEVICE.equals(key)
+                || PREF_PREFERRED_DEVICE.equals(key)
+                || key.startsWith(PREF_DEVICE_TABLE_PREFIX)
+                || key.startsWith(PREF_COMMAND_REMAP_PREFIX)
+                || key.startsWith(PREF_BINDING_REMAP_PREFIX);
     }
 
     private static String prefixedDeviceKey(String address) {

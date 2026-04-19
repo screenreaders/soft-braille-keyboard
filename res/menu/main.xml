@@ -15,6 +15,18 @@
         android:title="@string/quick_start_title"/>
 
     <item
+        android:id="@+id/action_braille_learn"
+        android:orderInCategory="80"
+        android:showAsAction="never"
+        android:title="@string/button_braille_learn"/>
+
+    <item
+        android:id="@+id/action_braille_notes"
+        android:orderInCategory="82"
+        android:showAsAction="never"
+        android:title="@string/button_braille_notes"/>
+
+    <item
         android:id="@+id/action_accessibility_settings"
         android:orderInCategory="85"
         android:showAsAction="never"

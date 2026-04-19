@@ -156,6 +156,7 @@ public class BrailleIME extends InputMethodService implements KeyboardListener {
             brailleView.onInitialiseForInput(this, this);
         }
         brailleParser.setTranslator(this);
+        syncKeyboardDotsWithBrailleType();
     }
 
     @Override
@@ -192,6 +193,7 @@ public class BrailleIME extends InputMethodService implements KeyboardListener {
 
     private void brailleParserReady(int status) {
         if (status == BrailleParser.STATUS_OK) {
+            syncKeyboardDotsWithBrailleType();
             if (brailleView != null) {
                 brailleView.setLocale(getLocale());
             }
@@ -447,7 +449,9 @@ public class BrailleIME extends InputMethodService implements KeyboardListener {
     public int switchBrailleType() {
         finishComposingText();
         if (brailleParser != null) {
-            return brailleParser.switchBrailleType(this).dots;
+            int dots = brailleParser.switchBrailleType(this).dots;
+            syncKeyboardDotsWithBrailleType();
+            return dots;
         }
         return -1;
     }
@@ -456,9 +460,23 @@ public class BrailleIME extends InputMethodService implements KeyboardListener {
     public String switchTable() {
         finishComposingText();
         if (brailleParser != null) {
-            return brailleParser.switchTable(this);
+            String table = brailleParser.switchTable(this);
+            syncKeyboardDotsWithBrailleType();
+            return table;
         }
         return null;
+    }
+
+    private void syncKeyboardDotsWithBrailleType() {
+        if (brailleParser == null) {
+            return;
+        }
+        boolean useEightDots = brailleParser.getBrailleType(this).dots == 8;
+        Options.writeBooleanPreference(this, R.string.pref_use_eight_dots_key,
+                useEightDots);
+        if (brailleView != null) {
+            brailleView.refreshKeyboardDots();
+        }
     }
 
     @Override

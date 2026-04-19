@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Locale;
 
 import android.content.Intent;
+import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.MultiSelectListPreference;
@@ -31,6 +32,7 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.EngineInfo;
+import android.text.TextUtils;
 
 import com.dalton.braillekeyboard.BrailleParser.BrailleType;
 import com.dalton.braillekeyboard.Options.KeyboardEcho;
@@ -72,6 +74,8 @@ public class PreferenceIME extends PreferenceActivity {
             ListPreference textToSpeechPreference = (ListPreference) findPreference(getString(R.string.pref_text_to_speech_engine_key));
             Preference brailleDisplayTools = findPreference(getString(
                     R.string.pref_braille_display_tools_key));
+            Preference brailleLearn = findPreference(getString(
+                    R.string.pref_braille_learn_key));
             Preference accessibilityTools = findPreference(getString(
                     R.string.pref_accessibility_tools_key));
             Preference quickStartGuide = findPreference(getString(
@@ -100,6 +104,10 @@ public class PreferenceIME extends PreferenceActivity {
             if (brailleDisplayTools != null) {
                 brailleDisplayTools.setIntent(new Intent(getActivity(),
                         BrailleDisplayActivity.class));
+            }
+            if (brailleLearn != null) {
+                brailleLearn.setIntent(new Intent(getActivity(),
+                        BrailleLearnActivity.class));
             }
             if (accessibilityTools != null) {
                 accessibilityTools.setIntent(new Intent(
@@ -252,14 +260,44 @@ public class PreferenceIME extends PreferenceActivity {
         }
 
         private void doEnginesList(ListPreference preference) {
-            if (preference == null || tts == null || getActivity() == null) {
+            if (preference == null || getActivity() == null) {
                 return;
             }
-            List<EngineInfo> engines = tts.getEngines();
-            tts.shutdown();
-            tts = null;
-            if (engines == null) {
-                engines = new ArrayList<EngineInfo>();
+            List<EngineInfo> engines = new ArrayList<EngineInfo>();
+            if (tts != null) {
+                List<EngineInfo> queried = tts.getEngines();
+                if (queried != null) {
+                    engines.addAll(queried);
+                }
+                tts.shutdown();
+                tts = null;
+            }
+
+            Intent engineIntent = new Intent(TextToSpeech.Engine.INTENT_ACTION_TTS_SERVICE);
+            List<ResolveInfo> services = getActivity().getPackageManager()
+                    .queryIntentServices(engineIntent, 0);
+            if (services != null) {
+                for (ResolveInfo service : services) {
+                    if (service == null || service.serviceInfo == null) {
+                        continue;
+                    }
+                    String packageName = service.serviceInfo.packageName;
+                    boolean found = false;
+                    for (EngineInfo engine : engines) {
+                        if (engine != null && packageName.equals(engine.name)) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        EngineInfo info = new EngineInfo();
+                        info.name = packageName;
+                        CharSequence label = service.loadLabel(
+                                getActivity().getPackageManager());
+                        info.label = label == null ? packageName : label.toString();
+                        engines.add(info);
+                    }
+                }
             }
             Collections.sort(engines, new Comparator<EngineInfo>() {
                 @Override
@@ -289,6 +327,17 @@ public class PreferenceIME extends PreferenceActivity {
 
             preference.setEntries(entries);
             preference.setEntryValues(entryValues);
+            String currentValue = preference.getValue();
+            boolean foundValue = TextUtils.isEmpty(currentValue);
+            for (CharSequence value : entryValues) {
+                if (TextUtils.equals(currentValue, value)) {
+                    foundValue = true;
+                    break;
+                }
+            }
+            if (!foundValue) {
+                preference.setValue("");
+            }
         }
     }
 }

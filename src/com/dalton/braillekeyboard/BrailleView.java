@@ -372,7 +372,11 @@ public class BrailleView extends View {
             break;
         case MotionEvent.ACTION_HOVER_EXIT:
         case MotionEvent.ACTION_UP:
-            if (!handleVoiceInput()) {
+            if (isCalibrationGestureActive()) {
+                resetDots();
+                lastDotList.clear();
+                handledSwipe = false;
+            } else if (!handleVoiceInput()) {
                 if (pad != null && pressedDotString() != NO_DOTS) {
                     setDots();
                     if (!handledSwipe) {
@@ -467,6 +471,16 @@ public class BrailleView extends View {
         }
     }
 
+    public void refreshKeyboardDots() {
+        resetDots();
+        setDotsSevenEight(false, false);
+        if (getWidth() > 0 && getHeight() > 0) {
+            loadDefaultPad(getWidth(), getHeight());
+        }
+        invalidate();
+        requestLayout();
+    }
+
     private boolean setPad(int id, int width, int height, boolean autoRotate) {
         final int TOTAL_DOTS = 6;
         final int ONE_SIDE = 3;
@@ -542,11 +556,7 @@ public class BrailleView extends View {
 
     // Set the pad using a default pad.
     private boolean setDefaultPad(int w, int h, int padWidth, int padHeight) {
-        boolean useEightDots = Options.getBooleanPreference(
-                getContext(),
-                R.string.pref_use_eight_dots_key,
-                Boolean.parseBoolean(getContext().getString(
-                        R.string.pref_use_eight_dots_default)));
+        boolean useEightDots = shouldUseEightDots();
         try {
             pad = PadUtilities
                     .displayDefaultPad(getContext(), padWidth, padHeight, h > w
@@ -561,11 +571,7 @@ public class BrailleView extends View {
     // Display a pad according to the possitioning of the fingers (user
     // calibration)
     private boolean selectPad(Coords[] dots, int width, int height) {
-        boolean useEightDots = Options.getBooleanPreference(
-                getContext(),
-                R.string.pref_use_eight_dots_key,
-                Boolean.parseBoolean(getContext().getString(
-                        R.string.pref_use_eight_dots_default)));
+        boolean useEightDots = shouldUseEightDots();
         try {
             pad = PadUtilities.selectPad(getContext(), dots, width, height,
                     !displayParams.autoRotate && getHeight() > getWidth(),
@@ -633,6 +639,17 @@ public class BrailleView extends View {
         if (dot8) {
             this.dot8 = dot8;
         }
+    }
+
+    private boolean shouldUseEightDots() {
+        if (listener != null) {
+            return listener.getDots() == 8;
+        }
+        return Options.getBooleanPreference(
+                getContext(),
+                R.string.pref_use_eight_dots_key,
+                Boolean.parseBoolean(getContext().getString(
+                        R.string.pref_use_eight_dots_default)));
     }
 
     private byte pressedDotString() {
@@ -797,6 +814,11 @@ public class BrailleView extends View {
             return true;
         }
         return false;
+    }
+
+    private boolean isCalibrationGestureActive() {
+        return System.currentTimeMillis() > requiredTouchTime
+                && (countDotsDown(dotsDown) >= 3 || !lastDotList.isEmpty());
     }
 
     private static class DisplayParams {

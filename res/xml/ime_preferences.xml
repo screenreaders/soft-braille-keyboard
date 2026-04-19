@@ -97,6 +97,10 @@
              android:title="@string/pref_braille_display_tools_title"
              android:summary="@string/pref_braille_display_tools_summary" />
          <Preference
+             android:key="@string/pref_braille_learn_key"
+             android:title="@string/pref_braille_learn_title"
+             android:summary="@string/pref_braille_learn_summary" />
+         <Preference
              android:key="@string/pref_accessibility_tools_key"
              android:title="@string/pref_accessibility_tools_title"
              android:summary="@string/pref_accessibility_tools_summary" />

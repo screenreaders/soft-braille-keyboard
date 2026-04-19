@@ -142,6 +142,20 @@ public class MainActivity extends Activity {
         }
     }
 
+    public void onBrailleLearn(View view) {
+        Intent intent = new Intent(this, BrailleLearnActivity.class);
+        if (canStartActivity(intent)) {
+            startActivity(intent);
+        }
+    }
+
+    public void onBrailleNotes(View view) {
+        Intent intent = new Intent(this, BrailleNotesActivity.class);
+        if (canStartActivity(intent)) {
+            startActivity(intent);
+        }
+    }
+
     public void onCheckForUpdates(View view) {
         if (updateCheckInProgress) {
             return;
@@ -226,6 +240,14 @@ public class MainActivity extends Activity {
             if (canStartActivity(intent)) {
                 startActivity(intent);
             }
+            return true;
+        }
+        if (id == R.id.action_braille_learn) {
+            onBrailleLearn(null);
+            return true;
+        }
+        if (id == R.id.action_braille_notes) {
+            onBrailleNotes(null);
             return true;
         }
         if (id == R.id.action_check_updates) {

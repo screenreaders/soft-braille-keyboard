@@ -177,7 +177,7 @@ public class BrailleParser {
                 R.array.braille_tables);
         tableIds = Arrays.asList(ids);
 
-        client = new TranslatorClient(context, new OnInitListener() {
+        client = new MyTranslatorClient(context, new OnInitListener() {
 
             @Override
             public void onInit(int status) {
@@ -418,6 +418,37 @@ public class BrailleParser {
     public TranslationResult translateText(Context context, CharSequence text,
             int cursorPosition) {
         return translateText(context, text, cursorPosition, null);
+    }
+
+    public Integer findDotsForCharacter(Context context, char character) {
+        if (status != STATUS_OK) {
+            return null;
+        }
+        String target = String.valueOf(character);
+        String normalizedTarget = Character.isLetter(character)
+                ? String.valueOf(Character.toLowerCase(character)) : target;
+        for (int mask = 1; mask <= 0xFF; mask++) {
+            String translated = backTranslate(context,
+                    new Byte[] { Byte.valueOf((byte) mask) });
+            if (TextUtils.isEmpty(translated) || translated.length() != 1) {
+                continue;
+            }
+            String candidate = Character.isLetter(translated.charAt(0))
+                    ? String.valueOf(Character.toLowerCase(translated.charAt(0)))
+                    : translated;
+            if (TextUtils.equals(candidate, normalizedTarget)) {
+                return Integer.valueOf(mask);
+            }
+        }
+        return null;
+    }
+
+    public byte[] translateTextToBrailleCells(Context context, CharSequence text) {
+        if (TextUtils.isEmpty(text)) {
+            return null;
+        }
+        TranslationResult translation = translateText(context, text, text.length());
+        return translation == null ? null : translation.getCells();
     }
 
     public TranslationResult translateText(Context context, CharSequence text,

@@ -17,9 +17,10 @@
     <string name="pref_braille_literary_table_default" translatable="false">en-UEB-g1</string>
     <string name="pref_braille_literary_table_key" translatable="false">BRAILLE_TABLE_1</string>
     <string name="pref_braille_table_auto" translatable="false">auto</string>
-    <string name="pref_braille_type_default" translatable="false">0</string>
+    <string name="pref_braille_type_default" translatable="false">1</string>
     <string name="pref_braille_type_key" translatable="false">BRAILLE_GRADE_KEY</string>
     <string name="pref_accessibility_tools_key" translatable="false">ACCESSIBILITY_TOOLS</string>
+    <string name="pref_braille_learn_key" translatable="false">BRAILLE_LEARN</string>
     <string name="pref_braille_display_tools_key" translatable="false">BRAILLE_DISPLAY_TOOLS</string>
     <string name="pref_category_braille_key" translatable="false">BRAILLE_CATEGORY_KEY</string>
     <string name="pref_category_feedback_key" translatable="false">KEYBOARD_FEEDBACK_Category</string>
@@ -190,7 +191,13 @@ Meaning: %2$s</string>
     <string name="braille_role_form_field">Form field</string>
     <string name="braille_role_heading">Heading</string>
     <string name="braille_role_landmark">Landmark</string>
+    <string name="braille_role_link">Link</string>
     <string name="braille_role_list">List</string>
+    <string name="braille_role_image">Image</string>
+    <string name="braille_role_pager">Pager</string>
+    <string name="braille_role_progress">Progress</string>
+    <string name="braille_role_slider">Slider</string>
+    <string name="braille_role_tab">Tab</string>
     <string name="braille_role_table">Table</string>
     <string name="braille_role_unchecked">Unchecked</string>
     <string name="braille_role_webview">Web content</string>
@@ -213,6 +220,7 @@ Meaning: %2$s</string>
     <string name="braille_service_no_focus">No focused item.</string>
     <string name="braille_service_pane_template">Pane: %s</string>
     <string name="braille_service_password_field">Password field</string>
+    <string name="braille_service_progress_template">Progress: %1$d of %2$d</string>
     <string name="braille_service_position_template">Row %1$d, column %2$d</string>
     <string name="braille_service_status_idle">Braille accessibility service is idle.</string>
     <string name="braille_service_status_interrupted">Braille accessibility service interrupted.</string>
@@ -226,7 +234,9 @@ Device table: %3$s</string>
     <string name="braille_status_connected">Connected</string>
     <string name="braille_status_disconnected">Disconnected</string>
     <string name="braille_status_error">Connection error</string>
+    <string name="braille_state_collapsed">collapsed</string>
     <string name="braille_state_disabled">disabled</string>
+    <string name="braille_state_expanded">expanded</string>
     <string name="braille_state_reader_focusable">screen reader focusable</string>
     <string name="braille_state_selected">selected</string>
     <string name="braille_usb_profile_exact">exact usb profile</string>
@@ -234,6 +244,8 @@ Device table: %3$s</string>
     <string name="braille_usb_permission_missing">usb permission missing</string>
     <string name="braille_ime">Soft Braille Keyboard</string>
     <string name="button_accessibility_settings">Open accessibility settings for braille display output</string>
+    <string name="button_braille_learn">Braille learning mode</string>
+    <string name="button_braille_notes">Braille notes</string>
     <string name="button_braille_displays">Braille display diagnostics</string>
     <string name="button_check_updates">Check for updates on GitHub</string>
     <string name="button_report_issue">Send support report</string>
@@ -305,6 +317,8 @@ Device table: %3$s</string>
     <string name="pref_default_computer_braille_table_title">Computer Braille table</string>
     <string name="pref_braille_display_tools_summary">Open braille display diagnostics, command test and device profile tools.</string>
     <string name="pref_braille_display_tools_title">Braille display tools</string>
+    <string name="pref_braille_learn_summary">Open practice mode for braille letters, numbers and punctuation.</string>
+    <string name="pref_braille_learn_title">Braille learning mode</string>
     <string name="pref_accessibility_tools_summary">Open Android accessibility settings to enable braille display screen output.</string>
     <string name="pref_accessibility_tools_title">Accessibility settings for braille output</string>
     <string name="pref_default_keyboard_summary">Choose the keyboard layout that is displayed by default.</string>
@@ -353,6 +367,96 @@ Device table: %3$s</string>
   <string name="report_issue_message_required">Describe the problem before sending the report.</string>
   <string name="report_issue_sent_github">Diagnostics copied. Opening a GitHub issue draft.</string>
   <string name="report_issue_failed">The report could not be prepared.</string>
+  <string name="braille_export_profiles">Copy braille display profiles</string>
+  <string name="braille_import_profiles">Import braille display profiles from clipboard</string>
+  <string name="braille_profiles_clip_label">Braille display profiles</string>
+  <string name="braille_share_profiles">Share braille display profiles</string>
+  <string name="braille_export_profiles_file">Export braille display profiles to file</string>
+  <string name="braille_import_profiles_file">Import braille display profiles from file</string>
+  <string name="braille_log_profiles_exported">Braille display profiles copied to the clipboard.</string>
+  <string name="braille_log_profiles_imported">Imported %d braille display profile entries from the clipboard.</string>
+  <string name="braille_log_profiles_import_empty">No braille display profile data was found on the clipboard.</string>
+  <string name="braille_log_profiles_import_failed">Could not import braille display profiles from the clipboard.</string>
+  <string name="braille_log_profiles_share_failed">Could not share braille display profiles.</string>
+  <string name="braille_log_profiles_file_exported">Braille display profiles exported to %1$s.</string>
+  <string name="braille_log_profiles_file_export_failed">Could not export braille display profiles to file.</string>
+  <string name="braille_log_profiles_file_imported">Imported %1$d braille display profile entries from %2$s.</string>
+  <string name="braille_log_profiles_file_import_failed">Could not import braille display profiles from file.</string>
+  <string name="braille_learn_title">Braille learning mode</string>
+  <string name="braille_learn_intro">Practice braille by matching the requested symbol with the correct dots. Lessons use the currently active translation table.</string>
+  <string name="braille_learn_change_category">Change lesson category</string>
+  <string name="braille_learn_change_mode">Change lesson mode</string>
+  <string name="braille_learn_change_order">Change lesson order</string>
+  <string name="braille_learn_mode_symbol_to_dots">Mode: symbol to dots</string>
+  <string name="braille_learn_mode_dots_to_symbol">Mode: dots to symbol</string>
+  <string name="braille_learn_order_random">Order: random practice</string>
+  <string name="braille_learn_order_sequential">Order: sequential lesson</string>
+  <string name="braille_learn_category_letters">Category: letters</string>
+  <string name="braille_learn_category_numbers">Category: numbers</string>
+  <string name="braille_learn_category_punctuation">Category: punctuation</string>
+  <string name="braille_learn_prompt">Find symbol: %s</string>
+  <string name="braille_learn_prompt_from_dots">Which symbol uses dots %s?</string>
+  <string name="braille_learn_prompt_empty">Waiting for a lesson item.</string>
+  <string name="braille_learn_selected_dots_value">Selected dots: %s</string>
+  <string name="braille_learn_dot_button">Dot %1$d: %2$s</string>
+  <string name="braille_learn_dot_on">on</string>
+  <string name="braille_learn_dot_off">off</string>
+  <string name="braille_learn_check">Check</string>
+  <string name="braille_learn_hint_button">Hint</string>
+  <string name="braille_learn_next">Next</string>
+  <string name="braille_learn_clear">Clear dots</string>
+  <string name="braille_learn_waiting">The lesson is still loading.</string>
+  <string name="braille_learn_correct">Correct. %1$s uses dots %2$s.</string>
+  <string name="braille_learn_incorrect">Try again. %1$s uses dots %2$s.</string>
+  <string name="braille_learn_correct_choice">Correct. Dots %2$s mean %1$s.</string>
+  <string name="braille_learn_incorrect_choice">Incorrect. Dots %2$s mean %1$s.</string>
+  <string name="braille_learn_hint">Hint: %1$s uses dots %2$s.</string>
+  <string name="braille_learn_hint_choice">Hint: dots %2$s mean %1$s.</string>
+  <string name="braille_learn_pick_choice">Choose one of the answer buttons.</string>
+  <string name="braille_learn_empty">No lesson items are available for the current braille table and category.</string>
+  <string name="braille_learn_ready">Lesson ready.</string>
+  <string name="braille_learn_score">Score: %1$d/%2$d, streak %3$d, best %4$d</string>
+  <string name="braille_learn_progress">Lesson item %1$d of %2$d</string>
+  <string name="braille_learn_no_dots">none</string>
+  <string name="braille_learn_table_waiting">Waiting for braille translation backend.</string>
+  <string name="braille_learn_table_value">Table: %1$s, %2$s</string>
+  <string name="braille_learn_keyboard_intro">Type a character with the system keyboard and the app will show the braille dots for the current table.</string>
+  <string name="braille_learn_keyboard_hint">Tap here and type one character</string>
+  <string name="braille_learn_keyboard_text_mode">Show text keyboard</string>
+  <string name="braille_learn_keyboard_number_mode">Show numeric keyboard</string>
+  <string name="braille_learn_keyboard_symbol_mode">Show symbol keyboard</string>
+  <string name="braille_learn_keyboard_result">Character %1$s uses dots %2$s.</string>
+  <string name="braille_learn_keyboard_missing">No single-cell braille mapping was found for %1$s in the current table.</string>
+  <string name="braille_learn_keyboard_waiting">Waiting for a character from the system keyboard.</string>
+  <string name="braille_learn_prefix_capital">capital prefix</string>
+  <string name="braille_learn_prefix_number">number prefix</string>
+  <string name="braille_learn_prefix_multi_cell">multi-cell sequence</string>
+  <string name="braille_notes_title">Braille notes</string>
+  <string name="braille_notes_intro">Use this simple notepad with the braille keyboard or the system keyboard. Notes are stored locally on the device.</string>
+  <string name="braille_notes_title_hint">Note title</string>
+  <string name="braille_notes_hint">Write your note here</string>
+  <string name="braille_notes_previous">Previous note</string>
+  <string name="braille_notes_next">Next note</string>
+  <string name="braille_notes_create">Create note</string>
+  <string name="braille_notes_delete">Delete note</string>
+  <string name="braille_notes_save">Save note</string>
+  <string name="braille_notes_load">Reload note</string>
+  <string name="braille_notes_share">Share note</string>
+  <string name="braille_notes_export">Export note to file</string>
+  <string name="braille_notes_import">Import note from file</string>
+  <string name="braille_notes_clear">Clear note</string>
+  <string name="braille_notes_empty">No saved note yet.</string>
+  <string name="braille_notes_saved">Note saved to %1$s.</string>
+  <string name="braille_notes_loaded">Note loaded from %1$s.</string>
+  <string name="braille_notes_autosaved">Autosaved to %1$s.</string>
+  <string name="braille_notes_save_failed">Could not save the note.</string>
+  <string name="braille_notes_load_failed">Could not load the saved note.</string>
+  <string name="braille_notes_cleared">The note was cleared.</string>
+  <string name="braille_notes_deleted">The note was deleted.</string>
+  <string name="braille_notes_exported">The note was exported to %1$s.</string>
+  <string name="braille_notes_export_failed">Could not export the note.</string>
+  <string name="braille_notes_imported">The note was imported from %1$s.</string>
+  <string name="braille_notes_import_failed">Could not import the note.</string>
   <string name="pref_two_hand_calibration_summary">Allow calibrating the keyboard with two touch points.</string>
     <string name="pref_two_hand_calibration_title">Two-touch calibration</string>
     <string name="pref_use_eight_dots_summary">When enabled shows dots 7 and 8.</string>

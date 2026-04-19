@@ -19,6 +19,7 @@ package com.dalton.braillekeyboard;
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.content.Intent;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Build;
 import android.text.TextUtils;
@@ -484,35 +485,119 @@ public class BrailleAccessibilityService extends AccessibilityService
     }
 
     private boolean navigateSemanticNode(boolean forward, SemanticTarget target) {
-        AccessibilityNodeInfo node = obtainStoredFocusedNode();
-        if (node == null) {
-            node = obtainCurrentFocusedNode();
+        AccessibilityNodeInfo root = getRootInActiveWindow();
+        if (root == null) {
+            return false;
         }
-        while (node != null) {
-            AccessibilityNodeInfo next = node.focusSearch(
-                    forward ? View.FOCUS_FORWARD : View.FOCUS_BACKWARD);
-            node.recycle();
-            node = next;
-            if (node == null) {
-                break;
+        AccessibilityNodeInfo current = obtainStoredFocusedNode();
+        if (current == null) {
+            current = obtainCurrentFocusedNode();
+        }
+        List<AccessibilityNodeInfo> nodes = new ArrayList<AccessibilityNodeInfo>();
+        try {
+            collectTraversalNodes(root, nodes, target);
+            if (nodes.isEmpty()) {
+                return false;
             }
-            if (matchesSemanticTarget(node, target)) {
-                try {
-                    boolean handled = node.performAction(
-                            AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS)
-                            || node.performAction(AccessibilityNodeInfo.ACTION_FOCUS);
-                    if (handled) {
-                        panOffset = 0;
-                        updateDisplayedContent(AccessibilityNodeInfo.obtain(node),
-                                null);
+            int currentIndex = -1;
+            if (current != null) {
+                for (int i = 0; i < nodes.size(); i++) {
+                    if (areSameNode(current, nodes.get(i))) {
+                        currentIndex = i;
+                        break;
                     }
-                    return handled;
-                } finally {
+                }
+            }
+            int index = forward ? currentIndex + 1
+                    : (currentIndex < 0 ? nodes.size() - 1 : currentIndex - 1);
+            while (index >= 0 && index < nodes.size()) {
+                AccessibilityNodeInfo candidate = nodes.get(index);
+                if (focusNodeOrDescendant(candidate)) {
+                    panOffset = 0;
+                    updateDisplayedContent(AccessibilityNodeInfo.obtain(candidate),
+                            null);
+                    return true;
+                }
+                index += forward ? 1 : -1;
+            }
+        } finally {
+            if (current != null) {
+                current.recycle();
+            }
+            for (AccessibilityNodeInfo node : nodes) {
+                if (node != null) {
                     node.recycle();
                 }
             }
+            root.recycle();
         }
         return false;
+    }
+
+    private void collectTraversalNodes(AccessibilityNodeInfo node,
+            List<AccessibilityNodeInfo> out, SemanticTarget target) {
+        if (node == null || out == null) {
+            return;
+        }
+        if (matchesSemanticTarget(node, target)) {
+            out.add(AccessibilityNodeInfo.obtain(node));
+        }
+        for (int i = 0; i < node.getChildCount(); i++) {
+            AccessibilityNodeInfo child = node.getChild(i);
+            if (child == null) {
+                continue;
+            }
+            try {
+                collectTraversalNodes(child, out, target);
+            } finally {
+                child.recycle();
+            }
+        }
+    }
+
+    private boolean focusNodeOrDescendant(AccessibilityNodeInfo node) {
+        if (node == null) {
+            return false;
+        }
+        if (node.performAction(AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS)
+                || node.performAction(AccessibilityNodeInfo.ACTION_FOCUS)) {
+            return true;
+        }
+        for (int i = 0; i < node.getChildCount(); i++) {
+            AccessibilityNodeInfo child = node.getChild(i);
+            if (child == null) {
+                continue;
+            }
+            try {
+                if (focusNodeOrDescendant(child)) {
+                    return true;
+                }
+            } finally {
+                child.recycle();
+            }
+        }
+        return false;
+    }
+
+    private boolean areSameNode(AccessibilityNodeInfo first,
+            AccessibilityNodeInfo second) {
+        if (first == null || second == null) {
+            return false;
+        }
+        if (first.equals(second)) {
+            return true;
+        }
+        Rect firstBounds = new Rect();
+        Rect secondBounds = new Rect();
+        first.getBoundsInScreen(firstBounds);
+        second.getBoundsInScreen(secondBounds);
+        return TextUtils.equals(first.getViewIdResourceName(),
+                second.getViewIdResourceName())
+                && TextUtils.equals(first.getClassName(), second.getClassName())
+                && TextUtils.equals(first.getText(), second.getText())
+                && TextUtils.equals(first.getContentDescription(),
+                        second.getContentDescription())
+                && firstBounds.equals(secondBounds);
     }
 
     private boolean navigateToBoundary(boolean end) {
@@ -1092,10 +1177,27 @@ public class BrailleAccessibilityService extends AccessibilityService
         } else if (node.getCollectionInfo() != null) {
             roles.add(getString(R.string.braille_role_collection));
         }
+        if (isPager(node)) {
+            roles.add(getString(R.string.braille_role_pager));
+        }
         if (node.isEditable()) {
             roles.add(getString(R.string.braille_role_edit_text));
         } else if (isFormField(node)) {
             roles.add(getString(R.string.braille_role_form_field));
+        }
+        if (isLink(node)) {
+            roles.add(getString(R.string.braille_role_link));
+        }
+        if (isImage(node)) {
+            roles.add(getString(R.string.braille_role_image));
+        }
+        if (isTab(node)) {
+            roles.add(getString(R.string.braille_role_tab));
+        }
+        if (isSlider(node)) {
+            roles.add(getString(R.string.braille_role_slider));
+        } else if (isProgressIndicator(node)) {
+            roles.add(getString(R.string.braille_role_progress));
         }
         if (node.isCheckable()) {
             roles.add(node.isChecked()
@@ -1154,6 +1256,11 @@ public class BrailleAccessibilityService extends AccessibilityService
         if (node.isSelected()) {
             metadata.add(getString(R.string.braille_state_selected));
         }
+        if (hasAction(node, AccessibilityNodeInfo.ACTION_COLLAPSE)) {
+            metadata.add(getString(R.string.braille_state_expanded));
+        } else if (hasAction(node, AccessibilityNodeInfo.ACTION_EXPAND)) {
+            metadata.add(getString(R.string.braille_state_collapsed));
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && node.isScreenReaderFocusable()) {
             metadata.add(getString(R.string.braille_state_reader_focusable));
         }
@@ -1170,6 +1277,10 @@ public class BrailleAccessibilityService extends AccessibilityService
         CharSequence collection = buildCollectionDescription(node);
         if (!TextUtils.isEmpty(collection)) {
             metadata.add(collection);
+        }
+        CharSequence progress = buildRangeDescription(node);
+        if (!TextUtils.isEmpty(progress)) {
+            metadata.add(progress);
         }
         return metadata.isEmpty() ? null : TextUtils.join(", ", metadata);
     }
@@ -1218,11 +1329,14 @@ public class BrailleAccessibilityService extends AccessibilityService
         }
         switch (target) {
         case SECTION:
-            return isHeading(node) || isLandmark(node) || isTable(node);
+            return isHeading(node) || isLandmark(node) || isTable(node)
+                    || isListLike(node) || isDialogOrPane(node);
         case CONTROL:
-            return isFormField(node) || node.isClickable() || node.isCheckable();
+            return isFormField(node) || isLink(node) || isTab(node)
+                    || isSlider(node) || node.isClickable()
+                    || node.isCheckable();
         case LIST:
-            return isListLike(node) || isTable(node);
+            return isListLike(node) || isTable(node) || isPager(node);
         default:
             return false;
         }
@@ -1257,6 +1371,19 @@ public class BrailleAccessibilityService extends AccessibilityService
                 || normalized.contains("search");
     }
 
+    private boolean isDialogOrPane(AccessibilityNodeInfo node) {
+        if (node == null) {
+            return false;
+        }
+        CharSequence className = node.getClassName();
+        String cls = className == null ? "" : className.toString();
+        if (cls.contains("Dialog")) {
+            return true;
+        }
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
+                && !TextUtils.isEmpty(node.getPaneTitle());
+    }
+
     private boolean isTable(AccessibilityNodeInfo node) {
         if (node == null) {
             return false;
@@ -1283,6 +1410,15 @@ public class BrailleAccessibilityService extends AccessibilityService
                         || collectionInfo.getColumnCount() > 1);
     }
 
+    private boolean isPager(AccessibilityNodeInfo node) {
+        if (node == null) {
+            return false;
+        }
+        CharSequence className = node.getClassName();
+        String cls = className == null ? "" : className.toString();
+        return cls.contains("ViewPager") || cls.contains("Pager");
+    }
+
     private boolean isFormField(AccessibilityNodeInfo node) {
         if (node == null) {
             return false;
@@ -1296,6 +1432,66 @@ public class BrailleAccessibilityService extends AccessibilityService
                 || cls.contains("RadioButton")
                 || cls.contains("Switch")
                 || cls.contains("ToggleButton");
+    }
+
+    private boolean isLink(AccessibilityNodeInfo node) {
+        if (node == null) {
+            return false;
+        }
+        String viewId = node.getViewIdResourceName();
+        if (!TextUtils.isEmpty(viewId)
+                && viewId.toLowerCase(java.util.Locale.ROOT).contains("link")) {
+            return true;
+        }
+        CharSequence className = node.getClassName();
+        String cls = className == null ? "" : className.toString();
+        return cls.contains("Link")
+                || (cls.contains("TextView") && node.isClickable()
+                        && !TextUtils.isEmpty(node.getText()));
+    }
+
+    private boolean isImage(AccessibilityNodeInfo node) {
+        if (node == null) {
+            return false;
+        }
+        CharSequence className = node.getClassName();
+        String cls = className == null ? "" : className.toString();
+        return cls.contains("ImageView");
+    }
+
+    private boolean isTab(AccessibilityNodeInfo node) {
+        if (node == null) {
+            return false;
+        }
+        CharSequence className = node.getClassName();
+        String cls = className == null ? "" : className.toString();
+        if (cls.contains("Tab")) {
+            return true;
+        }
+        String viewId = node.getViewIdResourceName();
+        return !TextUtils.isEmpty(viewId)
+                && viewId.toLowerCase(java.util.Locale.ROOT).contains("tab");
+    }
+
+    private boolean isSlider(AccessibilityNodeInfo node) {
+        if (node == null) {
+            return false;
+        }
+        CharSequence className = node.getClassName();
+        String cls = className == null ? "" : className.toString();
+        if (cls.contains("SeekBar") || cls.contains("Slider")) {
+            return true;
+        }
+        return node.getRangeInfo() != null && node.isFocusable();
+    }
+
+    private boolean isProgressIndicator(AccessibilityNodeInfo node) {
+        if (node == null) {
+            return false;
+        }
+        CharSequence className = node.getClassName();
+        String cls = className == null ? "" : className.toString();
+        return cls.contains("ProgressBar") || node.getRangeInfo() != null;
     }
 
     private boolean isLiveRegionEvent(AccessibilityNodeInfo node,
@@ -1317,6 +1513,40 @@ public class BrailleAccessibilityService extends AccessibilityService
             return node.getHintText();
         }
         return null;
+    }
+
+    private boolean hasAction(AccessibilityNodeInfo node, int action) {
+        if (node == null) {
+            return false;
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            List<AccessibilityNodeInfo.AccessibilityAction> actions =
+                    node.getActionList();
+            if (actions == null) {
+                return false;
+            }
+            for (AccessibilityNodeInfo.AccessibilityAction candidate : actions) {
+                if (candidate != null && candidate.getId() == action) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        return (node.getActions() & action) != 0;
+    }
+
+    private CharSequence buildRangeDescription(AccessibilityNodeInfo node) {
+        if (node == null || node.getRangeInfo() == null) {
+            return null;
+        }
+        AccessibilityNodeInfo.RangeInfo rangeInfo = node.getRangeInfo();
+        int current = Math.round(rangeInfo.getCurrent());
+        int max = Math.round(rangeInfo.getMax());
+        if (max <= 0) {
+            return null;
+        }
+        return getString(R.string.braille_service_progress_template,
+                current, max);
     }
 
     private void addPart(List<CharSequence> parts, CharSequence value) {

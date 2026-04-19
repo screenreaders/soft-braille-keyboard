@@ -185,6 +185,15 @@ public class Options {
         editor.apply();
     }
 
+    public static void writeBooleanPreference(Context context, int resource,
+            boolean value) {
+        SharedPreferences sharedPref = PreferenceManager
+                .getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putBoolean(context.getString(resource), value);
+        editor.apply();
+    }
+
     public static Set<String> getStringSetPreference(Context context,
             int resource, Set<String> defaultValue) {
         SharedPreferences sharedPref = PreferenceManager

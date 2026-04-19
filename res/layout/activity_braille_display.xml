@@ -101,6 +101,36 @@
             android:onClick="onClearDeviceProfileTable"
             android:text="@string/braille_clear_profile_table" />
 
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="onExportBrailleProfiles"
+            android:text="@string/braille_export_profiles" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="onImportBrailleProfiles"
+            android:text="@string/braille_import_profiles" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="onShareBrailleProfiles"
+            android:text="@string/braille_share_profiles" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="onExportBrailleProfilesToFile"
+            android:text="@string/braille_export_profiles_file" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="onImportBrailleProfilesFromFile"
+            android:text="@string/braille_import_profiles_file" />
+
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
