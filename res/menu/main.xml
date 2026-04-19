@@ -21,6 +21,12 @@
         android:title="@string/button_braille_learn"/>
 
     <item
+        android:id="@+id/action_braille_table_test"
+        android:orderInCategory="81"
+        android:showAsAction="never"
+        android:title="@string/button_braille_table_test"/>
+
+    <item
         android:id="@+id/action_braille_notes"
         android:orderInCategory="82"
         android:showAsAction="never"

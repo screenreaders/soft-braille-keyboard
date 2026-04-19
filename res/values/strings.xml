@@ -58,6 +58,14 @@
     <string name="pref_swipe_sensitivity_key" translatable="false">SWIPE_SENSITIVITY_KEY</string>
     <string name="pref_switch_tables_key" translatable="false">SWITCH_TABLES</string>
     <string name="pref_text_to_speech_engine_key" translatable="false">TEXT_TO_SPEECH</string>
+    <string name="pref_text_to_speech_pitch_default" translatable="false">100</string>
+    <string name="pref_text_to_speech_pitch_key" translatable="false">TEXT_TO_SPEECH_PITCH</string>
+    <string name="pref_text_to_speech_rate_default" translatable="false">100</string>
+    <string name="pref_text_to_speech_rate_key" translatable="false">TEXT_TO_SPEECH_RATE</string>
+    <string name="pref_text_to_speech_voice_default" translatable="false"></string>
+    <string name="pref_text_to_speech_voice_key" translatable="false">TEXT_TO_SPEECH_VOICE</string>
+    <string name="pref_text_to_speech_volume_default" translatable="false">100</string>
+    <string name="pref_text_to_speech_volume_key" translatable="false">TEXT_TO_SPEECH_VOLUME</string>
     <string name="pref_two_hand_calibration_default" translatable="false">true</string>
     <string name="pref_two_hand_calibration_key" translatable="false">TWO_HAND_CALIBRATE</string>
     <string name="pref_use_eight_dots_default" translatable="false">false</string>
@@ -247,12 +255,36 @@ Device table: %3$s</string>
     <string name="button_braille_learn">Braille learning mode</string>
     <string name="button_braille_notes">Braille notes</string>
     <string name="button_braille_displays">Braille display diagnostics</string>
+    <string name="button_braille_table_test">Braille table test</string>
     <string name="button_check_updates">Check for updates on GitHub</string>
     <string name="button_report_issue">Send support report</string>
     <string name="button_report_braille_issue">Report braille display problem</string>
     <string name="button_choose_default_keyboard">Set Soft Braille Keyboard as the default keyboard</string>
     <string name="button_keyboard_settings">Enable Soft Braille Keyboard</string>
     <string name="button_more_info">Read the quick start guide</string>
+    <string name="braille_table_test_title">Braille table test</string>
+    <string name="braille_table_test_intro">Use this screen to switch between braille tables, translate plain text into braille cells and back-translate manually entered dot patterns.</string>
+    <string name="braille_table_test_waiting">Waiting for braille translator.</string>
+    <string name="braille_table_test_error">The braille translator is not ready.</string>
+    <string name="braille_table_test_ready">Braille table tester is ready.</string>
+    <string name="braille_table_test_no_tables">No braille tables are available.</string>
+    <string name="braille_table_test_current_value">%1$d/%2$d: %3$s</string>
+    <string name="braille_table_test_previous">Previous table</string>
+    <string name="braille_table_test_next">Next table</string>
+    <string name="braille_table_test_forward_title">Text to braille</string>
+    <string name="braille_table_test_source_hint">Enter sample text for the selected table.</string>
+    <string name="braille_table_test_translate_forward">Translate text</string>
+    <string name="braille_table_test_forward_waiting">No forward translation yet.</string>
+    <string name="braille_table_test_forward_result">Cells: %1$s\nCell count: %2$d</string>
+    <string name="braille_table_test_empty_input">Enter text to translate.</string>
+    <string name="braille_table_test_no_forward_result">No braille cells were produced for this text.</string>
+    <string name="braille_table_test_backward_title">Braille to text</string>
+    <string name="braille_table_test_cells_hint">Enter cells as dot numbers, for example 145 15 123.</string>
+    <string name="braille_table_test_translate_backward">Back-translate cells</string>
+    <string name="braille_table_test_backward_waiting">No back-translation yet.</string>
+    <string name="braille_table_test_backward_result">Text: %1$s</string>
+    <string name="braille_table_test_invalid_cells">Enter at least one valid braille cell.</string>
+    <string name="braille_table_test_no_backward_result">No text was produced for the entered cells.</string>
     <string name="capital">Capital %s</string>
     <string name="closing_keyboard">Closing keyboard</string>
     <string name="copied">Copied</string>
@@ -348,6 +380,11 @@ Device table: %3$s</string>
     <string name="pref_switch_tables_title">Enable Braille tables for on the fly switching.</string>
     <string name="pref_text_to_speech_engine_title">Text To Speech Engine</string>
     <string name="pref_text_to_speech_engine_auto">Auto - use system default</string>
+    <string name="pref_text_to_speech_voice_title">Voice</string>
+    <string name="pref_text_to_speech_voice_auto">Auto - use engine default voice</string>
+    <string name="pref_text_to_speech_rate_title">Speech rate</string>
+    <string name="pref_text_to_speech_pitch_title">Pitch</string>
+    <string name="pref_text_to_speech_volume_title">Speech volume</string>
     <string name="pref_text_to_speech_title">Text To Speech Settings</string>
   <string name="pref_quick_start_guide_key" translatable="false">QUICK_START_GUIDE</string>
   <string name="pref_quick_start_guide_title">Quick start guide</string>

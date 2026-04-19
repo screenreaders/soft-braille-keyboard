@@ -347,6 +347,38 @@ public class BrailleLearnActivity extends Activity
         }
         java.util.LinkedHashMap<String, Integer> items =
                 new java.util.LinkedHashMap<String, Integer>();
+        TableInfo table = brailleParser.getTable(this);
+        Locale tableLocale = table == null || table.getLocale() == null
+                ? Locale.getDefault() : table.getLocale();
+        for (String candidate : getCategoryCandidates(tableLocale)) {
+            if (TextUtils.isEmpty(candidate)) {
+                continue;
+            }
+            byte[] cells = brailleParser.translateTextToBrailleCells(this,
+                    candidate);
+            Integer dotsMask = extractSingleCellMask(cells);
+            if (dotsMask == null) {
+                continue;
+            }
+            String key = normalizeLessonSymbol(candidate);
+            if (!items.containsKey(key)) {
+                items.put(key, dotsMask);
+            }
+        }
+        if (items.isEmpty()) {
+            appendBackTranslatedLessonItems(items);
+        }
+        List<LessonItem> result = new ArrayList<LessonItem>(items.size());
+        List<String> keys = new ArrayList<String>(items.keySet());
+        Collections.sort(keys);
+        for (String key : keys) {
+            result.add(new LessonItem(key, items.get(key).intValue()));
+        }
+        return result;
+    }
+
+    private void appendBackTranslatedLessonItems(
+            java.util.LinkedHashMap<String, Integer> items) {
         for (int mask = 1; mask <= 0xFF; mask++) {
             String translated = brailleParser.backTranslate(this,
                     new Byte[] { Byte.valueOf((byte) mask) });
@@ -357,20 +389,89 @@ public class BrailleLearnActivity extends Activity
             if (!matchesCategory(symbol)) {
                 continue;
             }
-            String key = Character.isLetter(symbol)
-                    ? String.valueOf(Character.toLowerCase(symbol))
-                    : String.valueOf(symbol);
+            String key = normalizeLessonSymbol(String.valueOf(symbol));
             if (!items.containsKey(key)) {
                 items.put(key, Integer.valueOf(mask));
             }
         }
-        List<LessonItem> result = new ArrayList<LessonItem>(items.size());
-        List<String> keys = new ArrayList<String>(items.keySet());
-        Collections.sort(keys);
-        for (String key : keys) {
-            result.add(new LessonItem(key, items.get(key).intValue()));
+    }
+
+    private List<String> getCategoryCandidates(Locale tableLocale) {
+        String language = tableLocale == null ? "" : tableLocale.getLanguage();
+        String symbols;
+        switch (currentCategory) {
+        case LETTERS:
+            symbols = getLetterCandidates(language);
+            break;
+        case NUMBERS:
+            symbols = "1234567890";
+            break;
+        case PUNCTUATION:
+            symbols = ".,;:!?'-\"()/[]{}@#%&*+=<>\\_";
+            break;
+        default:
+            symbols = "";
+            break;
         }
-        return result;
+        List<String> candidates = new ArrayList<String>(symbols.length());
+        for (int i = 0; i < symbols.length();) {
+            int codePoint = symbols.codePointAt(i);
+            candidates.add(new String(Character.toChars(codePoint)));
+            i += Character.charCount(codePoint);
+        }
+        return candidates;
+    }
+
+    private String getLetterCandidates(String language) {
+        String base = "abcdefghijklmnopqrstuvwxyz";
+        if (TextUtils.isEmpty(language)) {
+            return base;
+        }
+        if ("pl".equals(language)) {
+            return base + "ąćęłńóśźż";
+        }
+        if ("cs".equals(language) || "sk".equals(language)) {
+            return base + "áäčďéěíĺľňóôŕšťúýž";
+        }
+        if ("de".equals(language)) {
+            return base + "äöüß";
+        }
+        if ("es".equals(language)) {
+            return base + "áéíñóúü";
+        }
+        if ("fr".equals(language)) {
+            return base + "àâçéèêëîïôùûüÿ";
+        }
+        if ("it".equals(language)) {
+            return base + "àèéìíîòóùú";
+        }
+        if ("pt".equals(language)) {
+            return base + "áâãàçéêíóôõúü";
+        }
+        if ("hr".equals(language)) {
+            return base + "čćđšž";
+        }
+        if ("ru".equals(language)) {
+            return "абвгдеёжзийклмнопрстуфхцчшщъыьэюя";
+        }
+        return base;
+    }
+
+    private Integer extractSingleCellMask(byte[] cells) {
+        if (cells == null || cells.length != 1) {
+            return null;
+        }
+        return Integer.valueOf(cells[0] & 0xFF);
+    }
+
+    private String normalizeLessonSymbol(String symbol) {
+        if (TextUtils.isEmpty(symbol)) {
+            return "";
+        }
+        if (symbol.length() == 1 && Character.isLetter(symbol.charAt(0))) {
+            return String.valueOf(Character.toLowerCase(symbol.charAt(0)));
+        }
+        return symbol;
     }
 
     private boolean matchesCategory(char symbol) {

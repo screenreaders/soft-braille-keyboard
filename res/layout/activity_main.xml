@@ -41,6 +41,11 @@
     <Button style="@android:style/TextAppearance.Large"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:onClick="onBrailleTableTest"
+        android:text="@string/button_braille_table_test" />
+    <Button style="@android:style/TextAppearance.Large"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:onClick="onBrailleNotes"
         android:text="@string/button_braille_notes" />
     <Button style="@android:style/TextAppearance.Large"

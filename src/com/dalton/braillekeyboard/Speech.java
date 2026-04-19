@@ -27,6 +27,7 @@ import android.media.AudioManager.OnAudioFocusChangeListener;
 import android.os.Build;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
+import android.speech.tts.Voice;
 import android.speech.tts.UtteranceProgressListener;
 import android.text.TextUtils;
 
@@ -103,6 +104,10 @@ public class Speech {
     };
 
     private boolean canSpeak;
+    private float speechRate = 1.0f;
+    private float speechPitch = 1.0f;
+    private float speechVolume = 1.0f;
+    private String selectedVoiceName;
 
     /**
      * Construct a Speech instance for integration with the Android tts service
@@ -141,6 +146,7 @@ public class Speech {
                     }
                     if (status == TextToSpeech.SUCCESS) {
                         canSpeak = true;
+                        applySpeechPreferences(context);
                         setProgressListener();
                         if (listener != null) {
                             listener.ttsReady();
@@ -321,6 +327,9 @@ public class Speech {
      *         engine does not support the locale.
      */
     public boolean setLocale(Locale locale) {
+        if (!TextUtils.isEmpty(selectedVoiceName) && applySelectedVoice()) {
+            return true;
+        }
         if (locale != null
                 && isReadyToSpeak()
                 && tts.isLanguageAvailable(locale) >= TextToSpeech.LANG_AVAILABLE) {
@@ -379,15 +388,76 @@ public class Speech {
                     bundle.putString(key, params.get(key));
                 }
             }
+            bundle.putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, speechVolume);
 
             tts.speak(text, queueMode, bundle, id);
         } else {
+            if (params == null) {
+                params = new HashMap<String, String>();
+            }
+            params.put(TextToSpeech.Engine.KEY_PARAM_VOLUME,
+                    String.valueOf(speechVolume));
             tts.speak(text, queueMode, params);
         }
     }
 
     private boolean isReadyToSpeak() {
         return canSpeak && tts != null;
+    }
+
+    private void applySpeechPreferences(Context context) {
+        if (context == null || !isReadyToSpeak()) {
+            return;
+        }
+        speechRate = getPercentPreference(context,
+                R.string.pref_text_to_speech_rate_key,
+                R.string.pref_text_to_speech_rate_default);
+        speechPitch = getPercentPreference(context,
+                R.string.pref_text_to_speech_pitch_key,
+                R.string.pref_text_to_speech_pitch_default);
+        speechVolume = getPercentPreference(context,
+                R.string.pref_text_to_speech_volume_key,
+                R.string.pref_text_to_speech_volume_default);
+        selectedVoiceName = Options.getStringPreference(context,
+                R.string.pref_text_to_speech_voice_key,
+                context.getString(R.string.pref_text_to_speech_voice_default));
+
+        tts.setSpeechRate(speechRate);
+        tts.setPitch(speechPitch);
+        applySelectedVoice();
+    }
+
+    private float getPercentPreference(Context context, int keyRes,
+            int defaultValueRes) {
+        int percent = Options.getIntPreference(context, keyRes,
+                context.getString(defaultValueRes));
+        if (percent < 0) {
+            percent = 0;
+        }
+        return percent / 100f;
+    }
+
+    private boolean applySelectedVoice() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP
+                || !isReadyToSpeak()
+                || TextUtils.isEmpty(selectedVoiceName)) {
+            return false;
+        }
+        try {
+            java.util.Set<Voice> voices = tts.getVoices();
+            if (voices == null) {
+                return false;
+            }
+            for (Voice voice : voices) {
+                if (voice != null
+                        && TextUtils.equals(selectedVoiceName, voice.getName())) {
+                    return tts.setVoice(voice) == TextToSpeech.SUCCESS;
+                }
+            }
+        } catch (RuntimeException e) {
+            return false;
+        }
+        return false;
     }
 
     // Find the best endpoint to speak until.

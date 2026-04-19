@@ -149,6 +149,13 @@ public class MainActivity extends Activity {
         }
     }
 
+    public void onBrailleTableTest(View view) {
+        Intent intent = new Intent(this, BrailleTableTestActivity.class);
+        if (canStartActivity(intent)) {
+            startActivity(intent);
+        }
+    }
+
     public void onBrailleNotes(View view) {
         Intent intent = new Intent(this, BrailleNotesActivity.class);
         if (canStartActivity(intent)) {
@@ -244,6 +251,10 @@ public class MainActivity extends Activity {
         }
         if (id == R.id.action_braille_learn) {
             onBrailleLearn(null);
+            return true;
+        }
+        if (id == R.id.action_braille_table_test) {
+            onBrailleTableTest(null);
             return true;
         }
         if (id == R.id.action_braille_notes) {
