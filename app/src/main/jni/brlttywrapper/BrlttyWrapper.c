@@ -28,6 +28,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "bluetooth_android.h"
 #include "libbrltty.h"
 
@@ -295,7 +296,7 @@ Java_com_googlecode_eyesfree_braille_service_display_BrlttyWrapper_writeWindowNa
   if (!bytes) {
     goto out;
   }
-  if (!brltty_writeWindow(bytes, patternLen)) {
+  if (!brltty_writeWindow((unsigned char *)bytes, patternLen)) {
     goto releasebytes;
   }
   ret = JNI_TRUE;
@@ -523,7 +524,7 @@ Java_com_googlecode_eyesfree_braille_service_display_BrlttyWrapper_addBytesFromD
     // Out of memory thrown.
     return;
   }
-  char *writeptr = b;
+  jbyte *writeptr = b;
   while (size > 0) {
     ssize_t res = write(nat->pipefd[1], writeptr, size);
     if (res < 0) {
@@ -631,7 +632,7 @@ getNativeData(JNIEnv* env, jobject object) {
 static ssize_t writeDataToDevice(BluetoothAndroidConnection* conn,
                                  const void* buffer,
                                  size_t size) {
-  LOGV("Writing %d bytes to bluetooth", size);
+  LOGV("Writing %zu bytes to bluetooth", size);
   NativeData *nat = conn->data;
   JNIEnv* env;
   (*nat->vm)->GetEnv(nat->vm, (void**)&env, nat->envVer);

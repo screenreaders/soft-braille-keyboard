@@ -75,6 +75,8 @@ extern "C" {
 #endif /* FOR_BUILD */
 #endif /* HAVE_CONFIG_H */
 
+#include <string.h>
+
 #if defined(__CYGWIN__) || defined(__MINGW32__)
 #define WINDOWS
 
@@ -254,7 +256,6 @@ WIN_ERRNO_STORAGE_CLASS int win_toErrno (DWORD error);
 #define iswLatin1(wc) ((wc) < 0X100)
 #else /* HAVE_WCHAR_H */
 #include <ctype.h>
-#include <string.h>
 
 #define wchar_t unsigned char
 #define wint_t int

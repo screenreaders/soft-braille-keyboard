@@ -1,6 +1,30 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
 }
+
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+if (keystorePropertiesFile.exists()) {
+    keystorePropertiesFile.withInputStream { stream ->
+        keystoreProperties.load(stream)
+    }
+}
+
+def releaseStoreFile = (keystoreProperties.getProperty("storeFile")
+        ?: System.getenv("SBK_RELEASE_STORE_FILE"))
+def releaseStorePassword = (keystoreProperties.getProperty("storePassword")
+        ?: System.getenv("SBK_RELEASE_STORE_PASSWORD"))
+def releaseKeyAlias = (keystoreProperties.getProperty("keyAlias")
+        ?: System.getenv("SBK_RELEASE_KEY_ALIAS"))
+def releaseKeyPassword = (keystoreProperties.getProperty("keyPassword")
+        ?: System.getenv("SBK_RELEASE_KEY_PASSWORD"))
+def hasReleaseSigning = [releaseStoreFile, releaseStorePassword,
+        releaseKeyAlias, releaseKeyPassword].every { value ->
+    value != null && !value.trim().isEmpty()
+}
+def releaseStoreFilePath = releaseStoreFile ? rootProject.file(releaseStoreFile) : null
 
 android {
     namespace "com.dalton.braillekeyboard"
@@ -52,12 +76,26 @@ android {
         }
     }
 
+    signingConfigs {
+        if (hasReleaseSigning) {
+            release {
+                storeFile releaseStoreFilePath
+                storePassword releaseStorePassword
+                keyAlias releaseKeyAlias
+                keyPassword releaseKeyPassword
+            }
+        }
+    }
+
     buildTypes {
         debug {
             minifyEnabled false
         }
         release {
             minifyEnabled false
+            if (hasReleaseSigning) {
+                signingConfig signingConfigs.release
+            }
         }
     }
 }
