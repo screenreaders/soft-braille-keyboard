@@ -23,7 +23,7 @@
     <string name="grade_computer">Počítačové Braillovo písmo</string>
     <string name="grade">Výchozí typ Braillova písma</string>
     <string name="grade_literary">Plnopis nebo zkratkopis</string>
-    <string name="grade_table">Stupeň %s</string>
+    <string name="grade_table">Stupeň %1$d</string>
     <string name="hide_keyboard">Klávesnice skryta.</string>
     <string name="high">Vysoká</string>
     <string name="info_url">https://github.com/screenreaders/soft-braille-keyboard.git</string>

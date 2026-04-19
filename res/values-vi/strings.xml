@@ -51,7 +51,7 @@
     <string name="grade">Chữ Braille Cấp Mặc Định</string>
     <string name="grade_computer">Chữ Braille Máy Tính</string>
     <string name="grade_literary">Chữ Braille Văn Học</string>
-    <string name="grade_table">Cấp %s</string>
+    <string name="grade_table">Cấp %1$d</string>
     <string name="hide_keyboard">Bàn Phím Đang Ẩn.</string>
     <string name="high">Cao</string>
     <string name="info_url">https://github.com/screenreaders/soft-braille-keyboard.git</string>

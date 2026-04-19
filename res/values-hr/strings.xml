@@ -23,7 +23,7 @@
     <string name="grade_computer">Kompjutorska brajica</string>
     <string name="grade">Zadani stupanj brajice</string>
     <string name="grade_literary">Literarna brajica</string>
-    <string name="grade_table">Stupanj %s</string>
+    <string name="grade_table">Stupanj %1$d</string>
     <string name="hide_keyboard">Skrivanje tipkovnice.</string>
     <string name="high">Visoko</string>
     <string name="info_url">https://github.com/screenreaders/soft-braille-keyboard.git</string>

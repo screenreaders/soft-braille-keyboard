@@ -23,7 +23,7 @@
     <string name="grade_computer">Braille de computador (8 pontos)</string>
     <string name="grade_literary">Braille literário</string>
     <string name="grade">Tabela Braille padrão</string>
-    <string name="grade_table">Grau %s</string>
+    <string name="grade_table">Grau %1$d</string>
     <string name="hide_keyboard">Escondendo o teclado.</string>
     <string name="high">Alta</string>
     <string name="info_url">https://github.com/screenreaders/soft-braille-keyboard.git</string>

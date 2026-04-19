@@ -43,6 +43,30 @@ public class DeviceFinder {
     private static final UUID SERIAL_BOARD_UUID =
             UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
+    private static String getBluetoothDeviceName(
+            BluetoothDevice bluetoothDevice) {
+        if (bluetoothDevice == null) {
+            return null;
+        }
+        try {
+            return bluetoothDevice.getName();
+        } catch (SecurityException e) {
+            return null;
+        }
+    }
+
+    private static Set<BluetoothDevice> getBondedDevices(
+            BluetoothAdapter adapter) {
+        if (adapter == null) {
+            return null;
+        }
+        try {
+            return adapter.getBondedDevices();
+        } catch (SecurityException e) {
+            return null;
+        }
+    }
+
     private final Context mContext;
 
     /**
@@ -70,7 +94,7 @@ public class DeviceFinder {
                 boolean connectSecurely,
                 Map<String, Integer> friendlyKeyNames) {
             this(Transport.BLUETOOTH, bluetoothDevice, null,
-                    bluetoothDevice == null ? null : bluetoothDevice.getName(),
+                    getBluetoothDeviceName(bluetoothDevice),
                     bluetoothDevice == null ? null : bluetoothDevice.getAddress(),
                     driverCode, sdpUuid, connectSecurely, friendlyKeyNames, null);
         }
@@ -278,7 +302,7 @@ public class DeviceFinder {
         }
 
         List<DeviceInfo> ret = new ArrayList<DeviceInfo>();
-        Set<BluetoothDevice> bondedDevices = adapter.getBondedDevices();
+        Set<BluetoothDevice> bondedDevices = getBondedDevices(adapter);
         if (bondedDevices == null) {
             return ret;
         }
@@ -470,7 +494,7 @@ public class DeviceFinder {
 
         @Override
         public DeviceInfo match(BluetoothDevice bluetoothDevice) {
-            String name = bluetoothDevice.getName();
+            String name = getBluetoothDeviceName(bluetoothDevice);
             if (name == null) {
                 return null;
             }

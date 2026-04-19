@@ -23,7 +23,7 @@
     <string name="grade_computer">Braille a 8 punti</string>
     <string name="grade">Grado Braille predefinito</string>
     <string name="grade_literary">Braille a 6 punti</string>
-    <string name="grade_table">Grado %s</string>
+    <string name="grade_table">Grado %1$d</string>
     <string name="hide_keyboard">Tastiera nascosta.</string>
     <string name="high">Alta</string>
     <string name="info_url">https://github.com/screenreaders/soft-braille-keyboard.git</string>

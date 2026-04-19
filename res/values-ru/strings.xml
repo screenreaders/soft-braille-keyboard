@@ -22,7 +22,7 @@
     <string name="expand_keyboard">Коснитесь здесь, чтобы развернуть клавиатуру</string>
     <string name="grade_computer">Компьютерный Брайль</string>
     <string name="grade_literary">Литературный Брайль</string>
-    <string name="grade_table">Степень %s</string>
+    <string name="grade_table">Степень %1$d</string>
     <string name="grade">Степень Брайля по умолчанию</string>
     <string name="hide_keyboard">клавиатура сворачивается.</string>
     <string name="high">Высокая</string>

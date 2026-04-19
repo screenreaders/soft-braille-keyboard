@@ -23,7 +23,7 @@
     <string name="grade_computer">Braille Computarizado</string>
     <string name="grade">Grado de braille actual</string>
     <string name="grade_literary">Braille literario</string>
-    <string name="grade_table">Grado %s</string>
+    <string name="grade_table">Grado %1$d</string>
     <string name="hide_keyboard">Ocultando el teclado.</string>
     <string name="high">Alto</string>
     <string name="info_url">https://github.com/screenreaders/soft-braille-keyboard.git</string>

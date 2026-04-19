@@ -23,7 +23,7 @@
     <string name="grade">Standard Braille Typ</string>
     <string name="grade_computer">Computer Braille</string>
     <string name="grade_literary">Literary Braille</string>	<!-- ANNI: Can't find any braille related translation for this -->
-    <string name="grade_table">Typ %s</string>	<!-- ANNI: Same here, not sure if those "grades" exist in German? -->
+    <string name="grade_table">Typ %1$d</string>	<!-- ANNI: Same here, not sure if those "grades" exist in German? -->
     <string name="hide_keyboard">Tastatur wird eingeklappt</string>
     <string name="high">Oben</string>	<!-- ANNI: To what does high refer? -->
     <string name="info_url">https://github.com/screenreaders/soft-braille-keyboard.git</string>

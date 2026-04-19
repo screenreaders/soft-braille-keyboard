@@ -22,7 +22,7 @@
     <string name="expand_keyboard">輕點此處擴展鍵盤</string>
     <string name="grade_computer">電腦點字</string>
     <string name="grade_literary">書面點字</string>
-    <string name="grade_table">%s 級</string>
+    <string name="grade_table">%1$d 級</string>
     <string name="grade">預設縮寫等級</string>
     <string name="hide_keyboard">隱藏鍵盤.</string>
     <string name="high">高</string>

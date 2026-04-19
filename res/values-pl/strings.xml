@@ -23,7 +23,7 @@
     <string name="grade_computer">Brajl komputerowy</string>
     <string name="grade">Domyślny stopień brajla</string>
         <string name="grade_literary">Brajl literacki</string>
-        <string name="grade_table">Stopień %s</string>
+        <string name="grade_table">Stopień %1$d</string>
     <string name="hide_keyboard">Ukrywanie klawiatury.</string>
     <string name="high">Wysoka</string>
     <string name="info_url">https://github.com/screenreaders/soft-braille-keyboard.git</string>
