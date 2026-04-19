@@ -2,13 +2,6 @@ plugins {
     id("com.android.application")
 }
 
-def sentryDsnValue = (project.findProperty("sentryDsn")
-        ?: System.getenv("SENTRY_DSN")
-        ?: "").toString()
-def escapedSentryDsn = sentryDsnValue
-        .replace("\\", "\\\\")
-        .replace("\"", "\\\"")
-
 android {
     namespace "com.dalton.braillekeyboard"
     compileSdk 36
@@ -20,9 +13,6 @@ android {
         targetSdk 36
         versionCode 56
         versionName "3.1.0"
-        buildConfigField "String", "SENTRY_DSN", "\"${escapedSentryDsn}\""
-        buildConfigField "boolean", "SENTRY_ENABLED",
-                sentryDsnValue.isEmpty() ? "false" : "true"
     }
 
     sourceSets {
@@ -74,5 +64,4 @@ android {
 
 dependencies {
     implementation "androidx.core:core:1.13.1"
-    implementation "io.sentry:sentry-android:8.39.1"
 }

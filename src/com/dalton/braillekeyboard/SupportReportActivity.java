@@ -50,14 +50,7 @@ public class SupportReportActivity extends Activity {
                 new SupportReportSender.ReportData(subject, message,
                         textOf(nameView), textOf(emailView),
                         diagnosticsView.isChecked(), additionalDiagnostics));
-        if (result.mode == SupportReportSender.ReportResult.Mode.REMOTE) {
-            Toast.makeText(this, getString(R.string.report_issue_sent_remote,
-                    result.eventId == null ? "" : result.eventId.toString()),
-                    Toast.LENGTH_LONG).show();
-            finish();
-            return;
-        }
-        if (result.mode == SupportReportSender.ReportResult.Mode.GITHUB_FALLBACK) {
+        if (result.mode == SupportReportSender.ReportResult.Mode.GITHUB) {
             Toast.makeText(this, R.string.report_issue_sent_github,
                     Toast.LENGTH_LONG).show();
             finish();
@@ -68,9 +61,7 @@ public class SupportReportActivity extends Activity {
     }
 
     private void updateStatus() {
-        statusView.setText(SupportReportSender.isRemoteReportingConfigured()
-                ? R.string.report_issue_sentry_ready
-                : R.string.report_issue_github_fallback);
+        statusView.setText(R.string.report_issue_github_only);
     }
 
     private static String textOf(EditText view) {
