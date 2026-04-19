@@ -1,5 +1,5 @@
 blank_issues_enabled: true
 contact_links:
-  - name: Crash reporting setup
-    url: https://github.com/screenreaders/soft-braille-keyboard/blob/main/docs/SENTRY_GITHUB_SETUP.md
-    about: Configure Sentry and automatic GitHub issue creation for this project.
+  - name: Quick start guide
+    url: https://github.com/screenreaders/soft-braille-keyboard/blob/main/README
+    about: Build, install and reporting information for Soft Braille Keyboard.

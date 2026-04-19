@@ -5,13 +5,14 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.text.TextUtils;
+
+import java.util.Locale;
 
 public final class SupportReportSender {
     public static final String EXTRA_ADDITIONAL_DIAGNOSTICS =
             "com.dalton.braillekeyboard.EXTRA_ADDITIONAL_DIAGNOSTICS";
-
-    private static volatile boolean initialized;
 
     public static final class ReportResult {
         public enum Mode {
@@ -27,22 +28,30 @@ public final class SupportReportSender {
     }
 
     public static final class ReportData {
+        public enum ReportType {
+            GENERAL,
+            BRAILLE_DISPLAY
+        }
+
         public final String subject;
         public final String message;
         public final String name;
         public final String email;
         public final boolean includeDiagnostics;
         public final String additionalDiagnostics;
+        public final ReportType reportType;
 
         public ReportData(String subject, String message, String name,
                 String email, boolean includeDiagnostics,
-                String additionalDiagnostics) {
+                String additionalDiagnostics, ReportType reportType) {
             this.subject = subject == null ? "" : subject.trim();
             this.message = message == null ? "" : message.trim();
             this.name = name == null ? "" : name.trim();
             this.email = email == null ? "" : email.trim();
             this.includeDiagnostics = includeDiagnostics;
             this.additionalDiagnostics = additionalDiagnostics;
+            this.reportType = reportType == null ? ReportType.GENERAL
+                    : reportType;
         }
     }
 
@@ -69,11 +78,31 @@ public final class SupportReportSender {
         }
         String issueUrl = "https://github.com/" + repoInfo.owner + "/"
                 + repoInfo.repo + "/issues/new";
+        boolean hardware = data.reportType == ReportData.ReportType.BRAILLE_DISPLAY;
         StringBuilder body = new StringBuilder();
-        body.append("Manual support report sent from the app.\n\n");
-        body.append("Message:\n");
+        body.append(hardware ? "Hardware or braille-display report sent from the app.\n\n"
+                : "General app report sent from the app.\n\n");
+        body.append("Summary\n");
+        body.append(data.subject);
+        body.append("\n\n");
+        body.append("Description\n");
         body.append(data.message);
         body.append("\n\n");
+        body.append("Expected result\n");
+        body.append("-\n\n");
+        body.append("Actual result\n");
+        body.append("-\n\n");
+        body.append("Steps to reproduce\n");
+        body.append("1. \n2. \n3. \n\n");
+        body.append("Environment\n");
+        body.append("- App version: ").append(BuildConfig.VERSION_NAME)
+                .append(" (").append(BuildConfig.VERSION_CODE).append(")\n");
+        body.append("- Android: ").append(Build.VERSION.RELEASE)
+                .append(" / SDK ").append(Build.VERSION.SDK_INT).append('\n');
+        body.append("- Device: ").append(Build.MANUFACTURER).append(' ')
+                .append(Build.MODEL).append('\n');
+        body.append("- Locale: ").append(Locale.getDefault().toLanguageTag())
+                .append("\n\n");
         if (!TextUtils.isEmpty(data.name) || !TextUtils.isEmpty(data.email)) {
             body.append("Reporter:\n");
             body.append(TextUtils.isEmpty(data.name) ? "(not provided)"
@@ -85,12 +114,26 @@ public final class SupportReportSender {
             }
             body.append("\n\n");
         }
-        body.append("Diagnostics were copied to the clipboard on the device.\n");
-        Uri uri = Uri.parse(issueUrl).buildUpon()
+        body.append("Diagnostics\n");
+        body.append("Paste the diagnostics copied from the app here.\n");
+        if (hardware) {
+            body.append("\nBraille display\n");
+            body.append("- Model / transport:\n");
+            body.append("- Connection type: Bluetooth / USB\n");
+        }
+        Uri.Builder builder = Uri.parse(issueUrl).buildUpon()
                 .appendQueryParameter("title",
-                        "Manual report: " + data.subject)
+                        (hardware ? "[hardware] " : "[bug] ") + data.subject)
                 .appendQueryParameter("body", body.toString())
-                .build();
+                .appendQueryParameter("labels",
+                        hardware ? "hardware,needs-triage"
+                                : "bug,needs-triage");
+        if (hardware) {
+            builder.appendQueryParameter("template", "hardware-report.yml");
+        } else {
+            builder.appendQueryParameter("template", "bug-report.yml");
+        }
+        Uri uri = builder.build();
         Intent intent = new Intent(Intent.ACTION_VIEW, uri);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         if (intent.resolveActivity(context.getPackageManager()) == null) {

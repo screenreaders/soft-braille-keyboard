@@ -10,6 +10,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class SupportReportActivity extends Activity {
+    public static final String EXTRA_REPORT_TYPE =
+            "com.dalton.braillekeyboard.EXTRA_REPORT_TYPE";
+
     private EditText subjectView;
     private EditText messageView;
     private EditText nameView;
@@ -17,6 +20,7 @@ public class SupportReportActivity extends Activity {
     private CheckBox diagnosticsView;
     private TextView statusView;
     private String additionalDiagnostics;
+    private SupportReportSender.ReportData.ReportType reportType;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +34,10 @@ public class SupportReportActivity extends Activity {
         statusView = (TextView) findViewById(R.id.report_status);
         additionalDiagnostics = getIntent().getStringExtra(
                 SupportReportSender.EXTRA_ADDITIONAL_DIAGNOSTICS);
+        String type = getIntent().getStringExtra(EXTRA_REPORT_TYPE);
+        reportType = "braille_display".equals(type)
+                ? SupportReportSender.ReportData.ReportType.BRAILLE_DISPLAY
+                : SupportReportSender.ReportData.ReportType.GENERAL;
         updateStatus();
     }
 
@@ -49,7 +57,8 @@ public class SupportReportActivity extends Activity {
         SupportReportSender.ReportResult result = SupportReportSender.submit(this,
                 new SupportReportSender.ReportData(subject, message,
                         textOf(nameView), textOf(emailView),
-                        diagnosticsView.isChecked(), additionalDiagnostics));
+                        diagnosticsView.isChecked(), additionalDiagnostics,
+                        reportType));
         if (result.mode == SupportReportSender.ReportResult.Mode.GITHUB) {
             Toast.makeText(this, R.string.report_issue_sent_github,
                     Toast.LENGTH_LONG).show();
@@ -62,6 +71,11 @@ public class SupportReportActivity extends Activity {
 
     private void updateStatus() {
         statusView.setText(R.string.report_issue_github_only);
+        if (reportType == SupportReportSender.ReportData.ReportType.BRAILLE_DISPLAY
+                && TextUtils.isEmpty(subjectView.getText())) {
+            subjectView.setText(R.string.report_braille_issue_default_subject);
+            subjectView.setSelection(subjectView.getText().length());
+        }
     }
 
     private static String textOf(EditText view) {

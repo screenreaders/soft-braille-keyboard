@@ -362,6 +362,8 @@ public class BrailleDisplayActivity extends Activity {
         Intent intent = new Intent(this, SupportReportActivity.class);
         intent.putExtra(SupportReportSender.EXTRA_ADDITIONAL_DIAGNOSTICS,
                 buildDiagnosticsReport());
+        intent.putExtra(SupportReportActivity.EXTRA_REPORT_TYPE,
+                "braille_display");
         if (canStartActivity(intent)) {
             startActivity(intent);
         }

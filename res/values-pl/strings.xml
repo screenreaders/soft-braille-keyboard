@@ -395,6 +395,7 @@ Tabela urządzeń: %3$s</string>
     <string name="button_braille_displays">Diagnostyka monitorów brajlowskich</string>
     <string name="button_check_updates">Sprawdź aktualizacje na GitHubie</string>
     <string name="button_report_issue">Wyślij raport wsparcia</string>
+    <string name="button_report_braille_issue">Zgłoś problem z monitorem brajlowskim</string>
     <string name="pref_braille_display_tools_summary">Otwórz diagnostykę monitora brajlowskiego, test poleceń i narzędzia profili urządzeń.</string>
     <string name="pref_braille_display_tools_title">Narzędzia monitora brajlowskiego</string>
     <string name="pref_accessibility_tools_summary">Otwórz ustawienia dostępności Androida, aby włączyć wyjście na monitor brajlowski.</string>
@@ -406,6 +407,7 @@ Tabela urządzeń: %3$s</string>
     <string name="report_issue_title">Raport wsparcia</string>
     <string name="report_issue_intro">Użyj tego formularza, aby wysłać raport awarii albo problemu sprzętowego. Aplikacja otworzy wstępnie wypełnione zgłoszenie GitHub i skopiuje diagnostykę do schowka, aby testerzy mogli zgłaszać realne zachowanie na urządzeniach.</string>
     <string name="report_issue_subject_hint">Krótki tytuł problemu</string>
+    <string name="report_braille_issue_default_subject">Problem z monitorem brajlowskim</string>
     <string name="report_issue_message_hint">Opisz, co się stało, jakiego urządzenia używasz i jak odtworzyć problem.</string>
     <string name="report_issue_name_hint">Imię lub nazwa (opcjonalnie)</string>
     <string name="report_issue_email_hint">Adres e-mail (opcjonalnie)</string>

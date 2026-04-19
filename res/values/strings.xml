@@ -237,6 +237,7 @@ Device table: %3$s</string>
     <string name="button_braille_displays">Braille display diagnostics</string>
     <string name="button_check_updates">Check for updates on GitHub</string>
     <string name="button_report_issue">Send support report</string>
+    <string name="button_report_braille_issue">Report braille display problem</string>
     <string name="button_choose_default_keyboard">Set Soft Braille Keyboard as the default keyboard</string>
     <string name="button_keyboard_settings">Enable Soft Braille Keyboard</string>
     <string name="button_more_info">Read the quick start guide</string>
@@ -341,6 +342,7 @@ Device table: %3$s</string>
   <string name="report_issue_title">Support report</string>
   <string name="report_issue_intro">Use this form to send a crash or hardware report. The app opens a prefilled GitHub issue and copies diagnostics to the clipboard so testers can report real device behavior.</string>
   <string name="report_issue_subject_hint">Short title of the problem</string>
+  <string name="report_braille_issue_default_subject">Braille display problem</string>
   <string name="report_issue_message_hint">Describe what happened, which device you used and how to reproduce it.</string>
   <string name="report_issue_name_hint">Your name (optional)</string>
   <string name="report_issue_email_hint">Your email (optional)</string>

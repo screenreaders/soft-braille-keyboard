@@ -405,6 +405,7 @@ Tabuľka zariadení: %3$s</string>
     <string name="report_issue_title">Support report</string>
     <string name="report_issue_intro">Use this form to send a crash or hardware report. The app opens a prefilled GitHub issue and copies diagnostics to the clipboard so testers can report real device behavior.</string>
     <string name="report_issue_subject_hint">Short title of the problem</string>
+    <string name="report_braille_issue_default_subject">Braille display problem</string>
     <string name="report_issue_message_hint">Describe what happened, which device you used and how to reproduce it.</string>
     <string name="report_issue_name_hint">Your name (optional)</string>
     <string name="report_issue_email_hint">Your email (optional)</string>
@@ -428,6 +429,7 @@ Tabuľka zariadení: %3$s</string>
     <!-- Added automatically for missing localized UI strings -->
     <string name="button_check_updates">Skontrolujte aktualizácie na GitHub</string>
     <string name="button_report_issue">Send support report</string>
+    <string name="button_report_braille_issue">Report braille display problem</string>
     <string name="update_action_download">Stiahnite si APK</string>
     <string name="update_action_open_release">Otvorte stránku vydania</string>
     <string name="update_available_message">Inštalovaná verzia: %1$s 

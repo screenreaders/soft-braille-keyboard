@@ -8,7 +8,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        If you opened this issue from inside the app, paste the copied diagnostics first.
+        If you opened this issue from inside the app, paste the copied diagnostics in the Diagnostics section below.
   - type: textarea
     id: summary
     attributes:
@@ -31,6 +31,11 @@ body:
     attributes:
       label: Braille display
       placeholder: "Brailliant BI 40X over Bluetooth"
+  - type: input
+    id: transport
+    attributes:
+      label: Transport
+      placeholder: "Bluetooth or USB"
   - type: textarea
     id: reproduce
     attributes:

@@ -180,7 +180,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:onClick="onReportBrailleIssue"
-            android:text="@string/button_report_issue" />
+            android:text="@string/button_report_braille_issue" />
 
         <TextView
             android:layout_width="match_parent"
