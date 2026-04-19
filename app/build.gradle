@@ -1,0 +1,67 @@
+plugins {
+    id("com.android.application")
+}
+
+android {
+    namespace "com.dalton.braillekeyboard"
+    compileSdk 36
+    ndkVersion "27.1.12297006"
+
+    defaultConfig {
+        applicationId "com.dalton.braillekeyboard"
+        minSdk 21
+        targetSdk 36
+        versionCode 56
+        versionName "3.1.0"
+    }
+
+    sourceSets {
+        main {
+            manifest.srcFile "src/main/AndroidManifest.xml"
+            java.srcDirs = ["../src", "src/main/java"]
+            aidl.srcDirs = ["src/main/aidl"]
+            res.srcDirs = ["../res", "src/main/res"]
+            assets.srcDirs = ["src/main/assets"]
+            jni.srcDirs = []
+        }
+    }
+
+    buildFeatures {
+        aidl true
+        buildConfig true
+    }
+
+    externalNativeBuild {
+        ndkBuild {
+            path file("src/main/jni/Android.mk")
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    lint {
+        abortOnError false
+    }
+
+    packaging {
+        resources {
+            excludes += ["/META-INF/{AL2.0,LGPL2.1}"]
+        }
+    }
+
+    buildTypes {
+        debug {
+            minifyEnabled false
+        }
+        release {
+            minifyEnabled false
+        }
+    }
+}
+
+dependencies {
+    implementation "androidx.core:core:1.13.1"
+}

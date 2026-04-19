@@ -20,7 +20,9 @@ import java.util.ArrayList;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.speech.RecognizerIntent;
 import android.speech.RecognitionListener;
 import android.speech.SpeechRecognizer;
 
@@ -69,14 +71,17 @@ public class VoiceInput {
 
         @Override
         public void onResults(Bundle results) {
-            ArrayList<String> resultsList = results
+            ArrayList<String> resultsList = results == null ? null : results
                     .getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+            isListening = false;
+            hasDeliveredResult = true;
 
             // Send the best match to our callback, or the empty string if there
             // is none.
-            textReadyListener.onTextReady(resultsList.size() > 0 ? resultsList
-                    .get(0) : "");
-            isListening = false; // update state
+            if (textReadyListener != null) {
+                textReadyListener.onTextReady(resultsList != null
+                        && resultsList.size() > 0 ? resultsList.get(0) : "");
+            }
         }
 
         @Override
@@ -100,15 +105,17 @@ public class VoiceInput {
             // ignore this error, but it needs further investigation and a
             // better solution for example when it is actually a legitimate
             // problem.
-            if (error != SpeechRecognizer.ERROR_NO_MATCH) {
+            isListening = false;
+            boolean ignoreNoMatch = error == SpeechRecognizer.ERROR_NO_MATCH
+                    && hasDeliveredResult;
+            if (!ignoreNoMatch && textReadyListener != null) {
                 textReadyListener.onError(error);
-                isListening = false;
             }
+            hasDeliveredResult = false;
         }
 
         @Override
         public void onEndOfSpeech() {
-            isListening = false;
         }
 
         @Override
@@ -121,16 +128,25 @@ public class VoiceInput {
     };
 
     private SpeechRecognizer recognizer;
+    private boolean hasDeliveredResult;
     private boolean isListening;
     private TextReadyListener textReadyListener;
 
     // Prepares the Android SpeechRecognizer if necessary. Returns true if the
     // engine can be used otherwise false.
     private boolean prepareIfNecessary(Context context) {
+        if (context == null) {
+            return false;
+        }
         if (recognizer == null) {
             if (SpeechRecognizer.isRecognitionAvailable(context)) {
-                recognizer = SpeechRecognizer.createSpeechRecognizer(context);
-                recognizer.setRecognitionListener(listener);
+                try {
+                    recognizer = SpeechRecognizer.createSpeechRecognizer(
+                            context.getApplicationContext());
+                    recognizer.setRecognitionListener(listener);
+                } catch (RuntimeException e) {
+                    recognizer = null;
+                }
             } else {
                 recognizer = null;
             }
@@ -152,11 +168,29 @@ public class VoiceInput {
      *         if voice input can't be started or isn't available.
      */
     public boolean start(Context context, TextReadyListener textReadyListener) {
+        if (textReadyListener == null || context == null) {
+            return false;
+        }
         if (prepareIfNecessary(context)) {
             if (!isListening) {
                 this.textReadyListener = textReadyListener;
-                recognizer.startListening(new Intent());
-                isListening = true;
+                hasDeliveredResult = false;
+                Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                        RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+                intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, false);
+                PackageManager packageManager = context.getPackageManager();
+                if (packageManager == null
+                        || intent.resolveActivity(packageManager) == null) {
+                    return false;
+                }
+                try {
+                    recognizer.startListening(intent);
+                    isListening = true;
+                } catch (RuntimeException e) {
+                    isListening = false;
+                    return false;
+                }
             }
             return true;
         }
@@ -177,7 +211,11 @@ public class VoiceInput {
      * this when you have finished with the VoiceInput instance.
      */
     public void destroy() {
+        isListening = false;
+        hasDeliveredResult = false;
+        textReadyListener = null;
         if (recognizer != null) {
+            recognizer.cancel();
             recognizer.destroy();
             recognizer = null;
         }

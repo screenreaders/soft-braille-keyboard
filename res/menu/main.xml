@@ -3,6 +3,30 @@
     tools:context="com.dalton.braillekeyboard.MainActivity" >
 
     <item
+        android:id="@+id/action_braille_displays"
+        android:orderInCategory="50"
+        android:showAsAction="never"
+        android:title="@string/braille_displays_title"/>
+
+    <item
+        android:id="@+id/action_quick_start"
+        android:orderInCategory="75"
+        android:showAsAction="never"
+        android:title="@string/quick_start_title"/>
+
+    <item
+        android:id="@+id/action_accessibility_settings"
+        android:orderInCategory="85"
+        android:showAsAction="never"
+        android:title="@string/button_accessibility_settings"/>
+
+    <item
+        android:id="@+id/action_check_updates"
+        android:orderInCategory="90"
+        android:showAsAction="never"
+        android:title="@string/button_check_updates"/>
+
+    <item
         android:id="@+id/action_settings"
         android:orderInCategory="100"
         android:showAsAction="never"

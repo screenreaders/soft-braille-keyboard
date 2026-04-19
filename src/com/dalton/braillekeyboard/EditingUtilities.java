@@ -29,6 +29,8 @@ public class EditingUtilities {
     public static final String LINE_SEPARATOR = "\n";
 
     public static Word getBlock(String before, String after, String sep) {
+        before = before == null ? "" : before;
+        after = after == null ? "" : after;
         int start = before.length();
         int end = -1;
         // now work outwards until we find a separator
@@ -39,12 +41,15 @@ public class EditingUtilities {
                 && !matchesSeparator(after.charAt(end), sep)) {
         }
 
-        return new Word(before.substring(start) + after.substring(0, end),
+        return new Word(safeSubstring(before, start, before.length())
+                + safeSubstring(after, 0, end),
                 before.length() - start, end);
     }
 
     private static Word skipSeparator(String before, String after, String sep,
             int maxSkip) {
+        before = before == null ? "" : before;
+        after = after == null ? "" : after;
         int start = before.length();
         int end = -1;
         // Make before[start] and after[end] point to characters that
@@ -68,12 +73,15 @@ public class EditingUtilities {
             String sep, int maxSkip) {
         Word initialSpace = skipSeparator(before, after, sep, maxSkip);
         Word word = getBlock(
-                before.substring(0, before.length() - initialSpace.charsBefore),
-                after.substring(initialSpace.charsAfter), sep);
+                safeSubstring(before, 0, before.length()
+                        - initialSpace.charsBefore),
+                safeSubstring(after, initialSpace.charsAfter, after.length()),
+                sep);
         Word spaceAfter = skipSeparator(
-                before.substring(0, before.length() - initialSpace.charsBefore
-                        - word.charsBefore),
-                after.substring(initialSpace.charsAfter + word.charsAfter),
+                safeSubstring(before, 0, before.length()
+                        - initialSpace.charsBefore - word.charsBefore),
+                safeSubstring(after, initialSpace.charsAfter + word.charsAfter,
+                        after.length()),
                 sep, maxSkip);
         // Update the before and after parameters with the whitespace we skipped
         if (initialSpace.charsBefore > 0) {
@@ -88,6 +96,9 @@ public class EditingUtilities {
     }
 
     private static boolean matchesSeparator(char character, String sep) {
+        if (sep == null || sep.length() == 0) {
+            return false;
+        }
         for (int i = 0; i < sep.length(); i++) {
             if (sep.charAt(i) == character) {
                 return true;
@@ -110,7 +121,7 @@ public class EditingUtilities {
             } else {
                 return null;
             }
-            listener.setSelection(cursor - 1);
+            listener.setSelection(Math.max(0, cursor - 1));
         }
         return word;
     }
@@ -127,7 +138,7 @@ public class EditingUtilities {
             word = new Word(text.subSequence(1, text.length()).toString(), 0, 1);
             word.moveRight = true;
         }
-        listener.setSelection(cursor + 1);
+        listener.setSelection(Math.max(0, cursor + 1));
         return word;
     }
 
@@ -145,9 +156,10 @@ public class EditingUtilities {
         if (word.charsBefore == 0) {
             word.word = "";
         } else {
-            listener.setSelection(cursor - word.charsBefore);
+            listener.setSelection(Math.max(0, cursor - word.charsBefore));
             after = listener.getTextAfterCursor(maxLength);
-            word.word = getBlock("", after.toString(), separator).word;
+            word.word = getBlock("", after == null ? "" : after.toString(),
+                    separator).word;
             word.moveLeft = true;
         }
         return word;
@@ -167,7 +179,7 @@ public class EditingUtilities {
         if (word.charsAfter == 0) {
             word.word = "";
         } else {
-            listener.setSelection(cursor + word.charsAfter);
+            listener.setSelection(Math.max(0, cursor + word.charsAfter));
             after = listener.getTextAfterCursor(maxLength);
             word.word = getBlock("", after == null ? "" : after.toString(),
                     separator).word;
@@ -259,12 +271,21 @@ public class EditingUtilities {
                     -1);
             int cursor = listener.getCursor();
 
-            if (cursor > 0) {
-                listener.setSelection(cursor - word.charsBefore);
+            if (cursor >= word.charsBefore) {
+                listener.setSelection(Math.max(0, cursor - word.charsBefore));
                 return word;
             }
         }
         return null;
+    }
+
+    private static String safeSubstring(String value, int start, int end) {
+        if (value == null || value.length() == 0) {
+            return "";
+        }
+        int safeStart = Math.max(0, Math.min(start, value.length()));
+        int safeEnd = Math.max(safeStart, Math.min(end, value.length()));
+        return value.substring(safeStart, safeEnd);
     }
 
     public static class Word {

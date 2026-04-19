@@ -273,12 +273,13 @@ public abstract class Pad {
     protected final int viewHeight;
 
     protected final boolean invert;
+    private boolean adaptiveUpdatesEnabled = true;
 
     public Pad(Context context, Coords[] coords, int width, int height,
             int padString, boolean invert) {
-        SWIPE_MARGINE = Integer.parseInt(Options.getStringPreference(context,
+        SWIPE_MARGINE = Options.getIntPreference(context,
                 R.string.pref_swipe_sensitivity_key,
-                context.getString(R.string.default_swipe_sensitivity)));
+                context.getString(R.string.default_swipe_sensitivity));
         this.invert = invert;
         this.padString = padString;
         viewHeight = height;
@@ -293,11 +294,10 @@ public abstract class Pad {
     }
 
     public Coords[] getBrailleDots(Coords[] coords, int dots) {
-        dots = dots > keys.size() ? keys.size() : dots;
-        if (dots > keys.size()) {
-            throw new IllegalArgumentException("Requires " + dots
-                    + " keys only " + keys.size() + " set");
+        if (coords == null || coords.length == 0 || keys.isEmpty() || dots <= 0) {
+            return coords == null ? new Coords[0] : new Coords[coords.length];
         }
+        dots = dots > keys.size() ? keys.size() : dots;
         int[] total = getAverageLeftRightColumns();
         List<Coords> list = new ArrayList<Coords>();
         for (Coords coord : coords) {
@@ -357,14 +357,20 @@ public abstract class Pad {
 
     private int[] getAverageLeftRightColumns() {
         int total[] = { 0, 0 };
+        int[] count = { 0, 0 };
         for (int i = 0; i < keys.size(); i++) {
             if (keys.get(i) != null) {
                 int j = getColumn(i) == Column.LEFT ? 0 : 1;
                 total[j] += keys.get(i).x;
+                count[j] += 1;
             }
         }
-        total[0] /= (keys.size() / 2);
-        total[1] /= (keys.size() / 2);
+        if (count[0] > 0) {
+            total[0] /= count[0];
+        }
+        if (count[1] > 0) {
+            total[1] /= count[1];
+        }
         return total;
     }
 
@@ -373,6 +379,12 @@ public abstract class Pad {
     }
 
     public void updateKeys(boolean portrait) {
+        if (!adaptiveUpdatesEnabled) {
+            for (int i = 0; i < differences.length; i++) {
+                differences[i] = null;
+            }
+            return;
+        }
         XY[] newDiff = new XY[2];
         newDiff[0] = new XY(0, 0);
         newDiff[1] = new XY(0, 0);
@@ -399,6 +411,15 @@ public abstract class Pad {
             int j = getColumn(i) == Column.LEFT ? 0 : 1;
             if (keys.get(i) != null) {
                 keys.get(i).update(newDiff[j]);
+            }
+        }
+    }
+
+    public void setAdaptiveUpdatesEnabled(boolean adaptiveUpdatesEnabled) {
+        this.adaptiveUpdatesEnabled = adaptiveUpdatesEnabled;
+        if (!adaptiveUpdatesEnabled) {
+            for (int i = 0; i < differences.length; i++) {
+                differences[i] = null;
             }
         }
     }
@@ -446,6 +467,9 @@ public abstract class Pad {
     }
 
     private static int getGap(int[] array) {
+        if (array == null || array.length < 2) {
+            return 0;
+        }
         int[] gaps = new int[array.length - 1];
         for (int i = 1; i < array.length; i++) {
             gaps[i - 1] = Math.abs(array[i] - array[i - 1]);
@@ -472,12 +496,17 @@ public abstract class Pad {
         if (points != null) {
             int[] centre = { portrait ? viewHeight / 2 : viewWidth / 2,
                     portrait ? viewWidth / 2 : viewHeight / 2 };
-            Coords[] coords = new Coords[points.size()];
+            List<Coords> coords = new ArrayList<Coords>(points.size());
             int i = 0;
             for (String point : points) {
-                coords[i++] = new Coords(centre, point);
+                try {
+                    coords.add(new Coords(centre, point));
+                    i++;
+                } catch (RuntimeException e) {
+                    // Ignore malformed saved coordinates rather than crashing.
+                }
             }
-            return coords;
+            return coords.isEmpty() ? null : coords.toArray(new Coords[coords.size()]);
         }
         return null;
     }
@@ -499,6 +528,9 @@ public abstract class Pad {
     }
 
     public void makeSlateLayout() {
+        if (keys.size() < 6) {
+            return;
+        }
         int right = 3;
         for (int i = 0; i < right; i++) {
             Collections.swap(keys, i, right + i);
@@ -510,6 +542,9 @@ public abstract class Pad {
     }
 
     public void swapTopBottom() {
+        if (keys.size() < 6) {
+            return;
+        }
         Collections.swap(keys, 0, 2);
         Collections.swap(keys, 3, 5);
     }
@@ -546,6 +581,9 @@ public abstract class Pad {
 
         public Coords(int[] centre, String point) {
             String[] components = point.split(",");
+            if (components.length < 3) {
+                throw new IllegalArgumentException("Invalid point: " + point);
+            }
             x = centre[0] + Integer.parseInt(components[1]);
             y = centre[1] + Integer.parseInt(components[2]);
             id = Integer.parseInt(components[0]);

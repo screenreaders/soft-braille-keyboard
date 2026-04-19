@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Soft Braille Keyboard - szybki przewodnik</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f2e8;
+      --card: #fffdf8;
+      --ink: #1d1a14;
+      --muted: #6c6251;
+      --accent: #0f6d62;
+      --line: #ddd1bc;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font: 18px/1.55 sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top right, rgba(15, 109, 98, 0.10), transparent 30%),
+        linear-gradient(180deg, #fbf8f0, var(--bg));
+    }
+
+    main {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 24px 18px 48px;
+    }
+
+    section {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 18px 20px;
+      margin: 0 0 16px;
+      box-shadow: 0 8px 24px rgba(29, 26, 20, 0.05);
+    }
+
+    h1, h2 {
+      line-height: 1.2;
+      margin: 0 0 12px;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+    }
+
+    h2 {
+      font-size: 1.15rem;
+      color: var(--accent);
+    }
+
+    p, li {
+      margin: 0 0 10px;
+    }
+
+    ul, ol {
+      margin: 0;
+      padding-left: 24px;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: rgba(15, 109, 98, 0.10);
+      color: var(--accent);
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    a {
+      color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section>
+      <div class="pill">Przewodnik offline</div>
+      <h1>Soft Braille Keyboard - szybki przewodnik</h1>
+      <p class="muted">
+        Ten przewodnik jest dołączony do aplikacji, więc pozostaje dostępny nawet wtedy, gdy stare zewnętrzne linki przestaną działać.
+      </p>
+    </section>
+
+    <section>
+      <h2>1. Włącz klawiaturę</h2>
+      <ol>
+        <li>Otwórz ekran główny aplikacji.</li>
+        <li>Wybierz <strong>Włącz Soft Braille Keyboard</strong>.</li>
+        <li>W ustawieniach metod wprowadzania Androida włącz tę klawiaturę.</li>
+        <li>Wróć do aplikacji i wybierz <strong>Ustaw Soft Braille Keyboard jako klawiaturę domyślną</strong>.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>2. Zacznij pisać</h2>
+      <ul>
+        <li>Użyj pola ćwiczeniowego na ekranie głównym, aby sprawdzić, czy klawiatura jest aktywna.</li>
+        <li>W <strong>Ustawieniach</strong> wybierz preferowaną tablicę brajlowską i stopień brajla.</li>
+        <li>Jeśli kalibrujesz układ dotykowy ręcznie, zapisz wynik przed normalnym używaniem klawiatury.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>3. Monitory brajlowskie</h2>
+      <ul>
+        <li>Otwórz <strong>Diagnostykę monitorów brajlowskich</strong>, aby sprawdzić urządzenia Bluetooth lub USB.</li>
+        <li>Użyj eksportu diagnostyki, jeśli urządzenie łączy się, ale wysyła błędne polecenia albo powtarza wejście.</li>
+        <li>Jeśli treść ekranu ma pojawiać się na monitorze, włącz również usługę dostępności tej aplikacji.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>4. Gdy coś nie działa</h2>
+      <ul>
+        <li>Jeśli wpisywany tekst się dubluje albo zachowuje się nietypowo, wyeksportuj diagnostykę i ślad IME z ekranu diagnostycznego.</li>
+        <li>Jeśli klawiatura się nie pojawia, sprawdź obie rzeczy: czy jest włączona i czy została wybrana jako domyślna.</li>
+        <li>Jeśli monitor brajlowski się nie łączy, sprawdź uprawnienie Bluetooth lub USB, a potem ponów próbę z poziomu diagnostyki.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Projekt</h2>
+      <p>
+        Kod źródłowy i bieżący stan projektu:
+        <a href="https://github.com/screenreaders/soft-braille-keyboard.git">github.com/screenreaders/soft-braille-keyboard</a>
+      </p>
+    </section>
+  </main>
+</body>
+</html>

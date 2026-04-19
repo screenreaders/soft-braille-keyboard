@@ -38,11 +38,10 @@ import com.dalton.braillekeyboard.Options.KeyboardFeedback;
 import com.dalton.braillekeyboard.Options.OptionList;
 import com.googlecode.eyesfree.braille.translate.TableInfo;
 
-// TODO fix the keyboard echo / feedback prefs
 public class PreferenceIME extends PreferenceActivity {
     @Override
     protected boolean isValidFragment(String fragmentName) {
-        return true;
+        return Settings.class.getName().equals(fragmentName);
     }
 
     @Override
@@ -71,6 +70,12 @@ public class PreferenceIME extends PreferenceActivity {
             ListPreference keyboardEcho = (ListPreference) findPreference(getString(R.string.pref_echo_feedback_key));
             ListPreference keyboardFeedback = (ListPreference) findPreference(getString(R.string.pref_keyboard_feedback_key));
             ListPreference textToSpeechPreference = (ListPreference) findPreference(getString(R.string.pref_text_to_speech_engine_key));
+            Preference brailleDisplayTools = findPreference(getString(
+                    R.string.pref_braille_display_tools_key));
+            Preference accessibilityTools = findPreference(getString(
+                    R.string.pref_accessibility_tools_key));
+            Preference quickStartGuide = findPreference(getString(
+                    R.string.pref_quick_start_guide_key));
 
             addOptions(keyboardFeedback, KeyboardFeedback.ALL);
             addOptions(keyboardEcho, KeyboardEcho.ALL);
@@ -81,12 +86,28 @@ public class PreferenceIME extends PreferenceActivity {
             try {
                 String versionCode = getActivity().getPackageManager()
                         .getPackageInfo(getActivity().getPackageName(), 0).versionName;
-                preference.setTitle(String.format(
-                        getActivity()
-                                .getString(R.string.pref_app_version_title),
-                        versionCode));
+                if (preference != null) {
+                    preference.setTitle(String.format(
+                            getActivity()
+                                    .getString(R.string.pref_app_version_title),
+                            versionCode));
+                }
             } catch (Exception e) {
-                preference.setEnabled(false);
+                if (preference != null) {
+                    preference.setEnabled(false);
+                }
+            }
+            if (brailleDisplayTools != null) {
+                brailleDisplayTools.setIntent(new Intent(getActivity(),
+                        BrailleDisplayActivity.class));
+            }
+            if (accessibilityTools != null) {
+                accessibilityTools.setIntent(new Intent(
+                        android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS));
+            }
+            if (quickStartGuide != null) {
+                quickStartGuide.setIntent(new Intent(getActivity(),
+                        QuickStartActivity.class));
             }
 
             brailleParser = new BrailleParser(getActivity(),
@@ -105,6 +126,10 @@ public class PreferenceIME extends PreferenceActivity {
             if (brailleParser != null) {
                 brailleParser.destroy();
             }
+            if (tts != null) {
+                tts.shutdown();
+                tts = null;
+            }
         }
 
         private void addTables(int status) {
@@ -115,6 +140,10 @@ public class PreferenceIME extends PreferenceActivity {
             ListPreference literaryBraille = (ListPreference) findPreference(getString(R.string.pref_braille_literary_table_key));
             MultiSelectListPreference switchPref = (MultiSelectListPreference) findPreference(getActivity()
                     .getString(R.string.pref_switch_tables_key));
+            if (compBraille == null || literaryBraille == null || switchPref == null
+                    || brailleParser == null || getActivity() == null) {
+                return;
+            }
 
             List<TableInfo> tables = new ArrayList<TableInfo>();
             if (status == BrailleParser.STATUS_OK) {
@@ -150,6 +179,9 @@ public class PreferenceIME extends PreferenceActivity {
         }
 
         private void addOptions(ListPreference pref, OptionList option) {
+            if (pref == null || option == null) {
+                return;
+            }
             OptionList[] types = option.getValues();
             CharSequence[] entries = new CharSequence[types.length];
             CharSequence[] entryValues = new CharSequence[entries.length];
@@ -164,7 +196,15 @@ public class PreferenceIME extends PreferenceActivity {
         private void populateWithTables(List<TableInfo> tables,
                 List<String> entries, List<String> entryValues,
                 boolean verbose, String defaultId) {
+            if (tables == null || entries == null || entryValues == null
+                    || getActivity() == null) {
+                return;
+            }
             for (TableInfo table : tables) {
+                if (table == null || table.getLocale() == null
+                        || table.getId() == null) {
+                    continue;
+                }
                 String text = table.getLocale().getDisplayLanguage();
                 String country = table.getLocale().getDisplayCountry();
                 text += (country.equals("") ? "" : " (" + country + ")");
@@ -194,35 +234,57 @@ public class PreferenceIME extends PreferenceActivity {
         }
 
         private void addTTSList(final ListPreference preference) {
-            tts = new TextToSpeech(getActivity(),
-                    new TextToSpeech.OnInitListener() {
+            if (preference == null || getActivity() == null) {
+                return;
+            }
+            try {
+                tts = new TextToSpeech(getActivity(),
+                        new TextToSpeech.OnInitListener() {
 
-                        @Override
-                        public void onInit(int status) {
-                            doEnginesList(preference);
-                        }
-                    });
+                            @Override
+                            public void onInit(int status) {
+                                doEnginesList(preference);
+                            }
+                        });
+            } catch (RuntimeException e) {
+                tts = null;
+            }
         }
 
         private void doEnginesList(ListPreference preference) {
+            if (preference == null || tts == null || getActivity() == null) {
+                return;
+            }
             List<EngineInfo> engines = tts.getEngines();
             tts.shutdown();
+            tts = null;
+            if (engines == null) {
+                engines = new ArrayList<EngineInfo>();
+            }
             Collections.sort(engines, new Comparator<EngineInfo>() {
                 @Override
                 public int compare(EngineInfo o1, EngineInfo o2) {
-                    return o1.label.toLowerCase(Locale.getDefault()).compareTo(
-                            o2.label.toLowerCase(Locale.getDefault()));
+                    String label1 = o1 == null || o1.label == null ? ""
+                            : o1.label.toLowerCase(Locale.getDefault());
+                    String label2 = o2 == null || o2.label == null ? ""
+                            : o2.label.toLowerCase(Locale.getDefault());
+                    return label1.compareTo(label2);
                 }
             });
 
-            CharSequence[] entries = new CharSequence[engines.size()];
-            CharSequence[] entryValues = new CharSequence[engines.size()];
+            CharSequence[] entries = new CharSequence[engines.size() + 1];
+            CharSequence[] entryValues = new CharSequence[engines.size() + 1];
+            entries[0] = getString(R.string.pref_text_to_speech_engine_auto);
+            entryValues[0] = "";
 
             for (int i = 0; i < engines.size(); i++) {
-                String label = engines.get(i).label;
-                String name = engines.get(i).name;
-                entryValues[i] = name.subSequence(0, name.length());
-                entries[i] = label.subSequence(0, label.length());
+                EngineInfo engine = engines.get(i);
+                String label = engine == null || engine.label == null ? ""
+                        : engine.label;
+                String name = engine == null || engine.name == null ? ""
+                        : engine.name;
+                entryValues[i + 1] = name.subSequence(0, name.length());
+                entries[i + 1] = label.subSequence(0, label.length());
             }
 
             preference.setEntries(entries);

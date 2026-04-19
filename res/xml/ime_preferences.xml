@@ -92,6 +92,14 @@
               android:summary="@string/pref_switch_tables_summary"        
               android:title="@string/pref_switch_tables_title"
               android:defaultValue="@array/empty_array"/>
+         <Preference
+             android:key="@string/pref_braille_display_tools_key"
+             android:title="@string/pref_braille_display_tools_title"
+             android:summary="@string/pref_braille_display_tools_summary" />
+         <Preference
+             android:key="@string/pref_accessibility_tools_key"
+             android:title="@string/pref_accessibility_tools_title"
+             android:summary="@string/pref_accessibility_tools_summary" />
          </PreferenceScreen>
          <PreferenceScreen
          android:key="@string/pref_category_feedback_key"
@@ -121,7 +129,8 @@
              android:title="@string/pref_text_to_speech_title" >
          <ListPreference
              android:key="@string/pref_text_to_speech_engine_key"
-             android:title="@string/pref_text_to_speech_engine_title" />
+             android:title="@string/pref_text_to_speech_engine_title"
+             android:defaultValue="" />
          </PreferenceScreen>
          <PreferenceScreen
          android:key="@string/pref_category_misc_key"
@@ -150,6 +159,10 @@
          android:key="@string/pref_vibrate_on_exit_key"
          android:title="@string/pref_vibrate_on_exit_title"
          android:defaultValue="@string/pref_vibrate_on_exit_default" />
+         <Preference
+         android:key="@string/pref_quick_start_guide_key"
+         android:title="@string/pref_quick_start_guide_title"
+         android:summary="@string/pref_quick_start_guide_summary" />
          </PreferenceScreen>
          <Preference
          android:key="@string/pref_app_version_key" />

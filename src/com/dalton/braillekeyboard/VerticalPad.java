@@ -117,7 +117,13 @@ public class VerticalPad extends Pad {
             } else if (isInKeyColumn(coord, right, errorMargin)) {
                 rightList.add(coord);
             } else {
-                throw new IllegalArgumentException("Couldn't set the keyboard");
+                // Fall back to the nearest column when calibration points are a
+                // little noisy instead of rejecting the whole keyboard.
+                if (Math.abs(coord.x - left) <= Math.abs(coord.x - right)) {
+                    leftList.add(coord);
+                } else {
+                    rightList.add(coord);
+                }
             }
         }
         Collections.sort(leftList, comparatorY);
@@ -140,6 +146,9 @@ public class VerticalPad extends Pad {
     }
 
     private void insertSpecialDots(boolean portrait) {
+        if (keys.size() < 6) {
+            return;
+        }
         int yGapLeft = getYGap(keys.subList(0, 3));
         int yGapRight = getYGap(keys.subList(3, 6));
         int leftX = (Collections.min(keys.subList(0, 3), comparatorX).x + Collections

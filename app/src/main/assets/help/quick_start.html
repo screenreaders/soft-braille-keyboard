@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Soft Braille Keyboard Quick Start</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f2e8;
+      --card: #fffdf8;
+      --ink: #1d1a14;
+      --muted: #6c6251;
+      --accent: #0f6d62;
+      --line: #ddd1bc;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font: 18px/1.55 sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top right, rgba(15, 109, 98, 0.10), transparent 30%),
+        linear-gradient(180deg, #fbf8f0, var(--bg));
+    }
+
+    main {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 24px 18px 48px;
+    }
+
+    section {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 18px 20px;
+      margin: 0 0 16px;
+      box-shadow: 0 8px 24px rgba(29, 26, 20, 0.05);
+    }
+
+    h1, h2 {
+      line-height: 1.2;
+      margin: 0 0 12px;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+    }
+
+    h2 {
+      font-size: 1.15rem;
+      color: var(--accent);
+    }
+
+    p, li {
+      margin: 0 0 10px;
+    }
+
+    ul, ol {
+      margin: 0;
+      padding-left: 24px;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: rgba(15, 109, 98, 0.10);
+      color: var(--accent);
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    a {
+      color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section>
+      <div class="pill">Offline guide</div>
+      <h1>Soft Braille Keyboard Quick Start</h1>
+      <p class="muted">
+        This guide is bundled with the app so it remains available even when old external links disappear.
+      </p>
+    </section>
+
+    <section>
+      <h2>1. Enable the keyboard</h2>
+      <ol>
+        <li>Open the main screen of the app.</li>
+        <li>Activate <strong>Enable Soft Braille Keyboard</strong>.</li>
+        <li>In Android input settings, enable the keyboard.</li>
+        <li>Return to the app and activate <strong>Set Soft Braille Keyboard as the default keyboard</strong>.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>2. Start typing</h2>
+      <ul>
+        <li>Use the practice text box on the main screen to confirm that the keyboard is active.</li>
+        <li>Choose the preferred braille table and grade in <strong>Settings</strong>.</li>
+        <li>If you manually calibrate the touch layout, save the result before regular use.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>3. Braille displays</h2>
+      <ul>
+        <li>Open <strong>Braille display diagnostics</strong> to inspect Bluetooth or USB devices.</li>
+        <li>Use diagnostics export when a device connects but sends wrong commands or repeated input.</li>
+        <li>If screen content should appear on the display, also enable the app accessibility service.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>4. If something goes wrong</h2>
+      <ul>
+        <li>If typed text duplicates or behaves unexpectedly, export diagnostics and IME trace from the diagnostics screen.</li>
+        <li>If the keyboard does not appear, verify both: keyboard enabled and keyboard selected as default.</li>
+        <li>If a braille display does not connect, check Bluetooth or USB permission and then retry from diagnostics.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Project</h2>
+      <p>
+        Source code and current project status:
+        <a href="https://github.com/screenreaders/soft-braille-keyboard.git">github.com/screenreaders/soft-braille-keyboard</a>
+      </p>
+    </section>
+  </main>
+</body>
+</html>

@@ -24,8 +24,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.inputmethodservice.Keyboard;
-import android.support.v4.content.ContextCompat;
+import androidx.core.content.ContextCompat;
 import android.view.inputmethod.InputMethodManager;
+import android.view.inputmethod.ExtractedText;
 
 import com.dalton.braillekeyboard.EditingUtilities.Word;
 import com.dalton.braillekeyboard.Options.KeyboardEcho;
@@ -177,7 +178,7 @@ public class ActionHandler {
                 boolean canPaste;
                 // Check that there is text on the clipboard so it makes sense
                 // showing paste.
-                if (!(clipboard.hasPrimaryClip())) {
+                if (clipboard == null || !(clipboard.hasPrimaryClip())) {
                     canPaste = false;
                 } else {
                     // This enables the paste menu item, since the clipboard
@@ -270,6 +271,10 @@ public class ActionHandler {
      * @return true if the Swipe was handled otherwise false.
      */
     public boolean handleSwipe(Context context, Swipe value) {
+        if (context == null || value == null || listener == null
+                || callback == null) {
+            return false;
+        }
         // Disable all swipes while voice input is in progress.
         if (voiceInput.isListening()) {
             return true;
@@ -292,10 +297,10 @@ public class ActionHandler {
             moveRight(context, Granularity.CHARACTER);
             break;
         case ONE_DOWN:
-            KeyboardFeedback feedback = KeyboardFeedback.valueOf(Integer
-                    .parseInt(Options.getStringPreference(context,
+            KeyboardFeedback feedback = KeyboardFeedback.valueOf(
+                    Options.getIntPreference(context,
                             R.string.pref_keyboard_feedback_key,
-                            KeyboardFeedback.ALL.getValue())));
+                            KeyboardFeedback.ALL.getValue()));
             feedback = KeyboardFeedback.next(feedback);
             Options.writeStringPreference(context,
                     R.string.pref_keyboard_feedback_key, feedback.getValue());
@@ -316,10 +321,9 @@ public class ActionHandler {
             considerPassword = true;
             break;
         case TWO_DOWN:
-            KeyboardEcho echo = KeyboardEcho.valueOf(Integer.parseInt(Options
-                    .getStringPreference(context,
-                            R.string.pref_echo_feedback_key,
-                            KeyboardEcho.CHARACTER.getValue())));
+            KeyboardEcho echo = KeyboardEcho.valueOf(Options.getIntPreference(
+                    context, R.string.pref_echo_feedback_key,
+                    KeyboardEcho.CHARACTER.getValue()));
             echo = KeyboardEcho.next(echo);
             Options.writeStringPreference(context,
                     R.string.pref_echo_feedback_key, echo.getValue());
@@ -375,7 +379,13 @@ public class ActionHandler {
         case FIVE_DOWN:
             if (fastDoubleSwipe) {
                 message = context.getString(R.string.show_input_switcher);
-                inputManager.showInputMethodPicker();
+                if (inputManager != null) {
+                    try {
+                        inputManager.showInputMethodPicker();
+                    } catch (RuntimeException e) {
+                        // Ignore picker launch failure and keep gesture handling alive.
+                    }
+                }
             } else {
                 message = context.getString(R.string.swipe_confirm_input);
             }
@@ -386,7 +396,9 @@ public class ActionHandler {
                 message = context.getString(R.string.show_settings);
                 Intent intent = new Intent(context, PreferenceIME.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                context.startActivity(intent);
+                if (canStartActivity(context, intent)) {
+                    context.startActivity(intent);
+                }
             } else {
                 message = context.getString(R.string.swipe_confirm_settings);
             }
@@ -454,12 +466,15 @@ public class ActionHandler {
             callback.onShrink();
             break;
         case HOLD_ONE_DOWN:
-            CharSequence text = listener.getAllText().text;
+            ExtractedText extractedText = listener.getAllText();
+            CharSequence text = extractedText == null ? null : extractedText.text;
             if (text != null) {
                 message = String.format(context.getString(R.string.word_count),
                         EditingUtilities.lineCount(text),
                         EditingUtilities.wordCount(text),
                         EditingUtilities.characterCount(text));
+            } else {
+                message = context.getString(R.string.blank);
             }
             break;
         case HOLD_ONE_UP:
@@ -524,6 +539,9 @@ public class ActionHandler {
      *            8 dots are pressed.
      */
     public void handleCharacter(Context context, byte value) {
+        if (context == null || listener == null || callback == null) {
+            return;
+        }
         // Can't type while voice input is in progress.
         if (voiceInput.isListening()) {
             return;
@@ -589,9 +607,13 @@ public class ActionHandler {
             performAction(context, editAction);
             break;
         case SELECT_ALL:
-            listener.selectAll();
-            callback.onText("%s", context.getString(R.string.selected_all),
-                    false);
+            if (listener.selectAll()) {
+                callback.onText("%s", context.getString(R.string.selected_all),
+                        false);
+            } else {
+                callback.onText("%s",
+                        context.getString(R.string.selection_error), false);
+            }
             break;
         default:
         }
@@ -620,9 +642,9 @@ public class ActionHandler {
     private boolean performAction(Context context, EditAction action) {
         if (listener.setSelection()) {
             CharSequence text = listener.getSelectedText(0);
-            listener.deselect();
             switch (action) {
             case SPEAK:
+                listener.deselect();
                 callback.onText(
                         "%s",
                         text == null ? context.getString(R.string.blank) : text
@@ -633,6 +655,7 @@ public class ActionHandler {
                     callback.onText(context.getString(R.string.deleted),
                             text.toString(), listener.isPasswordField());
                 } else {
+                    listener.deselect();
                     callback.onText("%s",
                             context.getString(R.string.nothing_to_delete),
                             false);
@@ -724,6 +747,14 @@ public class ActionHandler {
         boolean canDelete = true;
         switch (granularity) {
         case CHARACTER:
+            String brailleResult = listener.deletePreviousBrailleCharacter();
+            if (brailleResult != null) {
+                callback.onText("%s",
+                        brailleResult.length() == 0 ? context
+                                .getString(R.string.blank) : brailleResult,
+                        listener.isPasswordField());
+                return true;
+            }
             listener.finishComposingText();
             word = EditingUtilities.moveToPreviousCharacter(listener);
             break;
@@ -736,8 +767,10 @@ public class ActionHandler {
                 if (space != null) {
                     word.charsBefore += space.charsBefore;
                 }
-                if (word.word.length() > word.charsBefore) {
-                    word.word = word.word.substring(0, word.charsBefore);
+                if (word.word != null) {
+                    int prefixEnd = Math.max(0,
+                            Math.min(word.charsBefore, word.word.length()));
+                    word.word = word.word.substring(0, prefixEnd);
                 }
                 EditingUtilities.moveToPreviousWord(listener);
             }
@@ -762,7 +795,7 @@ public class ActionHandler {
                 listener.finishComposingText();
                 word = EditingUtilities.moveToHome(listener);
                 word.word = EditingUtilities.getAllText(listener);
-                word.charsBefore = word.word.length();
+                word.charsBefore = word.word == null ? 0 : word.word.length();
             }
             break;
         default:
@@ -799,8 +832,12 @@ public class ActionHandler {
     private void typeCharacter(Context context, int code, String charName) {
         listener.finishComposingText();
         Word word = EditingUtilities.getWord(listener);
-        String message = word == null ? null : word.word.substring(0,
-                word.charsBefore);
+        String message = null;
+        if (word != null && word.word != null) {
+            int prefixEnd = Math.max(0,
+                    Math.min(word.charsBefore, word.word.length()));
+            message = word.word.substring(0, prefixEnd);
+        }
         listener.onKey(code);
 
         if ((message = echoWord(context, message)) == null) {
@@ -814,8 +851,23 @@ public class ActionHandler {
                         .getString(R.string.pref_echo_misspellings_default)))
                 && spellChecker.isSpellCheckAvailable()) {
             doSpellCheck(context, SpellChecker.Direction.UNDER_CURSOR, 0,
-                    listener.getCursor() - 2);
+                    resolveSpellCheckCursor());
         }
+    }
+
+    private int resolveSpellCheckCursor() {
+        int cursor = listener.getCursor();
+        CharSequence beforeCursor = listener.getTextBeforeCursor(64);
+        if (beforeCursor == null || beforeCursor.length() == 0) {
+            return Math.max(0, cursor);
+        }
+
+        for (int i = beforeCursor.length() - 1; i >= 0; i--) {
+            if (Character.isLetterOrDigit(beforeCursor.charAt(i))) {
+                return Math.max(0, cursor - (beforeCursor.length() - i));
+            }
+        }
+        return Math.max(0, cursor);
     }
 
     // Special logic for double space to insert a period followed by a space.
@@ -878,6 +930,9 @@ public class ActionHandler {
 
     // Handle voice input.
     public boolean doVoiceInput(final Context context, boolean fastDoubleSwipe) {
+        if (context == null || listener == null || callback == null) {
+            return false;
+        }
         // Check for the "dangerous permission" for Android 6 and higher.
         if (ContextCompat.checkSelfPermission(context,
                 Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
@@ -895,7 +950,9 @@ public class ActionHandler {
                 intent.putExtra(
                         context.getString(R.string.require_record_audio_now),
                         true);
-                context.startActivity(intent);
+                if (canStartActivity(context, intent)) {
+                    context.startActivity(intent);
+                }
             }
             return false; // We didn't do voice input.
         }
@@ -938,9 +995,8 @@ public class ActionHandler {
     // Rules for echoing character. Return the character if it should be echoed
     // else null.
     private static String echoCharacter(Context context, String character) {
-        if ((Integer.parseInt(Options.getStringPreference(context,
-                R.string.pref_echo_feedback_key,
-                KeyboardEcho.CHARACTER.getValue())) & KeyboardEcho.CHARACTER.value) != 0) {
+        if ((Options.getIntPreference(context, R.string.pref_echo_feedback_key,
+                KeyboardEcho.CHARACTER.getValue()) & KeyboardEcho.CHARACTER.value) != 0) {
             return character;
         }
         return null;
@@ -949,9 +1005,8 @@ public class ActionHandler {
     // Rules for echoing word. Return the word if it should be echoed
     // else null.
     private static String echoWord(Context context, String word) {
-        if ((Integer.parseInt(Options.getStringPreference(context,
-                R.string.pref_echo_feedback_key,
-                KeyboardEcho.CHARACTER.getValue())) & KeyboardEcho.WORD.value) != 0) {
+        if ((Options.getIntPreference(context, R.string.pref_echo_feedback_key,
+                KeyboardEcho.CHARACTER.getValue()) & KeyboardEcho.WORD.value) != 0) {
             return word;
         }
         return null;
@@ -1005,6 +1060,10 @@ public class ActionHandler {
 
         if (spellingSuggestion == null && directionThroughSuggestionList != 0) {
             message = context.getString(R.string.word_correct);
+        } else if (spellingSuggestion == null
+                && spellingDirection == SpellChecker.Direction.UNDER_CURSOR) {
+            spellingDirection = null;
+            message = context.getString(R.string.word_correct);
         } else if (spellingSuggestion != null
                 && spellingDirection == SpellChecker.Direction.UNDER_CURSOR) {
             spellingDirection = null;
@@ -1016,15 +1075,25 @@ public class ActionHandler {
                 message = context.getString(R.string.word_misspelled);
             }
         } else if (spellingSuggestion != null) {
+            String text = getInput(Granularity.ALL);
+            int offset = spellingSuggestion.offset;
+            int length = spellingSuggestion.getLength();
+            if (text == null || offset < 0 || length <= 0
+                    || (offset + length) > text.length()) {
+                spellingSuggestion = null;
+                callback.onText("%s", context.getString(R.string.word_correct),
+                        false, Speech.QUEUE_ADD);
+                return;
+            }
             password = true;
             message = spellingSuggestion.isMisspelledWord() ? String.format(
                     context.getString(R.string.word_correction_misspelled),
                     spellingSuggestion.getCurrent()) : spellingSuggestion
                     .getCurrent();
-            listener.setSelection(spellingSuggestion.offset);
-            listener.deleteSurroundingText(0, spellingSuggestion.getLength());
+            listener.setSelection(offset);
+            listener.deleteSurroundingText(0, length);
             listener.commitText(spellingSuggestion.getCurrent(), 1);
-            listener.setSelection(spellingSuggestion.offset);
+            listener.setSelection(offset);
             spellingSuggestion.setLength();
         }
 
@@ -1065,11 +1134,18 @@ public class ActionHandler {
             int length = spellingSuggestion.getLength();
             int cursor = listener.getCursor();
             if (text.length() > 0 && (offset + length) <= text.length()
-                    && cursor >= offset && cursor < (offset + length)) {
+                    && cursor >= offset && cursor <= (offset + length)) {
                 return text.substring(offset, offset + length).equals(
                         spellingSuggestion.getCurrent());
             }
         }
         return false;
+    }
+
+    private static boolean canStartActivity(Context context, Intent intent) {
+        PackageManager packageManager = context == null ? null
+                : context.getPackageManager();
+        return intent != null && packageManager != null
+                && intent.resolveActivity(packageManager) != null;
     }
 }

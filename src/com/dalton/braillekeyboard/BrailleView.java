@@ -16,7 +16,6 @@
 
 package com.dalton.braillekeyboard;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -28,7 +27,6 @@ import android.graphics.Paint.FontMetrics;
 import android.graphics.Paint.Style;
 import android.graphics.Rect;
 import android.os.Vibrator;
-import android.support.v4.view.MotionEventCompat;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
@@ -71,7 +69,10 @@ public class BrailleView extends View {
     private static final long QUICK_VIBRATION = 25;
 
     private final AccessibilityManager accessibilityManager;
-    private final List<Coords> lastDotList = new ArrayList<Coords>();
+    private static final int DEFAULT_TEXT_KEY_COUNT = 6;
+
+    private final java.util.ArrayList<Coords> lastDotList
+            = new java.util.ArrayList<Coords>();
     private final Paint circlePaint;
     private final Paint paint;
     private final Rect circleTextBounds = new Rect();
@@ -85,15 +86,19 @@ public class BrailleView extends View {
 
         @Override
         public void onText(String format, String text, boolean isPasswordField) {
-            speech.readConsiderPassword(getContext(), format, text,
-                    isPasswordField, Speech.QUEUE_FLUSH);
+            if (speech != null) {
+                speech.readConsiderPassword(getContext(), format, text,
+                        isPasswordField, Speech.QUEUE_FLUSH);
+            }
         }
 
         @Override
         public void onText(String format, String text, boolean isPasswordField,
                 int mode) {
-            speech.readConsiderPassword(getContext(), format, text,
-                    isPasswordField, mode);
+            if (speech != null) {
+                speech.readConsiderPassword(getContext(), format, text,
+                        isPasswordField, mode);
+            }
         }
 
         @Override
@@ -112,17 +117,21 @@ public class BrailleView extends View {
             shrinkKeyboard = true;
             invalidate();
             requestLayout();
-            listener.updateFullscreenMode();
+            if (listener != null) {
+                listener.updateFullscreenMode();
+            }
         }
 
         @Override
         public void onPrivacy() {
-            setPrivacy();
+            applyPrivacy();
         }
 
         @Override
         public void onShutup() {
-            speech.stop();
+            if (speech != null) {
+                speech.stop();
+            }
         }
     };
 
@@ -137,6 +146,7 @@ public class BrailleView extends View {
     private long requiredTouchTime = 0;
     private boolean shrinkKeyboard;
     private Speech speech;
+    private Boolean privacyEnabled;
 
     public BrailleView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -164,10 +174,14 @@ public class BrailleView extends View {
 
             @Override
             public void ttsReady() {
-                setLocale(BrailleView.this.listener.getLocale());
-                speech.speak(getContext(),
-                        getContext().getString(R.string.ready),
-                        Speech.QUEUE_FLUSH);
+                if (BrailleView.this.listener != null) {
+                    setLocale(BrailleView.this.listener.getLocale());
+                }
+                if (speech != null) {
+                    speech.speak(getContext(),
+                            getContext().getString(R.string.ready),
+                            Speech.QUEUE_FLUSH);
+                }
             }
         });
 
@@ -194,11 +208,16 @@ public class BrailleView extends View {
                 getContext(),
                 R.string.pref_vibrate_on_exit_key,
                 Boolean.parseBoolean(getContext().getString(
-                        R.string.pref_vibrate_on_exit_default)))) {
+                        R.string.pref_vibrate_on_exit_default)))
+                && vibrator != null) {
             vibrator.vibrate(LONG_VIBRATION * 2);
         }
-        speech.shutdown(getContext().getString(R.string.closing_keyboard));
-        actionHandler.shutdown();
+        if (speech != null) {
+            speech.shutdown(getContext().getString(R.string.closing_keyboard));
+        }
+        if (actionHandler != null) {
+            actionHandler.shutdown();
+        }
         setLocale(Locale.getDefault(), false);
     }
 
@@ -212,6 +231,7 @@ public class BrailleView extends View {
     @Override
     public void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+        applyPrivacy();
         if (!shrinkKeyboard
                 && displayParams != null
                 && Options.getBooleanPreference(
@@ -221,7 +241,8 @@ public class BrailleView extends View {
                                 R.string.pref_show_circles_default)))) {
             // We should show a visual representation of the view according to
             // user preference.
-            if (accessibilityManager.isTouchExplorationEnabled()) {
+            if (accessibilityManager != null
+                    && accessibilityManager.isTouchExplorationEnabled()) {
                 // Display a message saying that talkback needs to be disabled.
                 // canvas.drawText(
                 // getContext().getString(R.string.switch_off_talkback),
@@ -232,29 +253,17 @@ public class BrailleView extends View {
                 setContentDescription(null);
             }
 
-            List<Coords> keys = getKeys();
-            // For each dot draw a circle on the screen at it's position and
-            // write the corresponding dot number in the circle.
-            for (int i = 0; i < keys.size(); i++) {
-                int x = displayParams.autoRotate || getWidth() >= getHeight() ? keys
-                        .get(i).x : keys.get(i).y;
-                int y = displayParams.autoRotate || getWidth() >= getHeight() ? keys
-                        .get(i).y : keys.get(i).x;
-                String text = String.valueOf(i + 1);
-                paint.getTextBounds(text, 0, text.length(), circleTextBounds);
-                canvas.drawCircle(x, y, displayParams.radius, circlePaint);
-                canvas.drawText(text, x, y, paint);
-            }
-        } else if (shrinkKeyboard) {
+            drawPadKeys(canvas);
+        } else if (shrinkKeyboard && displayParams != null) {
             String text = getContext().getString(R.string.expand_keyboard);
-            if (accessibilityManager.isTouchExplorationEnabled()) {
+            if (accessibilityManager != null
+                    && accessibilityManager.isTouchExplorationEnabled()) {
                 text = getContext()
                         .getString(R.string.expand_keyboard_talkback);
             }
             canvas.drawText(text, displayParams.x, displayParams.y, paint);
             setContentDescription(text);
         }
-        setPrivacy();
     }
 
     @Override
@@ -293,7 +302,8 @@ public class BrailleView extends View {
 
     @Override
     public boolean onHoverEvent(MotionEvent event) {
-        if (accessibilityManager.isTouchExplorationEnabled()) {
+        if (speech != null && accessibilityManager != null
+                && accessibilityManager.isTouchExplorationEnabled()) {
             if (shrinkKeyboard) {
                 speech.speak(
                         getContext(),
@@ -312,6 +322,9 @@ public class BrailleView extends View {
     @Override
     public boolean onTouchEvent(MotionEvent motionEvent) {
         super.onTouchEvent(motionEvent);
+        if (displayParams == null || actionHandler == null) {
+            return true;
+        }
         // Get the height and width of the keyboard.
         // If autoRotate is enabled then the standard dimenssions are correct.
         // If autoRotate is disabled the width is the maximum of the height and
@@ -324,11 +337,11 @@ public class BrailleView extends View {
                 getWidth(), getHeight());
         int height = displayParams.autoRotate ? getHeight() : Math.min(
                 getWidth(), getHeight());
-        int action = MotionEventCompat.getActionMasked(motionEvent);
-        int index = MotionEventCompat.getActionIndex(motionEvent);
-        int id = MotionEventCompat.getPointerId(motionEvent, index);
-        int x = (int) MotionEventCompat.getX(motionEvent, index);
-        int y = (int) MotionEventCompat.getY(motionEvent, index);
+        int action = motionEvent.getActionMasked();
+        int index = motionEvent.getActionIndex();
+        int id = motionEvent.getPointerId(index);
+        int x = (int) motionEvent.getX(index);
+        int y = (int) motionEvent.getY(index);
 
         // Swap x and y if the view is being used perpendicular to it's intended
         // purpose see above.
@@ -392,11 +405,11 @@ public class BrailleView extends View {
                 invalidate();
             }
             break;
-        case MotionEventCompat.ACTION_HOVER_MOVE:
+        case MotionEvent.ACTION_HOVER_MOVE:
         case MotionEvent.ACTION_MOVE:
             updatePointer(dotsDown, id, x, y, false);
             break;
-        case MotionEventCompat.ACTION_POINTER_UP:
+        case MotionEvent.ACTION_POINTER_UP:
             if (!setPad(id, width, height, displayParams.autoRotate)) {
                 updatePointer(dotsDown, id, x, y, false);
                 setDots();
@@ -428,7 +441,7 @@ public class BrailleView extends View {
             android.content.res.Configuration conf = resources
                     .getConfiguration();
             if (!conf.locale.equals(locale)) {
-                if (!setTTSLocale || (setTTSLocale && speech.setLocale(locale))) {
+                if (!setTTSLocale || (speech != null && speech.setLocale(locale))) {
                     conf.locale = locale;
                     resources.updateConfiguration(conf, displayMetrics);
 
@@ -440,12 +453,17 @@ public class BrailleView extends View {
     }
 
     private void loadDefaultPad(int w, int h) {
+        if (displayParams == null) {
+            return;
+        }
         int width = displayParams.autoRotate ? w : Math.max(w, h);
         int height = displayParams.autoRotate ? h : Math.min(w, h);
         if (!setDefaultPad(w, h, width, height)) {
-            speech.speak(getContext(),
-                    getContext().getString(R.string.keyboard_error),
-                    Speech.QUEUE_FLUSH);
+            if (speech != null) {
+                speech.speak(getContext(),
+                        getContext().getString(R.string.keyboard_error),
+                        Speech.QUEUE_FLUSH);
+            }
         }
     }
 
@@ -481,14 +499,22 @@ public class BrailleView extends View {
             }
             boolean result;
             if ((result = selectPad(sixDots, width, height))) {
-                speech.speak(getContext(), getContext()
-                        .getString(pad.padString), Speech.QUEUE_FLUSH);
-                vibrator.vibrate(MEDIUM_VIBRATION);
+                if (speech != null) {
+                    speech.speak(getContext(), getContext()
+                            .getString(pad.padString), Speech.QUEUE_FLUSH);
+                }
+                if (vibrator != null) {
+                    vibrator.vibrate(MEDIUM_VIBRATION);
+                }
             } else {
-                speech.speak(getContext(),
-                        getContext().getString(R.string.keyboard_error),
-                        Speech.QUEUE_FLUSH);
-                vibrator.vibrate(QUICK_VIBRATION);
+                if (speech != null) {
+                    speech.speak(getContext(),
+                            getContext().getString(R.string.keyboard_error),
+                            Speech.QUEUE_FLUSH);
+                }
+                if (vibrator != null) {
+                    vibrator.vibrate(QUICK_VIBRATION);
+                }
             }
             lastDotList.clear();
             resetDots();
@@ -502,10 +528,14 @@ public class BrailleView extends View {
                     dotsDown[i] = null;
                 }
             }
-            speech.speak(getContext(),
-                    getContext().getString(R.string.keyboard_next_three),
-                    Speech.QUEUE_FLUSH);
-            vibrator.vibrate(MEDIUM_VIBRATION);
+            if (speech != null) {
+                speech.speak(getContext(),
+                        getContext().getString(R.string.keyboard_next_three),
+                        Speech.QUEUE_FLUSH);
+            }
+            if (vibrator != null) {
+                vibrator.vibrate(MEDIUM_VIBRATION);
+            }
             return true;
         }
     }
@@ -547,21 +577,34 @@ public class BrailleView extends View {
         return false;
     }
 
-    private List<Coords> getKeys() {
-        List<Coords> keys = new ArrayList<Coords>();
+    private void drawPadKeys(Canvas canvas) {
+        if (pad == null || listener == null || displayParams == null) {
+            return;
+        }
         List<Coords> padKeys = pad.getKeys();
+        if (padKeys == null || padKeys.isEmpty()) {
+            return;
+        }
         int dots = listener.getDots();
-        // should always be == dots, but handle errors cleanly
         if (dots == -1) {
             dots = padKeys.size();
         }
         int dotsInUse = Math.min(padKeys.size(), dots);
-        keys.addAll(padKeys.subList(0, dotsInUse));
-        return keys;
+        boolean useViewCoordinates
+                = displayParams.autoRotate || getWidth() >= getHeight();
+        for (int i = 0; i < dotsInUse; i++) {
+            Coords key = padKeys.get(i);
+            int x = useViewCoordinates ? key.x : key.y;
+            int y = useViewCoordinates ? key.y : key.x;
+            String text = String.valueOf(i + 1);
+            paint.getTextBounds(text, 0, text.length(), circleTextBounds);
+            canvas.drawCircle(x, y, displayParams.radius, circlePaint);
+            canvas.drawText(text, x, y, paint);
+        }
     }
 
     private void setDots() {
-        if (pad == null) {
+        if (pad == null || listener == null) {
             return;
         }
         // Sort the dots into their actual positions eg. dotsDown[0] = dot1
@@ -619,31 +662,35 @@ public class BrailleView extends View {
     }
 
     private void sendNotification(boolean vibrate, boolean playSound) {
+        int keyboardFeedback = Options.getIntPreference(getContext(),
+                R.string.pref_keyboard_feedback_key,
+                KeyboardFeedback.ALL.getValue());
         if (vibrate
-                && (KeyboardFeedback.VIBRATE.value & Integer.parseInt(Options
-                        .getStringPreference(getContext(),
-                                R.string.pref_keyboard_feedback_key,
-                                KeyboardFeedback.ALL.getValue()))) != 0) {
+                && (KeyboardFeedback.VIBRATE.value & keyboardFeedback) != 0
+                && vibrator != null) {
             vibrator.vibrate(QUICK_VIBRATION);
         }
         if (playSound
-                && (KeyboardFeedback.SOUND.value & Integer.parseInt(Options
-                        .getStringPreference(getContext(),
-                                R.string.pref_keyboard_feedback_key,
-                                KeyboardFeedback.ALL.getValue()))) != 0) {
+                && (KeyboardFeedback.SOUND.value & keyboardFeedback) != 0) {
             playSoundEffect(SoundEffectConstants.CLICK);
         }
     }
 
     private void expandKeyboard() {
-        speech.speak(getContext(),
-                getContext().getString(R.string.keyboard_full_screen),
-                Speech.QUEUE_FLUSH);
+        if (speech != null) {
+            speech.speak(getContext(),
+                    getContext().getString(R.string.keyboard_full_screen),
+                    Speech.QUEUE_FLUSH);
+        }
         shrinkKeyboard = false;
-        setLocale(listener.getLocale());
+        if (listener != null) {
+            setLocale(listener.getLocale());
+        }
         invalidate();
         requestLayout();
-        listener.updateFullscreenMode();
+        if (listener != null) {
+            listener.updateFullscreenMode();
+        }
     }
 
     private static int countDotsDown(Coords[] dots) {
@@ -673,35 +720,31 @@ public class BrailleView extends View {
     }
 
     private Swipe handledSwipeAction(Coords[] coords, boolean swap) {
-        Swipe value;
-        try {
-            value = pad.getSwipe(coords, swap);
-            return value;
-        } catch (NullPointerException npe) { // can be null if invalidate
-            // somehow is called
+        if (pad == null) {
+            return Swipe.NONE;
         }
-        return Swipe.NONE;
+        return pad.getSwipe(coords, swap);
     }
 
     private void handleTypedCharacter() {
         byte value = pressedDotString();
-        actionHandler.handleCharacter(getContext(), value);
+        if (actionHandler != null) {
+            actionHandler.handleCharacter(getContext(), value);
+        }
     }
 
-    private boolean setPrivacy() {
-        if (Options.getBooleanPreference(
+    private boolean applyPrivacy() {
+        boolean enabled = Options.getBooleanPreference(
                 getContext(),
                 R.string.pref_privacy_key,
                 Boolean.parseBoolean(getContext().getString(
-                        R.string.pref_privacy_default)))) {
+                        R.string.pref_privacy_default)));
+        if (privacyEnabled == null || privacyEnabled.booleanValue() != enabled) {
             setBackgroundColor(getContext().getResources().getColor(
-                    android.R.color.black));
-            return true;
-        } else {
-            setBackgroundColor(getContext().getResources().getColor(
-                    android.R.color.transparent));
-            return false;
+                    enabled ? android.R.color.black : android.R.color.transparent));
+            privacyEnabled = enabled;
         }
+        return enabled;
     }
 
     private void setDisplayParams(int w, int h) {
@@ -748,7 +791,8 @@ public class BrailleView extends View {
                         getContext(),
                         R.string.pref_voice_shortcut_key,
                         Boolean.parseBoolean(getContext().getString(
-                                R.string.pref_voice_shortcut_default)))) {
+                                R.string.pref_voice_shortcut_default)))
+                && actionHandler != null) {
             actionHandler.doVoiceInput(getContext(), false);
             return true;
         }

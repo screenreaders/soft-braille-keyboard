@@ -79,6 +79,15 @@ public interface KeyboardListener {
     String handleTypedCharacter(byte dots);
 
     /**
+     * Remove the last uncommitted braille cell from the current composition.
+     *
+     * @return The updated textual result of the braille composition, an empty
+     *         string if the composition was cleared completely, or null if
+     *         there was no active braille composition to edit.
+     */
+    String deletePreviousBrailleCharacter();
+
+    /**
      * Determine if the active input session pertains to a password typed field.
      * 
      * @return true if it's a password field otherwise false.

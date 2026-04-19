@@ -92,6 +92,9 @@ public class HorizontalPad extends Pad {
     }
 
     private void insertSpecialDots() {
+        if (keys.size() < 6) {
+            return;
+        }
         int xGapLeft = getXGap(keys.subList(0, 3));
         int yGapLeft = getYGap(keys.subList(0, 3));
         int xGapRight = getXGap(keys.subList(3, 6));
@@ -107,6 +110,9 @@ public class HorizontalPad extends Pad {
 
     private void sortKeys(List<Coords> coords, boolean portrait,
             boolean useEightDots) {
+        if (coords == null || coords.size() < 6) {
+            return;
+        }
         Collections.sort(coords, comparatorX);
         Collections.swap(keys, 0, 2);
         if (useEightDots) {

@@ -44,11 +44,11 @@ public class PadUtilities {
                 R.string.pref_keyboard_style_key,
                 context.getString(R.string.pref_keyboard_style_normal_value));
 
-        if (style.equals(context
-                .getString(R.string.pref_keyboard_style_slate_value))) {
+        if (context.getString(R.string.pref_keyboard_style_slate_value)
+                .equals(style)) {
             pad.makeSlateLayout();
-        } else if (style.equals(context
-                .getString(R.string.pref_keyboard_style_top_bottom_value))) {
+        } else if (context.getString(R.string.pref_keyboard_style_top_bottom_value)
+                .equals(style)) {
             pad.swapTopBottom();
         }
     }
@@ -63,11 +63,9 @@ public class PadUtilities {
         boolean invert = Options.getBooleanPreference(context,
                 R.string.pref_keyboard_invert_key, Boolean.parseBoolean(context
                         .getString(R.string.pref_keyboard_invert_default)));
-        KeyboardType keyboard = KeyboardType
-                .valueOf(Integer.parseInt(Options.getStringPreference(
-                        context,
-                        R.string.pref_default_keyboard_key,
-                        context.getString(R.string.pref_default_keyboard_default))));
+        KeyboardType keyboard = KeyboardType.valueOf(Options.getIntPreference(
+                context, R.string.pref_default_keyboard_key,
+                context.getString(R.string.pref_default_keyboard_default)));
         if (autoSet || keyboard == KeyboardType.AUTO) {
             List<Coords> keys = Arrays.asList(coords);
             int left = VerticalPad.getColumn(keys, VerticalPad.Column.LEFT);
@@ -92,6 +90,7 @@ public class PadUtilities {
                 pad = new HorizontalPad(context, coords, width, height,
                         portrait, invert, useEightDots);
             }
+            pad.setAdaptiveUpdatesEnabled(false);
         } else {
             if (keyboard == KeyboardType.HORIZONTAL) {
                 pad = new HorizontalPad(context, coords, width, height,
@@ -100,6 +99,7 @@ public class PadUtilities {
                 pad = new VerticalPad(context, coords, width, height, portrait,
                         invert, useEightDots);
             }
+            pad.setAdaptiveUpdatesEnabled(false);
         }
 
         setPadStyle(context, pad);
@@ -112,11 +112,9 @@ public class PadUtilities {
         boolean invert = Options.getBooleanPreference(context,
                 R.string.pref_keyboard_invert_key, Boolean.parseBoolean(context
                         .getString(R.string.pref_keyboard_invert_default)));
-        KeyboardType keyboard = KeyboardType
-                .valueOf(Integer.parseInt(Options.getStringPreference(
-                        context,
-                        R.string.pref_default_keyboard_key,
-                        context.getString(R.string.pref_default_keyboard_default))));
+        KeyboardType keyboard = KeyboardType.valueOf(Options.getIntPreference(
+                context, R.string.pref_default_keyboard_key,
+                context.getString(R.string.pref_default_keyboard_default)));
         int maxScreen = (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, MAX_SCREEN_SIZE, context
                         .getResources().getDisplayMetrics());
@@ -128,6 +126,7 @@ public class PadUtilities {
             if ((coords = Pad.load(context, width, height, prefKey, portrait)) != null) {
                 pad = new HorizontalPad(context, coords, width, height,
                         portrait, invert, useEightDots);
+                pad.setAdaptiveUpdatesEnabled(false);
             } else {
                 pad = HorizontalPad.displayDefaultPad(context, width, height,
                         portrait, invert, useEightDots);
@@ -138,6 +137,7 @@ public class PadUtilities {
             if ((coords = Pad.load(context, width, height, prefKey, portrait)) != null) {
                 pad = new VerticalPad(context, coords, width, height, portrait,
                         invert, useEightDots);
+                pad.setAdaptiveUpdatesEnabled(false);
             } else {
                 pad = VerticalPad.displayDefaultPad(context, width, height,
                         portrait, invert, useEightDots);

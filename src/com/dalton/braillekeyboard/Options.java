@@ -16,6 +16,7 @@
 
 package com.dalton.braillekeyboard;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import android.content.Context;
@@ -51,7 +52,7 @@ public class Options {
                     return keyboardFeedback;
                 }
             }
-            throw new IllegalArgumentException("Invalid value: " + value);
+            return ALL;
         }
 
         public static KeyboardFeedback next(KeyboardFeedback feedback) {
@@ -92,7 +93,7 @@ public class Options {
                     return keyboardEcho;
                 }
             }
-            throw new IllegalArgumentException("Invalid value: " + value);
+            return CHARACTER;
         }
 
         public static KeyboardEcho next(KeyboardEcho echo) {
@@ -132,14 +133,36 @@ public class Options {
             boolean defaultValue) {
         SharedPreferences sharedPref = PreferenceManager
                 .getDefaultSharedPreferences(context);
-        return sharedPref.getBoolean(context.getString(resource), defaultValue);
+        try {
+            return sharedPref.getBoolean(context.getString(resource), defaultValue);
+        } catch (ClassCastException e) {
+            return defaultValue;
+        }
     }
 
     public static String getStringPreference(Context context, int resource,
             String defaultValue) {
         SharedPreferences sharedPref = PreferenceManager
                 .getDefaultSharedPreferences(context);
-        return sharedPref.getString(context.getString(resource), defaultValue);
+        try {
+            return sharedPref.getString(context.getString(resource), defaultValue);
+        } catch (ClassCastException e) {
+            return defaultValue;
+        }
+    }
+
+    public static int getIntPreference(Context context, int resource,
+            String defaultValue) {
+        try {
+            return Integer.parseInt(getStringPreference(context, resource,
+                    defaultValue));
+        } catch (RuntimeException e) {
+            try {
+                return Integer.parseInt(defaultValue);
+            } catch (RuntimeException ignored) {
+                return 0;
+            }
+        }
     }
 
     public static boolean switchBooleanPreference(Context context,
@@ -166,8 +189,13 @@ public class Options {
             int resource, Set<String> defaultValue) {
         SharedPreferences sharedPref = PreferenceManager
                 .getDefaultSharedPreferences(context);
-        return sharedPref.getStringSet(context.getString(resource),
-                defaultValue);
+        try {
+            Set<String> values = sharedPref.getStringSet(
+                    context.getString(resource), defaultValue);
+            return values == null ? null : new HashSet<String>(values);
+        } catch (ClassCastException e) {
+            return defaultValue == null ? null : new HashSet<String>(defaultValue);
+        }
     }
 
     public static void writeStringSetPreference(Context context, int resource,
@@ -175,7 +203,8 @@ public class Options {
         SharedPreferences sharedPref = PreferenceManager
                 .getDefaultSharedPreferences(context);
         SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putStringSet(context.getString(resource), value);
+        editor.putStringSet(context.getString(resource),
+                value == null ? null : new HashSet<String>(value));
         editor.commit();
     }
 }

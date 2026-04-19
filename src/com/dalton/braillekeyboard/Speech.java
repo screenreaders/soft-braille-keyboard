@@ -28,6 +28,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
+import android.text.TextUtils;
 
 /**
  * Allows the Braille IME to interface with the Android TTS service. This class
@@ -67,9 +68,11 @@ public class Speech {
 
         @Override
         public void onStart(String utteranceId) {
-            audioManager.requestAudioFocus(audioFocusChangeListener,
-                    AudioManager.STREAM_MUSIC,
-                    AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK);
+            if (audioManager != null) {
+                audioManager.requestAudioFocus(audioFocusChangeListener,
+                        AudioManager.STREAM_MUSIC,
+                        AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK);
+            }
         }
 
         @Override
@@ -79,7 +82,9 @@ public class Speech {
 
         @Override
         public void onDone(String utteranceId) {
-            audioManager.abandonAudioFocus(audioFocusChangeListener);
+            if (audioManager != null) {
+                audioManager.abandonAudioFocus(audioFocusChangeListener);
+            }
             if (SHUTDOWN_ID.equals(utteranceId)) {
                 doShutdown();
             }
@@ -90,7 +95,8 @@ public class Speech {
 
         @Override
         public void onAudioFocusChange(int focusChange) {
-            if (focusChange == AudioManager.AUDIOFOCUS_LOSS) {
+            if (focusChange == AudioManager.AUDIOFOCUS_LOSS
+                    && audioManager != null) {
                 audioManager.abandonAudioFocus(audioFocusChangeListener);
             }
         }
@@ -116,22 +122,39 @@ public class Speech {
         setSpeechMap(context, speechMap);
 
         String engine = Options.getStringPreference(context,
-                R.string.pref_text_to_speech_engine_key, null);
+                R.string.pref_text_to_speech_engine_key, "");
+        if (TextUtils.isEmpty(engine)) {
+            engine = null;
+        }
 
         if (canSpeak || tts != null) {
             doShutdown();
         }
 
-        tts = new TextToSpeech(context, new TextToSpeech.OnInitListener() {
-            @Override
-            public void onInit(int status) {
-                if (status == TextToSpeech.SUCCESS) {
-                    canSpeak = true;
-                    setProgressListener();
-                    listener.ttsReady();
+        final TextToSpeech[] createdTts = new TextToSpeech[1];
+        try {
+            createdTts[0] = new TextToSpeech(context, new TextToSpeech.OnInitListener() {
+                @Override
+                public void onInit(int status) {
+                    if (tts != createdTts[0]) {
+                        return;
+                    }
+                    if (status == TextToSpeech.SUCCESS) {
+                        canSpeak = true;
+                        setProgressListener();
+                        if (listener != null) {
+                            listener.ttsReady();
+                        }
+                    } else {
+                        canSpeak = false;
+                    }
                 }
-            }
-        }, engine);
+            }, engine);
+            tts = createdTts[0];
+        } catch (RuntimeException e) {
+            canSpeak = false;
+            tts = null;
+        }
     }
 
     @SuppressLint("NewApi")
@@ -162,13 +185,13 @@ public class Speech {
     }
 
     private void doShutdown() {
-        if (tts != null && canSpeak) {
-            tts.stop();
-            setLocale(Locale.getDefault());
-            tts.shutdown();
-            canSpeak = false;
-        }
+        TextToSpeech localTts = tts;
+        canSpeak = false;
         tts = null;
+        if (localTts != null) {
+            localTts.stop();
+            localTts.shutdown();
+        }
     }
 
     /**
@@ -200,6 +223,9 @@ public class Speech {
      */
     public void speak(Context context, String format, CharSequence text,
             int mode) {
+        if (context == null || format == null) {
+            return;
+        }
         if (text != null) {
             if (text.equals(" ")) {
                 // say "space
@@ -249,6 +275,9 @@ public class Speech {
      */
     public void speakPassword(Context context, String formatter, String text,
             int mode) {
+        if (text == null) {
+            text = "";
+        }
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < text.length(); i++) {
             sb.append('*');
@@ -292,12 +321,8 @@ public class Speech {
      *         engine does not support the locale.
      */
     public boolean setLocale(Locale locale) {
-        // Somehow tts can be null while canSpeak is true.
-        // TODO This is really a work around, but the state that causes this
-        // should be fully understood and canSpeak's state should be updated
-        // accordingly.
-        if (tts != null
-                && canSpeak
+        if (locale != null
+                && isReadyToSpeak()
                 && tts.isLanguageAvailable(locale) >= TextToSpeech.LANG_AVAILABLE) {
             tts.setLanguage(locale);
             return true;
@@ -315,22 +340,24 @@ public class Speech {
     // tts service for speaking.
     private void divideAndSpeak(final String text, final int queueMode,
             final HashMap<String, String> params) {
-        int end = MAX_SPEECH_LENGTH < text.length() ? MAX_SPEECH_LENGTH : text
-                .length();
-        end = getBestEnd(text, end);
-
-        if (canSpeak) {
-            ttsSpeak(text.substring(0, end), queueMode, params, null);
+        if (TextUtils.isEmpty(text)) {
+            return;
         }
-
-        for (int i = end; i < text.length(); i += MAX_SPEECH_LENGTH) {
-            end = (i + MAX_SPEECH_LENGTH) < text.length() ? (i + MAX_SPEECH_LENGTH)
-                    : text.length();
-            end = getBestEnd(text, end);
-
-            if (canSpeak) {
-                ttsSpeak(text.substring(i, end), QUEUE_ADD, null, null);
+        int start = 0;
+        int currentQueueMode = queueMode;
+        while (start < text.length()) {
+            int requestedEnd = Math.min(start + MAX_SPEECH_LENGTH, text.length());
+            int end = getBestEnd(text, start, requestedEnd);
+            if (end <= start) {
+                end = requestedEnd;
             }
+
+            if (isReadyToSpeak()) {
+                ttsSpeak(text.substring(start, end), currentQueueMode,
+                        currentQueueMode == queueMode ? params : null, null);
+            }
+            currentQueueMode = QUEUE_ADD;
+            start = end;
         }
     }
 
@@ -359,11 +386,15 @@ public class Speech {
         }
     }
 
+    private boolean isReadyToSpeak() {
+        return canSpeak && tts != null;
+    }
+
     // Find the best endpoint to speak until.
     // This is either the current endpoint if it is the actual end of the text.
     // Otherwise we back track until a white space separator so that the
     // segments of speech sound clean.
-    private static int getBestEnd(String text, int end) {
+    private static int getBestEnd(String text, int start, int end) {
         // separators to divide segments at eg. whitespace so it sounds clean.
         String[] items = { " ", "\n" };
         int bestEnd = end;
@@ -374,9 +405,9 @@ public class Speech {
             // back track and pick the closest separator index.
             for (int i = 0; i < items.length; i++) {
                 // store the temporary segment separator index.
-                int temp = text.substring(0, end).lastIndexOf(items[i]);
+                int temp = text.lastIndexOf(items[i], end - 1);
                 // pick the longest segment.
-                if (temp > bestEnd) {
+                if (temp >= start && temp > bestEnd) {
                     bestEnd = temp;
                 }
             }
@@ -387,6 +418,9 @@ public class Speech {
     // If the string is just one character make sure we speak the actual
     // punctuation symbol for it. Otherwise it can be spoken natively.
     private String extractPunctuation(String text) {
+        if (text == null) {
+            return null;
+        }
         String symbol = null;
         if (text.length() == 1) {
             symbol = speechMap.get(text.substring(0, 1));

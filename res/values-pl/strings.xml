@@ -9,8 +9,8 @@
     <string name="braille_ime">Soft Braille Keyboard</string>
     <string name="button_choose_default_keyboard">Ustaw Soft Braille Keyboard jako klawiaturę domyślną</string>
     <string name="button_keyboard_settings">Włącz Soft Braille Keyboard</string>
-    <string name="button_more_info">Przeczytaj krótkie wprowadzenie</string>
-    <string name="capital">Duże %s</string>
+    <string name="button_more_info">Przeczytaj szybki przewodnik</string>
+    <string name="capital">Wielka litera %s</string>
     <string name="closing_keyboard">Zamknięto klawiaturę</string>
     <string name="copied">Skopiowano</string>
     <string name="copy_error">Błąd kopiowania</string>
@@ -18,15 +18,15 @@
     <string name="deleted">Usunięto %s</string>
     <string name="delete_selection">Usuń zaznaczenie</string>
     <string name="end_of_text">Koniec tekstu</string>
-      <string name="expand_keyboard">Stuknij tutaj, aby rozwinąć klawiaturę</string>
-        <string name="expand_keyboard_talkback">Stuknij dwukrotnie tutaj, aby rozwinąć klawiaturę</string>
-    <string name="grade_computer">Brajl Komputerowy</string>
+      <string name="expand_keyboard">Dotknij tutaj, aby rozwinąć klawiaturę</string>
+        <string name="expand_keyboard_talkback">Dotknij tutaj dwukrotnie, aby rozwinąć klawiaturę</string>
+    <string name="grade_computer">Brajl komputerowy</string>
     <string name="grade">Domyślny stopień brajla</string>
-        <string name="grade_literary">Brajl Literacki</string>
+        <string name="grade_literary">Brajl literacki</string>
         <string name="grade_table">Stopień %s</string>
     <string name="hide_keyboard">Ukrywanie klawiatury.</string>
     <string name="high">Wysoka</string>
-    <string name="info_url">https://docs.google.com/document/d/1OX6yFjkK61VfROdU9uQNxjEZ_QNWxiMnUY_1ECnIyRQ/pub</string>
+    <string name="info_url">https://github.com/screenreaders/soft-braille-keyboard.git</string>
     <string name="keyboard_auto">Automatyczna</string>
     <string name="keyboard_echo_all">Znaki i słowa</string>
     <string name="keyboard_echo_character">Znaki</string>
@@ -68,45 +68,45 @@
     <string name="pref_braille_grade_summary">Ustaw preferowany stopień brajla.</string>
     <string name="pref_category_braille_title">Tablice brajlowskie</string>
     <string name="pref_category_feedback_title">Ustawienia informacji zwrotnej klawiatury</string>
-    <string name="pref_category_keyboard_title">Ustawienia Klawiatury</string>
-    <string name="pref_category_misc_title">Pozostałe Ustawienia</string>
+    <string name="pref_category_keyboard_title">Ustawienia klawiatury</string>
+    <string name="pref_category_misc_title">Pozostałe ustawienia</string>
     <string name="pref_default_computer_braille_table_summary"></string>
     <string name="pref_default_computer_braille_table_title">Tablica brajla komputerowego</string>
     <string name="pref_default_keyboard_summary">Wybierz układ klawiatury, który będzie wyświetlany domyślnie.</string>
-    <string name="pref_default_keyboard_title">Domyślny Układ Klawiatury</string>
+    <string name="pref_default_keyboard_title">Domyślny układ klawiatury</string>
     <string name="pref_default_literary_braille_table_summary"></string>
-    <string name="pref_default_literary_braille_table_title">Tablica brajla literacki</string>    
-    <string name="pref_double_space_period_summary">Wstawienie podwójnej spacji wstawia kropkę i spację.</string>
+    <string name="pref_default_literary_braille_table_title">Tablica brajla literackiego</string>
+    <string name="pref_double_space_period_summary">Dwukrotne wpisanie spacji wstawia kropkę i spację.</string>
     <string name="pref_double_space_period_title">Kropka przy podwójnej spacji</string>    
     <string name="pref_echo_feedback_summary">Wybierz rodzaj echa klawiatury.</string>
-    <string name="pref_echo_feedback_title">Echo Klawiatury</string>
-    <string name="pref_echo_misspellings_summary">Gdy włączone, błędy pisowni są oznajmiane po wstawieniu spacji</string>
+    <string name="pref_echo_feedback_title">Echo klawiatury</string>
+    <string name="pref_echo_misspellings_summary">Gdy włączone, błędy pisowni są oznajmiane po wpisaniu spacji.</string>
     <string name="pref_echo_misspellings_title">Echo błędów pisowni podczas wpisywania</string>
-    <string name="pref_echo_passwords_summary">Gdy włączone, klawiatura będzie mówić podczas wpisywania haseł.</string>
+    <string name="pref_echo_passwords_summary">Gdy włączone, klawiatura będzie odczytywać wpisywane hasła.</string>
     <string name="pref_keyboard_feedback_summary">Wybierz rodzaj dźwiękowej lub wibracyjnej informacji zwrotnej.</string>
-    <string name="pref_keyboard_feedback_title">Informacja Zwrotna Klawiatury</string>
-    <string name="pref_keyboard_invert_summary">Gdy klawiatura nie jest obracana wraz z telefonem, użyj tego ustawienia, by obrócić ją o 180 stopni</string>
+    <string name="pref_keyboard_feedback_title">Informacja zwrotna klawiatury</string>
+    <string name="pref_keyboard_invert_summary">Gdy klawiatura nie obraca się razem z telefonem, użyj tego ustawienia, aby obrócić ją o 180 stopni.</string>
     <string name="pref_keyboard_invert_title">Obróć klawiaturę</string>
     <string name="pref_keyboard_style_summary">Skonfiguruj układ punktów na klawiaturze.</string>
     <string name="pref_keyboard_style_title">Styl klawiatury</string>
-    <string name="pref_privacy_summary">Gdy włączone, wyciemniaj ekran podczas pisania, by zachować prywatność.</string>    
+    <string name="pref_privacy_summary">Gdy włączone, zaciemnia ekran podczas pisania, aby zwiększyć prywatność.</string>
     <string name="pref_privacy_title">Ekran prywatny</string>
-    <string name="pref_show_circles_summary">Gdy włączone, małę kółka będą wyświetlane wskazując pozycję poszczególnych punktów na ekranie</string>
-    <string name="pref_show_circles_title">Pokazywać kółka na ekranie?</string>
+    <string name="pref_show_circles_summary">Gdy włączone, małe kółka będą wyświetlane, wskazując pozycję poszczególnych punktów na ekranie.</string>
+    <string name="pref_show_circles_title">Pokazuj kółka na ekranie</string>
     <string name="pref_swipe_sensitivity_summary">Wybierz czułość gestów przesuwania.</string>
     <string name="pref_swipe_sensitivity_title">Czułość przesuwania</string>
     <string name="pref_switch_tables_summary">Wybierz te języki, pomiędzy którymi chcesz się przełączać w locie podczas pisania.</string>
     <string name="pref_switch_tables_title">Włącz tablice brajlowskie do przełączania w locie.</string>
-    <string name="pref_text_to_speech_engine_title">Silnik Syntezy Mowy</string>
-    <string name="pref_text_to_speech_title">Ustawienia Syntezy Mowy</string>
+    <string name="pref_text_to_speech_engine_title">Silnik syntezy mowy</string>
+    <string name="pref_text_to_speech_title">Ustawienia syntezy mowy</string>
     <string name="pref_use_eight_dots_summary">Gdy włączone, pokazuj punkty 7 i 8.</string>
     <string name="pref_use_eight_dots_title">Pokazuj 8-punktową klawiaturę</string>
     <string name="pref_vibrate_on_exit_title">Wibracja przy zamykaniu klawiatury</string>
-    <string name="pref_voice_shortcut_summary">Gdy włączone, stuknij dwukrotnie z przytrzymaniem,by rozpocząć dyktowanie głosowe kiedy Talkback jest włączony.</string> 
+    <string name="pref_voice_shortcut_summary">Gdy włączone, stuknij dwukrotnie i przytrzymaj, aby rozpocząć dyktowanie głosowe, gdy TalkBack jest włączony.</string>
     <string name="pref_voice_shortcut_title">Skrót wprowadzania głosowego</string>
     <string name="privacy_disabled">Ekran prywatny wyłączony</string>
     <string name="privacy_enabled">Ekran prywatny włączony</string>
-    <string name="ready">klawiatura gotowa</string>
+    <string name="ready">Klawiatura gotowa</string>
     <string name="return_key">Enter</string>
     <string name="rotate_keyboard">Obracaj klawiaturę wraz z urządzeniem</string>
     <string name="rotate_summary">Gdy włączone, klawiatura będzie obracana zgodnie z orientacją urządzenia.</string>
@@ -114,8 +114,8 @@
     <string name="selected_all">Zaznaczono cały tekst</string>
     <string name="set_mark">Zaznaczenie ustawione</string>
     <string name="settings_name">Ustawienia Soft Braille Keyboard</string>
-    <string name="show_input_switcher">Pokazywanie przełączania metody wprowadzania</string>
-    <string name="show_settings">Pokazywanie ustawień klawiatury brajlowskiej</string>
+    <string name="show_input_switcher">Wyświetlam wybór metody wprowadzania</string>
+    <string name="show_settings">Wyświetlam ustawienia Soft Braille Keyboard</string>
     <string name="space">Spacja</string>
     <string name="speak_passwords">Wypowiadaj hasła</string>
     <string name="speak_selection">Odczytaj zaznaczenie</string>
@@ -124,27 +124,27 @@
     <string name="swipe_confirm_input">Przesuń ponownie, aby wyświetlić wybór klawiatury</string>
     <string name="swipe_confirm">Przesuń ponownie, by potwierdzić</string>
     <string name="swipe_confirm_settings">Przesuń ponownie, aby wyświetlić ustawienia Soft Braille Keyboard</string>
-    <string name="switch_off_talkback">Wyłącz Talkback. Możesz to zrobić wykonując gest w kształcie litery L, przesuń w dół, a następnie w prawo; , na ekranie znajdź opcję "Wstrzymaj reagowanie" w lewym górnym rogu. Talkback może zosta wznowiony w każdej chwili poprzez podwójne wciśnięcie przycisku zasilania</string>
+    <string name="switch_off_talkback">Wyłącz TalkBack. Możesz to zrobić gestem w kształcie litery L: przesuń w dół, a potem w prawo, a następnie znajdź opcję „Wstrzymaj reagowanie” w lewym górnym rogu. TalkBack można ponownie włączyć w każdej chwili przez dwukrotne naciśnięcie przycisku zasilania.</string>
     <string name="translator_error">Wystąpił błąd usługi brajla</string>
     <string name="try_box">Tutaj spróbuj pisać za pomocą klawiatury.</string>
     <string name="unknown_character">Nieznany znak</string>
     <string name="unset_mark">Zaznaczenie usunięte</string>    
-    <string name="voice_input_enable">Proszę wykonać ten gest szybko dwa razy . Zostanie wyświetlone okno. Proszę użyć Talkbacka, aby zaakceptować prośbę o udzielenie zezwolenia, aby wprowadzanie głosowe mogło działać poprawnie.</string>
+    <string name="voice_input_enable">Wykonaj ten gest szybko dwa razy. Zostanie wyświetlone okno. Użyj TalkBacka, aby zaakceptować prośbę o przyznanie uprawnienia, tak aby wprowadzanie głosowe działało poprawnie.</string>
     <string name="voice_input_error">Wystąpił błąd silnika wprowadzania głosowego, kod: %d</string>
     <string name="voice_input_is_not_available">Wprowadzanie głosowe nie jest dostępne na urządzeniu.</string>
-    <string name="voice_input_permission_message">Musisz włączyć zezwolenie na nagrywanie dźwięku, aby wprowadzanie głosowe mogło działać.</string>
-    <string name="voice_input_permission_title">Zezwolenie na Wprowadzanie Głosowe</string>
-    <string name="word_correction_misspelled">%s błąd pisowni</string>
+    <string name="voice_input_permission_message">Musisz włączyć uprawnienie do nagrywania dźwięku, aby wprowadzanie głosowe mogło działać.</string>
+    <string name="voice_input_permission_title">Uprawnienie do nagrywania dźwięku</string>
+    <string name="word_correction_misspelled">%s, błąd pisowni</string>
     <string name="word_correct">Słowo jest poprawne</string>
     <string name="word_count">%1$d linii, %2$d słów, %3$d znaków</string>
-    <string name="word_misspelled">Błąd Pisowni</string>
+    <string name="word_misspelled">Błąd pisowni</string>
     <!-- PUNCTUATION -->
 
     <!--
       Source: A value for announcing a question mark.
       Description: This is spoken to the user. [CHAR LIMIT="NONE"]
     -->
-    <string name="punctuation_questionmark">Pytajnik</string>
+    <string name="punctuation_questionmark">Znak zapytania</string>
 
     <!--
       Source: A value for announcing a space.
@@ -174,13 +174,13 @@
       Source: A value for announcing an opening parenthesis.
       Description: This is spoken to the user. [CHAR LIMIT="NONE"]
     -->
-    <string name="punctuation_open_paren">Lewy nawias</string>
+    <string name="punctuation_open_paren">Nawias otwierający</string>
 
     <!--
       Source: A value for announcing a closing parenthesis.
       Description: This is spoken to the user. [CHAR LIMIT="NONE"]
     -->
-    <string name="punctuation_close_paren">Prawy nawias</string>
+    <string name="punctuation_close_paren">Nawias zamykający</string>
 
     <!--
       Source: A value for announcing a double quote.
@@ -192,19 +192,19 @@
       Source: A value for announcing a single quote.
       Description: This is spoken to the user. [CHAR LIMIT="NONE"]
     -->
-    <string name="punctuation_single_quote">apostrof</string>
+    <string name="punctuation_single_quote">Apostrof</string>
 
     <!--
       Source: A value for announcing a slash.
       Description: This is spoken to the user. [CHAR LIMIT="NONE"]
     -->
-    <string name="punctuation_slash">Slesz</string>
+    <string name="punctuation_slash">Ukośnik</string>
 
     <!--
       Source: A value for announcing a backslash.
       Description: This is spoken to the user. [CHAR LIMIT="NONE"]
     -->
-    <string name="punctuation_backslash">Bekslesz</string>
+    <string name="punctuation_backslash">Odwrócony ukośnik</string>
 
     <!--
       Source: A value for announcing a semicolon.
@@ -216,7 +216,7 @@
       Source: A value for announcing a colon.
       Description: This is spoken to the user. [CHAR LIMIT="NONE"]
     -->
-    <string name="punctuation_colon">Dwókropek</string>
+    <string name="punctuation_colon">Dwukropek</string>
     
     <!--
       Source: A value for announcing a left brace.
@@ -229,4 +229,207 @@
       Description: This is spoken to the user. [CHAR LIMIT="NONE"]
     -->
     <string name="punctuation_right_brace">Prawy nawias klamrowy</string>
+
+    <!-- Added automatically for missing localized UI strings -->
+    <string name="pref_braille_table_auto">auto</string>
+    <string name="connprog_trying">Szukanie: %s</string>
+    <string name="connprog_initializing">Inicjowanie: %s</string>
+    <string name="connprog_failed_to_initialize">Nie udało się zainicjować: %s</string>
+    <string name="connprog_no_devices">Brak rozpoznanych sparowanych urządzeń</string>
+    <string name="connprog_waiting_usb_permission">Oczekiwanie na uprawnienie USB: %s</string>
+    <string name="permlab_displayConnect">Połączenie z usługą monitora brajlowskiego</string>
+    <string name="permdesc_displayConnect">Umożliwia zaufanym częściom aplikacji łączenie się z backendem monitora brajlowskiego.</string>
+    <string name="braille_clear_log">Wyczyść dziennik zdarzeń</string>
+    <string name="braille_copy_diagnostics">Skopiuj raport diagnostyczny</string>
+    <string name="braille_export_diagnostics">Zapisz raport diagnostyczny</string>
+    <string name="braille_display_not_connected">Brak podłączonego monitora brajlowskiego.</string>
+    <string name="braille_diagnostics_clip_label">Diagnostyka brajlowska</string>
+    <string name="braille_displays_intro">Na tym ekranie możesz sprawdzić uprawnienia Bluetooth, rozpoznane sparowane urządzenia, bieżące właściwości monitora i zdarzenia klawiszy na żywo z zewnętrznego monitora brajlowskiego.</string>
+    <string name="braille_displays_title">Monitory brajlowskie</string>
+    <string name="braille_accessibility_disabled">Usługa dostępności dla brajla jest wyłączona.</string>
+    <string name="braille_accessibility_enabled">Usługa dostępności dla brajla jest włączona.</string>
+    <string name="braille_accessibility_service_description">Wyświetla treść aktualnie skupionego elementu na podłączonym monitorze brajlowskim i obsługuje polecenia z monitora.</string>
+    <string name="braille_clear_preferred_display">Wyczyść preferowany monitor</string>
+    <string name="braille_clear_profile_table">Wyczyść nadpisanie tabeli dla urządzenia</string>
+    <string name="braille_clear_remap_command">Wyczyść remap powiązania</string>
+    <string name="braille_command_back">Wywołaj system Wstecz.</string>
+    <string name="braille_command_control_next">Przejdź do następnej kontrolki w treści internetowej.</string>
+    <string name="braille_command_control_previous">Przejdź do poprzedniej kontrolki w treści internetowej.</string>
+    <string name="braille_command_delete_backward">Usuń przed kursorem.</string>
+    <string name="braille_command_delete_forward">Usuń za kursorem.</string>
+    <string name="braille_command_dots_template">Wprowadzanie kropek brajlowskich: %s</string>
+    <string name="braille_command_focus_next">Przenieś fokus na następny element.</string>
+    <string name="braille_command_focus_previous">Przenieś fokus na poprzedni element.</string>
+    <string name="braille_command_home">Przejdź do ekranu głównego.</string>
+    <string name="braille_command_insert_newline">Wstaw nową linię.</string>
+    <string name="braille_command_line_next">Przejdź do następnej linii lub przewiń do przodu.</string>
+    <string name="braille_command_line_previous">Przejdź do poprzedniej linii lub przewiń do tyłu.</string>
+    <string name="braille_command_list_next">Przejdź do następnej listy w treści internetowej.</string>
+    <string name="braille_command_list_previous">Przejdź do poprzedniej listy w treści internetowej.</string>
+    <string name="braille_command_nav_bottom">Przejdź do ostatniego elementu, na którym można ustawić fokus, lub do końca tekstu.</string>
+    <string name="braille_command_nav_top">Przejdź do pierwszego elementu, na którym można ustawić fokus, lub do początku tekstu.</string>
+    <string name="braille_command_notifications">Otwórz powiadomienia.</string>
+    <string name="braille_command_pan_left">Przesuń jedno okno brajlowskie w lewo.</string>
+    <string name="braille_command_pan_right">Przesuń jedno okno brajlowskie w prawo.</string>
+    <string name="braille_command_raw_key">Surowe zdarzenie klawisza brajlowskiego.</string>
+    <string name="braille_command_recents">Otwórz ostatnie aplikacje.</string>
+    <string name="braille_command_route_template">Przenieś kursor do komórki %d.</string>
+    <string name="braille_command_scroll_backward">Przewiń do tyłu w bieżącym kontenerze.</string>
+    <string name="braille_command_scroll_forward">Przewiń do przodu w bieżącym kontenerze.</string>
+    <string name="braille_command_section_next">Przejdź do następnej sekcji treści internetowych.</string>
+    <string name="braille_command_section_previous">Przejdź do poprzedniej sekcji treści internetowych.</string>
+    <string name="braille_command_status_template">Surowe wejście: %1$s
+Znaczenie: %2$s</string>
+    <string name="braille_command_toggle_grade">Przełącz stopień brajla.</string>
+    <string name="braille_command_unknown">Odebrano polecenie. Oczekiwanie na interpretację.</string>
+    <string name="braille_command_waiting">Nie odebrano jeszcze żadnego polecenia z monitora brajlowskiego.</string>
+    <string name="braille_content_waiting">Żadna treść ekranu nie została jeszcze wysłana na monitor brajlowski.</string>
+    <string name="braille_cycle_preferred_display">Zmień preferowany monitor</string>
+    <string name="braille_cycle_profile_table">Zmień nadpisanie tabeli urządzenia</string>
+    <string name="braille_cycle_remap_binding">Zmień źródłowe powiązanie</string>
+    <string name="braille_cycle_remap_command">Zmień docelowe polecenie remapu</string>
+    <string name="braille_log_diagnostics_copied">Raport diagnostyczny skopiowany do schowka.</string>
+    <string name="braille_log_diagnostics_exported">Raport diagnostyczny zapisany w %1$s.</string>
+    <string name="braille_log_diagnostics_export_failed">Nie można zapisać raportu diagnostycznego w %1$s.</string>
+    <string name="braille_log_empty">Brak jeszcze zdarzeń z monitora brajlowskiego.</string>
+    <string name="braille_log_no_cells">Podłączony monitor zgłosił zero komórek tekstowych.</string>
+    <string name="braille_log_no_client">Klient monitora brajlowskiego nie jest gotowy.</string>
+    <string name="braille_log_no_display">Brak podłączonego monitora brajlowskiego do przetestowania.</string>
+    <string name="braille_log_no_devices_for_profile">Żaden rozpoznany monitor brajlowski nie jest dostępny do zmiany profilu.</string>
+    <string name="braille_log_no_bindings_for_remap">Brak powiązań podłączonego monitora brajlowskiego do remapu.</string>
+    <string name="braille_log_no_usb_permission_needed">Żaden rozpoznany monitor brajlowski USB nie wymaga obecnie uprawnienia.</string>
+    <string name="braille_log_poll_requested">Poproszono o ponowne połączenie.</string>
+    <string name="braille_log_preferred_display_cleared">Preferowany monitor brajlowski został wyczyszczony.</string>
+    <string name="braille_log_preferred_display_set">Ustawiono preferowany monitor brajlowski: %1$s (%2$s).</string>
+    <string name="braille_log_profile_table_global">Profil urządzenia dla %1$s korzysta teraz z tabeli globalnej.</string>
+    <string name="braille_log_profile_table_set">Profil urządzenia dla %1$s korzysta teraz z tabeli %2$s.</string>
+    <string name="braille_log_remap_cleared">Remap powiązania dla %1$s na %2$s został wyczyszczony.</string>
+    <string name="braille_log_remap_pending">Remap powiązania dla %1$s na %3$s zapisano jako %2$s, ale obsługa w czasie działania nadal jest niejednoznaczna dla tego polecenia.</string>
+    <string name="braille_log_remap_set">Remap powiązania dla %1$s na %3$s ustawiono na %2$s.</string>
+    <string name="braille_log_state_changed">Stan połączenia zmieniony: %s</string>
+    <string name="braille_log_test_pattern_sent">Wysłano wzór testowy do komórek %d.</string>
+    <string name="braille_log_usb_permission_requested">Zażądano uprawnienia USB dla %d urządzeń.</string>
+    <string name="braille_no_bluetooth">To urządzenie nie udostępnia funkcji Bluetooth.</string>
+    <string name="braille_no_recognized_devices">Nie rozpoznano sparowanych monitorów brajlowskich.</string>
+    <string name="braille_open_accessibility_settings">Otwórz ustawienia dostępności</string>
+    <string name="braille_open_bluetooth_settings">Otwórz ustawienia Bluetooth</string>
+    <string name="braille_permission_missing">Aby sprawdzić sparowane monitory brajlowskie, wymagane jest uprawnienie Bluetooth.</string>
+    <string name="braille_profile_last_label">Ostatnie połączenie:</string>
+    <string name="braille_profile_marker_last">[ostatni]</string>
+    <string name="braille_profile_marker_preferred">[preferowane]</string>
+    <string name="braille_profile_no_device">żaden</string>
+    <string name="braille_profile_preferred_label">Preferowany monitor:</string>
+    <string name="braille_profile_table_global">tabela globalna</string>
+    <string name="braille_profile_table_label">Tabela urządzeń:</string>
+    <string name="braille_profile_table_short">[tabela %s]</string>
+    <string name="braille_profile_target_label">Aktywny cel profilu:</string>
+    <string name="braille_progress_idle">Bezczynny</string>
+    <string name="braille_properties_bindings">Powiązania klawiszy: %d</string>
+    <string name="braille_properties_cells">Komórki tekstowe: %1$d, komórki statusowe: %2$d</string>
+    <string name="braille_properties_more_bindings">Nie pokazano jeszcze %d dodatkowych powiązań.</string>
+    <string name="braille_reconnect">Ponów próbę połączenia z monitorem</string>
+    <string name="braille_refresh">Odśwież diagnostykę</string>
+    <string name="braille_remap_identity">polecenie oryginalne</string>
+    <string name="braille_remap_keys_label">Klucze:</string>
+    <string name="braille_remap_no_bindings">Nie są jeszcze dostępne żadne powiązania podłączonego monitora.</string>
+    <string name="braille_remap_pending_short">[w oczekiwaniu]</string>
+    <string name="braille_remap_runtime_ambiguous">tylko zapisane; BRLTTY udostępnia wiele powiązań dla tego samego polecenia</string>
+    <string name="braille_remap_runtime_effective">aktywny w czasie działania</string>
+    <string name="braille_remap_runtime_ready">gotowe; jednoznaczne mapowanie polecenia</string>
+    <string name="braille_remap_runtime_status_label">Stan działania:</string>
+    <string name="braille_remap_selected_binding">Wybrane powiązanie:</string>
+    <string name="braille_remap_signature_label">Sygnatura powiązania:</string>
+    <string name="braille_remap_target_label">Polecenie docelowe:</string>
+    <string name="braille_request_usb_permission">Poproś o uprawnienie USB</string>
+    <string name="braille_role_button">Przycisk</string>
+    <string name="braille_role_checked">Zaznaczone</string>
+    <string name="braille_role_collection">Kolekcja</string>
+    <string name="braille_role_control">Kontrolka</string>
+    <string name="braille_role_edit_text">Pole tekstowe</string>
+    <string name="braille_role_form_field">Pole formularza</string>
+    <string name="braille_role_heading">Nagłówek</string>
+    <string name="braille_role_landmark">Punkt orientacyjny</string>
+    <string name="braille_role_list">Lista</string>
+    <string name="braille_role_table">Tabela</string>
+    <string name="braille_role_unchecked">Niezaznaczone</string>
+    <string name="braille_role_webview">Treści internetowe</string>
+    <string name="braille_section_accessibility">Integracja dostępności</string>
+    <string name="braille_section_command_test">Test poleceń</string>
+    <string name="braille_section_content">Ostatnia treść wysłana na monitor</string>
+    <string name="braille_section_devices">Rozpoznane sparowane monitory</string>
+    <string name="braille_section_log">Dziennik zdarzeń na żywo</string>
+    <string name="braille_section_profiles">Profile urządzeń</string>
+    <string name="braille_section_properties">Właściwości podłączonego monitora</string>
+    <string name="braille_section_remap">Remap powiązań dla każdego urządzenia</string>
+    <string name="braille_section_status">Stan połączenia</string>
+    <string name="braille_send_test_pattern">Wyślij wzór testowy</string>
+    <string name="braille_service_action_not_handled">(akcja nieobsługiwana)</string>
+    <string name="braille_service_empty_field">Puste pole edytowalne</string>
+    <string name="braille_service_collection_template">%1$d wierszy, %2$d kolumn</string>
+    <string name="braille_service_error_template">Błąd: %s</string>
+    <string name="braille_service_hint_template">Wskazówka: %s</string>
+    <string name="braille_service_live_region_template">Aktywny region: %s</string>
+    <string name="braille_service_no_focus">Brak skupionego elementu.</string>
+    <string name="braille_service_pane_template">Panel: %s</string>
+    <string name="braille_service_password_field">Pole hasła</string>
+    <string name="braille_service_position_template">Wiersz %1$d, kolumna %2$d</string>
+    <string name="braille_service_status_idle">Usługa dostępności dla brajla jest bezczynna.</string>
+    <string name="braille_service_status_interrupted">Usługa dostępności dla brajla została przerwana.</string>
+    <string name="braille_service_status_starting">Uruchamianie usługi dostępności dla brajla.</string>
+    <string name="braille_service_status_stopped">Usługa dostępności dla brajla została zatrzymana.</string>
+    <string name="braille_service_status_template">Połączenie: %1$s
+Aktywny monitor: %2$s
+Tabela urządzeń: %3$s</string>
+    <string name="braille_service_status_translator_error">Usługa dostępności dla brajla nie mogła zainicjować tłumaczenia.</string>
+    <string name="braille_service_status_waiting_for_translation">Oczekiwanie na backend tłumaczenia brajla.</string>
+    <string name="braille_status_connected">Połączono</string>
+    <string name="braille_status_disconnected">Rozłączony</string>
+    <string name="braille_status_error">Błąd połączenia</string>
+    <string name="braille_state_disabled">wyłączone</string>
+    <string name="braille_state_reader_focusable">czytnik ekranu z możliwością skupienia</string>
+    <string name="braille_state_selected">wybrane</string>
+    <string name="braille_usb_profile_exact">dokładny profil USB</string>
+    <string name="braille_usb_permission_granted">Uprawnienie USB zostało przyznane</string>
+    <string name="braille_usb_permission_missing">Brak uprawnienia USB</string>
+    <string name="button_accessibility_settings">Otwórz ustawienia dostępności dla wyjścia na monitor brajlowski</string>
+    <string name="button_braille_displays">Diagnostyka monitorów brajlowskich</string>
+    <string name="button_check_updates">Sprawdź aktualizacje na GitHubie</string>
+    <string name="pref_braille_display_tools_summary">Otwórz diagnostykę monitora brajlowskiego, test poleceń i narzędzia profili urządzeń.</string>
+    <string name="pref_braille_display_tools_title">Narzędzia monitora brajlowskiego</string>
+    <string name="pref_accessibility_tools_summary">Otwórz ustawienia dostępności Androida, aby włączyć wyjście na monitor brajlowski.</string>
+    <string name="pref_accessibility_tools_title">Ustawienia dostępności dla wyjścia brajlowskiego</string>
+    <string name="pref_text_to_speech_engine_auto">Auto — użyj ustawień domyślnych systemu</string>
+    <string name="pref_quick_start_guide_title">Szybki przewodnik</string>
+    <string name="pref_quick_start_guide_summary">Otwórz dołączony przewodnik offline dotyczący konfiguracji, pisania i monitorów brajlowskich.</string>
+    <string name="pref_two_hand_calibration_summary">Umożliwia kalibrację klawiatury za pomocą dwóch punktów dotykowych.</string>
+    <string name="pref_two_hand_calibration_title">Kalibracja dwudotykowa</string>
+    <string name="selection_error">Nie można zaznaczyć tekstu</string>
+    <string name="trial_buy">Kup</string>
+    <string name="trial_expired_message">Ten okres próbny wygasł.</string>
+    <string name="trial_expired_title">Wersja próbna wygasła</string>
+    <string name="quick_start_title">Szybki przewodnik</string>
+    <string name="update_action_download">Pobierz APK</string>
+    <string name="update_action_open_release">Otwórz stronę wydania</string>
+    <string name="update_available_message">Zainstalowana wersja: %1$s
+Najnowsze wydanie: %2$s</string>
+    <string name="update_available_title">Dostępna jest aktualizacja</string>
+    <string name="update_check_error_message">Nie udało się teraz sprawdzić wydań GitHuba.</string>
+    <string name="update_check_error_title">Nie udało się sprawdzić aktualizacji</string>
+    <string name="update_check_in_progress">Sprawdzanie wydań GitHuba…</string>
+    <string name="update_check_invalid_repo">Link projektu nie wskazuje na prawidłowe repozytorium GitHub.</string>
+    <string name="update_download_description">Pobieranie wydania z GitHuba</string>
+    <string name="update_download_fallback">Nie udało się rozpocząć bezpośredniego pobierania. Otwieram stronę wydania.</string>
+    <string name="update_download_started">Rozpoczęto pobieranie aktualizacji. Po zakończeniu otwórz powiadomienie pobierania.</string>
+    <string name="update_download_title">Soft Braille Keyboard %s</string>
+    <string name="update_no_apk_message">Znaleziono nowsze wydanie na GitHubie, ale nie ma do niego dołączonego pliku APK.
+
+Zainstalowana wersja: %1$s
+Najnowsze wydanie: %2$s</string>
+    <string name="update_no_release_message">Nie znaleziono jeszcze żadnego opublikowanego wydania dla tego repozytorium GitHub.</string>
+    <string name="update_no_release_title">Brak opublikowanego wydania</string>
+    <string name="update_release_notes_label">Opis wydania:</string>
+    <string name="update_unknown_version">nieznana</string>
+    <string name="update_up_to_date_message">Zainstalowana wersja %1$s jest aktualna.
+Najnowsze wydanie: %2$s</string>
+    <string name="update_up_to_date_title">Aplikacja jest aktualna</string>
 </resources>

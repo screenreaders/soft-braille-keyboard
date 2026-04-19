@@ -1,0 +1,358 @@
+# liblouis: Portuguese Grade 1 Braille Table
+#
+#  Copyright (C) 2004-2008 ViewPlus Technologies, Inc. www.viewplus.com
+#  Copyright (C) 2004-2006 JJB Software, Inc. www.jjb-software.com
+#  Copyright (C) 2012 Mesar Hameed <mesar.hameed@gmail.com>
+#
+#  This file is part of liblouis.
+#
+#  liblouis is free software: you can redistribute it and/or modify it
+#  under the terms of the GNU Lesser General Public License as
+#  published by the Free Software Foundation, either version 2.1 of the
+#  License, or (at your option) any later version.
+#
+#  liblouis is distributed in the hope that it will be useful, but
+#  WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+#  Lesser General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public
+#  License along with liblouis. If not, see
+#  <http://www.gnu.org/licenses/>.
+
+# Created by Leon Ungier <Leon.Ungier@ViewPlus.com>.
+
+locale Portugal
+
+include text_nabcc.dis
+
+#--------------------- All chars definitions ------------------------------
+
+space \t 0 tab            #  9
+space \s 0 blank					# 32
+
+punctuation ! 235				exclamation mark	33
+punctuation " 236				double quote			34
+sign # 3456-3456					number sign				35
+sign $ 56								dollar						36						x0024
+sign % 456-356					percent						37
+sign & 3456-12346						ampersand					38
+punctuation ' 3456-3					apostrophe				39
+punctuation ( 126-3			left parenthesis  40
+punctuation ) 6-345			right parenthesis	41
+punctuation * 35				asterisk					42
+math + 3456-235							plus							43
+punctuation , 2					coma							44
+punctuation - 36				hyphen-minus			45
+punctuation . 3					point							46
+math / 6-2							solidus						47
+
+include litdigits6Dots.uti
+
+punctuation : 25			colon					58		x003A
+punctuation ;	23			semicolon			59		x003B
+math < 3456-246													60		x003C
+math = 2356						equal sign		61		x003D
+math > 3456-135													62		x003E
+punctuation ? 26										63		x003F
+sign @ 156						commercial at	64		x0040
+
+include latinLetterDef6Dots.uti
+
+punctuation [ 12356-3		left square bracket			x005B
+sign \\ 5-3							reverse solidus					x005C
+punctuation ] 6-23456		right square bracket		x005D
+sign ^ 4							circumflex accent				x005E
+sign _ 46-36						low line								x005F
+sign ` 26								grave accent						x0060
+
+# a - z								# 97 - 122							x0061 - x007A
+
+punctuation { 5-123		left curly bracket			x007B
+sign | 456						vertical line						x007C
+punctuation } 456-2		right curly bracket			x007D
+sign ~ 5						tilde										x007E
+sign \x0080 15-136-1235-135										x0080
+
+space \X00A0 0				# no-break space													x00A0
+sign ¢ 3456-4-14						cent sign																	x00A2
+sign £ 3456-4-123					pound sign																x00A3
+sign ¤ 3456-45-15					currency sign															x00A4
+sign ¥ 3456-45-13456				yen	sign																	x00A5
+sign § 3456-234-234				paragraph	sign														x00A7
+sign © 6-14-135-1234-13456-1235-24-1245-125-2345		copyright		x00A9
+sign \x00AA 3-1					feminine ordinal indicator
+#begword « 236-3		left-pointing double quotation mark			x00AB
+sign ° 356						degree sign																x00B0
+sign ² 16-3456-12				superscript 2 sign												x00B2
+sign ³ 16-3456-14				superscript 3 sign												x00B3
+# sign \x00B4 35			acute accent
+sign \x00B4 35					acute accent
+# sign \x00B5 4-134		# 181				µ micro sign									x00B5
+sign \x00B6 3456-346				#						¶ pilcrow sign								x00B6
+sign ¹ 16-3456-1					superscript 1 sign												x00B9
+sign \x00BA 3-135				masculine ordinal indicator
+punctuation » 6-356		right-pointing double quotation mark		x00BB
+sign ¼ 3456-2-145			vulgar fraction one quarter								x00BC
+sign ½ 3456-2-12			vulgar fraction one half									x00BD
+sign ¾ 3456-25-145		vulgar fraction 3 quarters				x00BE
+
+uplow \x00C0\x00E0 1246			a with grave						x00C0 / 00E0
+uplow Áá 12356							A with acute						x00C1 / 00E1
+uplow Ââ 16									a with circumflex				x00C2 / 00E2
+uplow \x00C3\x00E3 345			a with tilde						x00C3 / 00E3
+uplow Åå 16									A with ring above				x00C5 / 00C4
+uplow Ää 345								A with diaeresis				x00C4 / 00E4
+uplow Çç 12346							letter c with cedilla		x00C7 / 00E7
+uplow \x00C8\x00E8 2346		e with grave è					x00C8 / 00E8
+uplow \x00C9\x00E9 123456		e with acute é					x00C9 / 00E9
+uplow \x00C9\x00E9 12345-6		e with acute é					x00C9 / 00E9
+uplow \x00CA\x00EA 126			e with circumflex				x00CA /	00EA
+uplow \x00CC\x00EC 146				i with grave						x00CC	/ 00EC
+uplow \x00CD\x00ED 34				i with acute						x00CD	/ 00ED
+uplow \x00D2\x00F2 3456-2456			o with grave ò					x00D2 / 00F2
+uplow \x00D3\x00F3 346			o with acute ó					x00D3 / 00F3
+uplow \x00D4\x00F4 1456			o with circumflex ô			x00D4 / 00F4
+uplow \x00D5\x00F5 246			o with tilde						x00D5 / 00F5
+uplow Öö 246								O with diaeresis				x00D6 / 00F6
+uplow \x00D9\x00F9 3456-156			u with grave					x00D9 / 00F9
+uplow \X00DA\x00FA 23456		u with acute						x00DA / 00FA
+uplow \x00DC\x00FC 1256			u with diaeresis				x00FC
+
+uplow \x00D1\x00F1 12456			n with tilde
+
+
+math ÷ 256			division sign															x00F7
+math × 3456-236			multiplication sign												x00D7
+
+# this is for compiler
+# uplow \x0104\x0105 6			# a with ogonek
+# uplow \x0118\x0119 3456		# the letter e with ogonek
+
+
+punctuation	\x2010 36						# 8208			hyphen
+punctuation	\x2011 36						# 8209			non-breaking hyphen
+punctuation	\x2012 36												figure dash
+math	\x2013 36						# 8211			en dash (smart minus sign)
+punctuation	\x2013 36-36				# 8211			en dash (smart minus sign)
+punctuation	\x2014 36-36										em dash
+sign \x2015 4-14														horizontal bar
+punctuation	\x2018 56-236						# 8216			smart single left quotation mark
+punctuation	\x2019 356-23						# 8217			smart single right quotation mark
+sign \x20AC 3456-4-15														Euro sign				x0080
+punctuation	\x201C 56-236					# 8220			smart opening double quote
+punctuation	\x201D 356-23					# 8221			smart closing double quote
+punctuation	\x201E 56-236					# 8222			smart double low quotation mark
+punctuation	\x201F 356-23					# 8223			double high reverse quotation mark
+
+sign \x2022 246-135											bullet
+punctuation \x2026 35-26-35	# 8230	smart ellipsis
+sign \x2030 456-356-356									per mile sign
+sign \x2190	246-25											leftwards arrow
+sign \x2192 25-135											rightwards arrow
+sign \x2194 246-25-135									left right arrow
+sign \x2260 45-2356											not equal to
+#-------------- end defintions ------------------------------------------
+
+
+capsletter 46
+# capsword 46-46-136			# uncomment if you don't want capitalization
+begcapsword 46-46
+
+emphclass italic
+emphclass underline
+emphclass bold
+begemph italic 35
+begemph bold 35
+begemph underline 35
+endemph italic 35
+endemph bold 35
+endemph underline 35
+begcomp 5-2
+endcomp 5-2
+
+begnum ( 126
+endnum ) 345
+begnum [ 12356
+endnum ] 23456
+endnum \x00AA 1
+endnum \x00BA 135
+numsign 3456
+midnum , 2
+midnum . 3
+midnum + 235-3456
+midnum - 36-3456
+midnum / 6-2-3456
+midnum : 25-3456
+
+# Letters a-j after numbers:
+endnum a 5-1
+endnum b 5-12
+endnum c 5-14
+endnum d 5-145
+endnum e 5-15
+endnum f 5-124
+endnum g 5-1245
+endnum h 5-125
+endnum i 5-24
+endnum j 5-245
+
+endword á. 12356-3
+endword ê. 126-3
+
+# Greek alphabet:
+uppercase \x0391 45-1 ALPHA
+uppercase \x0392 45-12 BETA
+uppercase \x0393 45-1245 GAMMA
+uppercase \x0394 45-145 DELTA
+uppercase \x0395 45-15 EPSILON
+uppercase \x0396 45-1356 ZETA
+uppercase \x0397 45-126 ETA
+uppercase \x0398 45-1456 THETA
+uppercase \x0399 45-24 IOTA
+uppercase \x039A 45-13 KAPPA
+uppercase \x039B 45-123 LAMBDA
+uppercase \x039C 45-134 MU
+uppercase \x039D 45-1345 NU
+uppercase \x039E 45-1346 XI
+uppercase \x039F 45-135 OMICRON
+uppercase \x03A0 45-1234 PI
+uppercase \x03A1 45-1235 RHO
+uppercase \x03A3 45-234 SIGMA
+uppercase \x03A4 45-136 TAU
+uppercase \x03A5 45-136 UPSILON
+uppercase \x03A6 45-124 PHI
+uppercase \x03A7 45-12346 CHI
+uppercase \x03A8 45-1246 PSI
+uppercase \x03A9 45-2456 OMEGA
+lowercase \x03B1 4-1 ALPHA
+lowercase \x03B2 4-12 BETA
+lowercase \x03B3 4-1245 GAMMA
+lowercase \x03B4 4-145 DELTA
+lowercase \x03B5 4-15 EPSILON
+lowercase \x03B6 4-1356 ZETA
+lowercase \x03B7 4-156 ETA
+lowercase \x03B8 4-1456 THETA
+lowercase \x03B9 4-24 IOTA
+lowercase \x03BA 4-13 KAPPA
+lowercase \x03BB 4-123 LAMBDA
+lowercase \x03BC 4-134 MU
+lowercase \x03BD 4-1345 NU
+lowercase \x03BE 4-1346 XI
+lowercase \x03BF 4-135 OMICRON
+lowercase \x03C0 4-1234 PI
+lowercase \x03C1 4-1235 RHO
+lowercase \x03C3 4-234 SIGMA
+lowercase \x03C4 4-2345 TAU
+lowercase \x03C5 4-136 UPSILON
+lowercase \x03C6 4-124 PHI
+lowercase \x03C7 4-12346 CHI
+lowercase \x03C8 4-13456 PSI
+lowercase \x03C9 4-2456 OMEGA
+
+# Hebrew Alphabet:
+letter	\x05d0	456-1	# HEBREW LETTER ALEF
+letter	\x05d1	456-12	# HEBREW LETTER BET
+letter	\x05d2	456-1245	# HEBREW LETTER GIMEL
+letter	\x05d3	456-145	# HEBREW LETTER DALET
+letter	\x05d4	456-125	# HEBREW LETTER HE
+letter	\x05d5	456-2456	# HEBREW LETTER VAV
+letter	\x05d6	456-1356	# HEBREW LETTER ZAYIN
+letter	\x05d7	456-1346	# HEBREW LETTER HET
+letter	\x05d8	456-2345	# HEBREW LETTER TET
+letter	\x05d9	456-245	# HEBREW LETTER YOD
+# letter	\x05da	456-168	# HEBREW LETTER FINAL KAF
+letter	\x05db	456-13	# HEBREW LETTER KAF
+letter	\x05dc	456-123	# HEBREW LETTER LAMED
+# letter	\x05dd	456-1348	# HEBREW LETTER FINAL MEM
+letter	\x05de	456-134	# HEBREW LETTER MEM
+# letter	\x05df	456-13458	# HEBREW LETTER FINAL NUN
+letter	\x05e0	456-1345	# HEBREW LETTER NUN
+letter	\x05e1	456-234	# HEBREW LETTER SAMEKH
+letter	\x05e2	456-1246	# HEBREW LETTER AYIN
+# letter	\x05e3	456-1248	# HEBREW LETTER FINAL PE
+letter	\x05e4	456-1234	# HEBREW LETTER PE
+# letter	\x05e5	456-23468	# HEBREW LETTER FINAL TSADI
+letter	\x05e6	456-2346	# HEBREW LETTER TSADI
+letter	\x05e7	456-12345	# HEBREW LETTER QOF
+letter	\x05e8	456-1235	# HEBREW LETTER RESH
+letter	\x05e9	456-146	# HEBREW LETTER SHIN
+letter	\x05ea	456-1456	# HEBREW LETTER TAV
+
+# Cylliric Alphabet
+uppercase \x0401 56-16
+uppercase \x0410 56-1
+uppercase \x0411 56-12
+uppercase \x0412 56-2456
+uppercase \x0413 56-1245
+uppercase \x0414 56-145
+uppercase \x0415 56-15
+uppercase \x0416 56-245
+uppercase \x0417 56-1356
+uppercase \x0418 56-24
+uppercase \x0419 56-12346
+uppercase \x041A 56-13
+uppercase \x041B 56-123
+uppercase \x041C 56-134
+uppercase \x041D 56-1345
+uppercase \x041E 56-135
+uppercase \x041F 56-1234
+uppercase \x0420 56-1235
+uppercase \x0421 56-234
+uppercase \x0422 56-2345
+uppercase \x0423 56-136
+uppercase \x0424 56-124
+uppercase \x0425 56-125
+uppercase \x0426 56-14
+uppercase \x0427 56-12345
+uppercase \x0428 56-156
+uppercase \x0429 56-1346
+uppercase \x042A 56-12356
+uppercase \x042B 56-2346
+uppercase \x042C 56-23456
+uppercase \x042D 56-246
+uppercase \x042E 56-1256
+uppercase \x042F 56-1246
+lowercase \x0430 6-16
+lowercase \x0431 6-1
+lowercase \x0432 6-12
+lowercase \x0433 6-2456
+lowercase \x0434 6-1245
+lowercase \x0435 6-145
+lowercase \x0436 6-15
+lowercase \x0437 6-245
+lowercase \x0438 6-1356
+lowercase \x0439 6-24
+lowercase \x043A 6-12346
+lowercase \x043B 6-13
+lowercase \x043C 6-123
+lowercase \x043D 6-134
+lowercase \x043E 6-1345
+lowercase \x043F 6-135
+lowercase \x0440 6-1234
+lowercase \x0441 6-1235
+lowercase \x0442 6-234
+lowercase \x0443 6-2345
+lowercase \x0444 6-136
+lowercase \x0445 6-124
+lowercase \x0446 6-125
+lowercase \x0447 6-14
+lowercase \x0448 6-12345
+lowercase \x0449 6-156
+lowercase \x044A 6-1346
+lowercase \x044B 6-12356
+lowercase \x044C 6-2346
+lowercase \x044D 6-23456
+lowercase \x044E 6-246
+lowercase \x044F 6-1256
+lowercase \x0451 6-1246
+
+
+
+# repeated ... 3-3-3		points de suite
+# repeated --- 36-36-36
+# repeated ___ 46-36
+
+# always \s--\s 36-36	tiret
+
+

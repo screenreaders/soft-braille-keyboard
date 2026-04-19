@@ -22,6 +22,7 @@ import java.util.List;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Build;
+import android.text.TextUtils;
 import android.view.textservice.SentenceSuggestionsInfo;
 import android.view.textservice.SpellCheckerSession;
 import android.view.textservice.SpellCheckerSession.SpellCheckerSessionListener;
@@ -60,7 +61,10 @@ public class SpellChecker {
         @Override
         @SuppressLint("NewApi")
         public void onGetSentenceSuggestions(SentenceSuggestionsInfo[] arg0) {
-            if (arg0.length == 1) {
+            if (listener == null) {
+                return;
+            }
+            if (arg0 != null && arg0.length == 1) {
                 SentenceSuggestionsInfo ssi = arg0[0];
                 Suggestion results = null;
                 if (ssi != null) {
@@ -89,8 +93,7 @@ public class SpellChecker {
                     doSpellCheck();
                 }
             } else {
-                throw new IllegalArgumentException(
-                        "Only supports one texinfo - got : " + arg0.length);
+                listener.suggestionsReady(null);
             }
         }
     };
@@ -106,14 +109,23 @@ public class SpellChecker {
     public SpellChecker(Context context) {
         final TextServicesManager tsm = (TextServicesManager) context
                 .getSystemService(Context.TEXT_SERVICES_MANAGER_SERVICE);
-        spellChecker = tsm.newSpellCheckerSession(null, null,
-                spellCheckerListener, true);
+        SpellCheckerSession session = null;
+        if (tsm != null) {
+            try {
+                session = tsm.newSpellCheckerSession(null, null,
+                        spellCheckerListener, true);
+            } catch (RuntimeException e) {
+                session = null;
+            }
+        }
+        spellChecker = session;
     }
 
     public boolean checkSpelling(SpellingSuggestionsReadyListener listener,
             String text, int cursor, Direction direction) {
-        if (isSpellCheckAvailable() && text.length() > 0) {
-            this.cursor = cursor;
+        if (isSpellCheckAvailable() && !TextUtils.isEmpty(text)
+                && listener != null && direction != null) {
+            this.cursor = Math.max(0, Math.min(cursor, text.length()));
             this.direction = direction;
             this.text = text;
             this.listener = listener;
@@ -127,14 +139,19 @@ public class SpellChecker {
 
     @SuppressLint("NewApi")
     private void doSpellCheck() {
+        if (spellChecker == null || text == null) {
+            return;
+        }
         spellChecker.cancel();
+        int safeStart = Math.max(0, Math.min(startOffset, text.length()));
+        int safeEnd = Math.max(safeStart, Math.min(endOffset, text.length()));
 
         // Append a space (" ") to the input string to the spelling checker.
         // This resolves some edge cases like a word followed by a period
         // without a following space.
         spellChecker.getSentenceSuggestions(
-                new TextInfo[] { new TextInfo(text.substring(startOffset,
-                        endOffset) + " ") }, MAX_SUGGESTIONS);
+                new TextInfo[] { new TextInfo(text.substring(safeStart, safeEnd)
+                        + " ") }, MAX_SUGGESTIONS);
     }
 
     public void destroy() {
@@ -150,6 +167,12 @@ public class SpellChecker {
 
     private Suggestion compileSuggestions(SuggestionsInfo suggestionInfo,
             int length, int offset) {
+        if (suggestionInfo == null) {
+            return null;
+        }
+        if (offset < 0 || length <= 0 || (offset + length) > text.length()) {
+            return null;
+        }
         if (suggestionInfo.getSuggestionsAttributes() == SuggestionsInfo.RESULT_ATTR_IN_THE_DICTIONARY
                 || !isPotentialWord(text.substring(offset, offset + length))) {
             return null;
@@ -168,18 +191,20 @@ public class SpellChecker {
             int length, int offset) {
         switch (direction) {
         case UNDER_CURSOR:
-            return cursor >= offset && cursor < (length + offset);
+            return cursor >= offset && cursor <= (length + offset);
         case LEFT:
             return (length + offset) <= cursor;
         case RIGHT:
             return offset > cursor;
         default:
-            throw new IllegalArgumentException(
-                    "No implementation for direction = " + direction);
+            return false;
         }
     }
 
     private static boolean isPotentialWord(String word) {
+        if (TextUtils.isEmpty(word)) {
+            return false;
+        }
         for (int i = 0; i < word.length(); i++) {
             if (Character.isLetter(word.charAt(i))) {
                 return true;
@@ -219,8 +244,7 @@ public class SpellChecker {
             endOffset = tempOffset;
             break;
         default:
-            throw new IllegalArgumentException("No implementation for: "
-                    + direction);
+            return false;
         }
 
         if (expanded) {
@@ -230,14 +254,15 @@ public class SpellChecker {
     }
 
     private void normaliseOffsets() {
-        for (int i = startOffset; i >= 0; i--) {
+        int safeStart = Math.min(startOffset, text.length() - 1);
+        for (int i = safeStart; i >= 0; i--) {
             startOffset = i;
             if (Character.isWhitespace(text.charAt(i))) {
                 break;
             }
         }
 
-        for (int i = endOffset; i < text.length(); i++) {
+        for (int i = Math.max(0, endOffset); i < text.length(); i++) {
             endOffset = i;
             if (Character.isWhitespace(text.charAt(i))) {
                 break;
@@ -257,24 +282,36 @@ public class SpellChecker {
         }
 
         public String next() {
+            if (results.isEmpty()) {
+                return "";
+            }
             current = ++current >= results.size() ? 0 : current;
             return results.get(current);
         }
 
         public String prev() {
+            if (results.isEmpty()) {
+                return "";
+            }
             current = --current < 0 ? results.size() - 1 : current;
             return results.get(current);
         }
 
         public String getCurrent() {
+            if (results.isEmpty()) {
+                return "";
+            }
             return results.get(current);
         }
 
         public void setLength() {
-            length = results.get(current).length();
+            length = getCurrent().length();
         }
 
         public int getLength() {
+            if (results.isEmpty()) {
+                return 0;
+            }
             return length == -1 ? results.get(0).length() : length;
         }
 
