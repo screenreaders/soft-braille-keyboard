@@ -172,7 +172,7 @@ public class Options {
         boolean pref = getBooleanPreference(context, resource, defaultValue);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putBoolean(context.getString(resource), !pref);
-        editor.commit();
+        editor.apply();
         return !pref;
     }
 
@@ -182,7 +182,7 @@ public class Options {
                 .getDefaultSharedPreferences(context);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString(context.getString(resource), value);
-        editor.commit();
+        editor.apply();
     }
 
     public static Set<String> getStringSetPreference(Context context,
@@ -205,6 +205,6 @@ public class Options {
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putStringSet(context.getString(resource),
                 value == null ? null : new HashSet<String>(value));
-        editor.commit();
+        editor.apply();
     }
 }

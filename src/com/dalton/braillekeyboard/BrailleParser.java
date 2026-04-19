@@ -298,7 +298,7 @@ public class BrailleParser {
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString(context.getString(R.string.pref_braille_type_key),
                 String.valueOf(brailleType.prefValue()));
-        editor.commit();
+        editor.apply();
         setTranslator(context);
         return brailleType;
     }
@@ -531,7 +531,7 @@ public class BrailleParser {
                         .getString(R.string.pref_braille_literary_table_key),
                         id);
             }
-            editor.commit();
+            editor.apply();
             setTranslator(context);
         }
     }
