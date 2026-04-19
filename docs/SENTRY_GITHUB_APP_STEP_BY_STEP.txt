@@ -1,0 +1,274 @@
+Soft Braille Keyboard - Sentry + GitHub + aplikacja
+Instrukcja krok po kroku
+
+Repo projektu:
+https://github.com/screenreaders/soft-braille-keyboard
+
+Lokalne pliki projektu powiązane z integracją:
+- docs/SENTRY_GITHUB_SETUP.md
+- scripts/create_sentry_project.sh
+- app/build.gradle
+- app/src/main/AndroidManifest.xml
+
+==================================================
+1. Załóż konto lub zaloguj się do Sentry
+==================================================
+
+Link:
+https://sentry.io/signup/
+
+Po zalogowaniu przejdź dalej.
+
+==================================================
+2. Utwórz organizację w Sentry
+==================================================
+
+Link:
+https://sentry.io/organizations/new/
+
+Co zrobić:
+1. Podaj nazwę organizacji, np. Screenreaders.
+2. Zapisz.
+3. Po utworzeniu sprawdź adres URL organizacji.
+
+Przykład:
+https://sentry.io/organizations/screenreaders/projects/
+
+Wtedy:
+SENTRY_ORG_SLUG=screenreaders
+
+Dokumentacja:
+https://docs.sentry.io/product/accounts/organizations/
+
+==================================================
+3. Utwórz team w organizacji
+==================================================
+
+Najpierw otwórz ustawienia organizacji:
+https://sentry.io/settings/
+
+Potem w lewym menu wybierz Teams.
+
+Możesz też użyć dokumentacji API:
+https://docs.sentry.io/api/teams/create-a-new-team/
+
+Co zrobić w UI:
+1. Settings
+2. Teams
+3. Create Team
+4. Nazwij team, np. mobile
+5. Zapisz
+
+Przykład URL teamu:
+https://sentry.io/settings/screenreaders/teams/mobile/
+
+Wtedy:
+SENTRY_TEAM_SLUG=mobile
+
+Dokumentacja produktu:
+https://docs.sentry.io/product/teams/
+
+==================================================
+4. Utwórz token API do automatycznego tworzenia projektu
+==================================================
+
+Instrukcja oficjalna:
+https://docs.sentry.io/api/guides/create-auth-token/
+
+Autoryzacja API:
+https://docs.sentry.io/hosted/api/auth/
+
+Scope'y:
+https://docs.sentry.io/api/permissions/
+
+Co zrobić:
+1. Otwórz ustawienia organizacji:
+   https://sentry.io/settings/
+2. Wejdź w Custom Integrations.
+3. Kliknij Create New Integration.
+4. Wybierz Internal Integration.
+5. Nadaj nazwę, np. soft-braille-keyboard-api.
+6. Zaznacz co najmniej scope'y:
+   - org:read
+   - org:write
+   - project:write
+   - team:read
+   Jeśli chcesz też tworzyć team przez API, dodaj:
+   - team:write
+7. Zapisz.
+8. Skopiuj token.
+
+To będzie:
+SENTRY_AUTH_TOKEN=...
+
+==================================================
+5. Utwórz projekt Sentry dla aplikacji
+==================================================
+
+Masz dwie opcje.
+
+Opcja A - ręcznie w UI:
+1. Otwórz organizację:
+   https://sentry.io/organizations/screenreaders/projects/new/
+   Uwaga: jeśli Twój org slug jest inny niż screenreaders, podmień go w URL.
+2. Wybierz platformę Android.
+3. Nazwij projekt:
+   Soft Braille Keyboard
+4. Ustaw slug:
+   soft-braille-keyboard
+5. Zapisz.
+
+Dokumentacja API tworzenia projektu:
+https://docs.sentry.io/api/projects/create-a-new-project/
+
+Opcja B - skrypt z repo:
+1. W katalogu repo uruchom:
+
+   export SENTRY_AUTH_TOKEN='TU_WKLEJ_TOKEN'
+   export SENTRY_ORG_SLUG='TU_WKLEJ_ORG_SLUG'
+   export SENTRY_TEAM_SLUG='TU_WKLEJ_TEAM_SLUG'
+   ./scripts/create_sentry_project.sh soft-braille-keyboard "Soft Braille Keyboard"
+
+2. Skrypt utworzy projekt, jeśli jeszcze nie istnieje.
+3. Skrypt wypisze publiczny DSN.
+
+Skrypt:
+scripts/create_sentry_project.sh
+
+==================================================
+6. Pobierz DSN projektu
+==================================================
+
+Jeśli tworzyłeś projekt skryptem, DSN pojawi się w wyniku działania.
+
+Jeśli tworzyłeś projekt ręcznie:
+1. Otwórz projekt w Sentry.
+2. Wejdź w Settings projektu.
+3. Wejdź w Client Keys (DSN).
+4. Skopiuj Public DSN.
+
+Dokumentacja:
+https://docs.sentry.io/product/sentry-basics/dsn-explainer/
+
+==================================================
+7. Podepnij DSN do aplikacji
+==================================================
+
+Najprościej lokalnie:
+1. W terminalu:
+
+   export SENTRY_DSN='TU_WKLEJ_PUBLIC_DSN'
+
+2. Zbuduj aplikację:
+
+   ./gradlew :app:assembleDebug
+
+Alternatywnie wpisz do:
+~/.gradle/gradle.properties
+
+zawartość:
+
+   sentryDsn=TU_WKLEJ_PUBLIC_DSN
+
+Po tym aplikacja ma już aktywne:
+- automatyczne raportowanie crashy do Sentry
+- ręczny ekran "Support report"
+- fallback do GitHub issue, jeśli Sentry nie jest skonfigurowane
+
+Dokumentacja Android:
+https://docs.sentry.io/platforms/android/
+
+==================================================
+8. Połącz Sentry z GitHubem
+==================================================
+
+Link do dokumentacji integracji GitHub:
+https://docs.sentry.io/organization/integrations/source-code-mgmt/github/
+
+Co zrobić:
+1. Otwórz ustawienia organizacji w Sentry:
+   https://sentry.io/settings/
+2. Wejdź w Integrations.
+3. Wybierz GitHub.
+4. Połącz konto GitHub.
+5. Nadaj dostęp do repo:
+   screenreaders/soft-braille-keyboard
+6. Zakończ konfigurację.
+
+Po tym Sentry będzie znał repo GitHub.
+
+==================================================
+9. Włącz automatyczne tworzenie issue z crashy i raportów
+==================================================
+
+Dokumentacja alertów:
+https://docs.sentry.io/product/issues/issue-alerts/
+
+Dokumentacja ogólna alertów:
+https://docs.sentry.io/product/alerts/
+
+Co zrobić:
+1. Otwórz projekt Soft Braille Keyboard w Sentry.
+2. Wejdź w Alerts.
+3. Utwórz regułę dla crashy:
+   - warunek: nowy issue / event typu error
+   - akcja: utwórz GitHub issue
+4. Utwórz drugą regułę dla raportów ręcznych z aplikacji:
+   - filtr po tagu:
+     report_source=manual_feedback
+   - akcja: utwórz GitHub issue
+
+W raportach z aplikacji są już używane tagi:
+- application=soft-braille-keyboard
+- app_version=<wersja>
+- report_source=manual_feedback
+- has_diagnostics=true|false
+
+==================================================
+10. Gdzie w aplikacji to działa
+==================================================
+
+Po zbudowaniu z DSN:
+1. Otwórz aplikację.
+2. Na ekranie głównym użyj:
+   "Send support report"
+3. Albo wejdź do:
+   "Braille display diagnostics"
+4. Tam też jest przycisk wysłania raportu.
+
+Zachowanie:
+- jeśli Sentry działa, raport leci do Sentry
+- jeśli Sentry nie jest skonfigurowane, aplikacja:
+  - kopiuje diagnostykę do schowka
+  - otwiera szkic issue na GitHubie
+
+==================================================
+11. Dane, które potem możesz wkleić mnie
+==================================================
+
+Jeśli chcesz, żebym utworzył projekt lub zweryfikował konfigurację,
+potrzebuję od Ciebie:
+
+1. SENTRY_AUTH_TOKEN
+2. SENTRY_ORG_SLUG
+3. SENTRY_TEAM_SLUG
+
+Wtedy mogę uruchomić:
+
+export SENTRY_AUTH_TOKEN='...'
+export SENTRY_ORG_SLUG='...'
+export SENTRY_TEAM_SLUG='...'
+./scripts/create_sentry_project.sh soft-braille-keyboard "Soft Braille Keyboard"
+
+==================================================
+12. Najkrótsza ścieżka
+==================================================
+
+1. https://sentry.io/signup/
+2. https://sentry.io/organizations/new/
+3. https://sentry.io/settings/
+4. https://docs.sentry.io/api/guides/create-auth-token/
+5. ./scripts/create_sentry_project.sh soft-braille-keyboard "Soft Braille Keyboard"
+6. https://docs.sentry.io/organization/integrations/source-code-mgmt/github/
+7. https://docs.sentry.io/product/issues/issue-alerts/
+
