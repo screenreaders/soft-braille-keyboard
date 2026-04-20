@@ -68,6 +68,7 @@ public class BrailleView extends View {
     private static final long MEDIUM_VIBRATION = 125;
     private static final byte NO_DOTS = 0;
     private static final long LONG_HOLD_DELAY = 800;
+    private static final long TALKBACK_HINT_DEBOUNCE_MS = 2000;
     private static final long QUICK_VIBRATION = 25;
 
     private final AccessibilityManager accessibilityManager;
@@ -122,6 +123,7 @@ public class BrailleView extends View {
             if (listener != null) {
                 listener.updateFullscreenMode();
             }
+            updateSystemGestureExclusion();
         }
 
         @Override
@@ -149,6 +151,7 @@ public class BrailleView extends View {
     private boolean shrinkKeyboard;
     private Speech speech;
     private Boolean privacyEnabled;
+    private long lastTalkBackHintAt;
 
     public BrailleView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -244,8 +247,7 @@ public class BrailleView extends View {
                                 R.string.pref_show_circles_default)))) {
             // We should show a visual representation of the view according to
             // user preference.
-            if (accessibilityManager != null
-                    && accessibilityManager.isTouchExplorationEnabled()) {
+            if (isTalkBackTouchModeActive()) {
                 setContentDescription(getContext().getString(
                         BrailleImePassthroughBridge.isPassthroughActive()
                                 ? R.string.braille_keyboard_talkback_ready
@@ -302,21 +304,28 @@ public class BrailleView extends View {
     }
 
     @Override
+    protected void onVisibilityChanged(View changedView, int visibility) {
+        super.onVisibilityChanged(changedView, visibility);
+        updateSystemGestureExclusion();
+    }
+
+    @Override
+    protected void onWindowVisibilityChanged(int visibility) {
+        super.onWindowVisibilityChanged(visibility);
+        updateSystemGestureExclusion();
+    }
+
+    @Override
     public boolean onHoverEvent(MotionEvent event) {
-        if (speech != null && accessibilityManager != null
-                && accessibilityManager.isTouchExplorationEnabled()) {
+        if (speech != null && isTalkBackTouchModeActive()) {
             if (shrinkKeyboard) {
-                speech.speak(
-                        getContext(),
-                        getContext().getString(
-                                R.string.expand_keyboard_talkback),
-                        Speech.QUEUE_FLUSH);
+                announceTalkBackHint(getContext().getString(
+                        R.string.expand_keyboard_talkback));
             } else if (!BrailleImePassthroughBridge.isPassthroughActive()) {
-                speech.speak(getContext(),
-                        getContext().getString(
-                                R.string.braille_keyboard_talkback_enable_service),
-                        Speech.QUEUE_FLUSH);
+                announceTalkBackHint(getContext().getString(
+                        R.string.braille_keyboard_talkback_enable_service));
             }
+            return true;
         }
         return super.onHoverEvent(event);
     }
@@ -325,6 +334,13 @@ public class BrailleView extends View {
     public boolean onTouchEvent(MotionEvent motionEvent) {
         super.onTouchEvent(motionEvent);
         if (displayParams == null || actionHandler == null) {
+            return true;
+        }
+        if (isTalkBackTouchModeActive()
+                && !BrailleImePassthroughBridge.isPassthroughActive()
+                && !shrinkKeyboard) {
+            announceTalkBackHint(getContext().getString(
+                    R.string.braille_keyboard_talkback_enable_service));
             return true;
         }
         // Get the height and width of the keyboard.
@@ -845,9 +861,31 @@ public class BrailleView extends View {
         return false;
     }
 
+    public boolean isTalkBackTouchModeActive() {
+        return accessibilityManager != null
+                && accessibilityManager.isTouchExplorationEnabled()
+                && Options.getBooleanPreference(
+                        getContext(),
+                        R.string.pref_talkback_braille_mode_key,
+                        Boolean.parseBoolean(getContext().getString(
+                                R.string.pref_talkback_braille_mode_default)));
+    }
+
     private boolean isCalibrationGestureActive() {
         return System.currentTimeMillis() > requiredTouchTime
                 && (countDotsDown(dotsDown) >= 3 || !lastDotList.isEmpty());
+    }
+
+    private void announceTalkBackHint(String message) {
+        if (speech == null || message == null) {
+            return;
+        }
+        long now = System.currentTimeMillis();
+        if (now - lastTalkBackHintAt < TALKBACK_HINT_DEBOUNCE_MS) {
+            return;
+        }
+        lastTalkBackHintAt = now;
+        speech.speak(getContext(), message, Speech.QUEUE_FLUSH);
     }
 
     private void updateSystemGestureExclusion() {

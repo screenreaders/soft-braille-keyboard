@@ -394,6 +394,12 @@
                     android:text="@string/pref_voice_shortcut_title" />
 
                 <CheckBox
+                    android:id="@+id/setup_talkback_mode_checkbox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/pref_talkback_braille_mode_title" />
+
+                <CheckBox
                     android:id="@+id/setup_auto_updates_checkbox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

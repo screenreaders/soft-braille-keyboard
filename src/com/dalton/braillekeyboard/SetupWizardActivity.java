@@ -95,6 +95,7 @@ public class SetupWizardActivity extends Activity
     private CheckBox doubleSpaceCheckBox;
     private CheckBox autoCapsCheckBox;
     private CheckBox voiceShortcutCheckBox;
+    private CheckBox talkBackModeCheckBox;
     private CheckBox autoUpdatesCheckBox;
     private CheckBox crashPromptCheckBox;
     private CheckBox usesDisplayCheckBox;
@@ -308,6 +309,8 @@ public class SetupWizardActivity extends Activity
         autoCapsCheckBox = (CheckBox) findViewById(R.id.setup_auto_caps_checkbox);
         voiceShortcutCheckBox = (CheckBox) findViewById(
                 R.id.setup_voice_shortcut_checkbox);
+        talkBackModeCheckBox = (CheckBox) findViewById(
+                R.id.setup_talkback_mode_checkbox);
         autoUpdatesCheckBox = (CheckBox) findViewById(
                 R.id.setup_auto_updates_checkbox);
         crashPromptCheckBox = (CheckBox) findViewById(
@@ -516,6 +519,9 @@ public class SetupWizardActivity extends Activity
         if (voiceShortcutCheckBox != null) {
             voiceShortcutCheckBox.setOnCheckedChangeListener(profileListener);
         }
+        if (talkBackModeCheckBox != null) {
+            talkBackModeCheckBox.setOnCheckedChangeListener(profileListener);
+        }
         if (autoUpdatesCheckBox != null) {
             autoUpdatesCheckBox.setOnCheckedChangeListener(profileListener);
         }
@@ -631,6 +637,12 @@ public class SetupWizardActivity extends Activity
                         Boolean.parseBoolean(getString(
                                 R.string.pref_voice_shortcut_default))));
             }
+            if (talkBackModeCheckBox != null) {
+                talkBackModeCheckBox.setChecked(Options.getBooleanPreference(this,
+                        R.string.pref_talkback_braille_mode_key,
+                        Boolean.parseBoolean(getString(
+                                R.string.pref_talkback_braille_mode_default))));
+            }
             if (autoUpdatesCheckBox != null) {
                 autoUpdatesCheckBox.setChecked(Options.getBooleanPreference(this,
                         R.string.pref_auto_check_updates_key,
@@ -736,7 +748,8 @@ public class SetupWizardActivity extends Activity
         if (finishButton != null) {
             finishButton.setVisibility(currentPage == PAGE_PROFILE
                     ? View.VISIBLE : View.GONE);
-            finishButton.setEnabled(!requiresAccessibilityForTalkBack()
+            finishButton.setEnabled(!(requiresAccessibilityForTalkBack()
+                    && isTalkBackBrailleModeEnabled())
                     || isBrailleAccessibilityEnabled());
         }
     }
@@ -827,8 +840,19 @@ public class SetupWizardActivity extends Activity
         return manager != null && manager.isTouchExplorationEnabled();
     }
 
+    private boolean isTalkBackBrailleModeEnabled() {
+        return Options.getBooleanPreference(this,
+                R.string.pref_talkback_braille_mode_key,
+                Boolean.parseBoolean(getString(
+                        R.string.pref_talkback_braille_mode_default)));
+    }
+
     private String buildAccessibilityStatus(boolean accessibilityEnabled) {
         if (requiresAccessibilityForTalkBack()) {
+            if (!isTalkBackBrailleModeEnabled()) {
+                return getString(
+                        R.string.setup_status_accessibility_disabled_for_talkback_mode_off);
+            }
             return getString(accessibilityEnabled
                     ? R.string.setup_status_accessibility_enabled_for_talkback
                     : R.string.setup_status_accessibility_required_for_talkback);
@@ -896,6 +920,8 @@ public class SetupWizardActivity extends Activity
                         && misspellingsCheckBox.isChecked()),
                 yesNo(doubleSpaceCheckBox != null
                         && doubleSpaceCheckBox.isChecked()),
+                yesNo(talkBackModeCheckBox != null
+                        && talkBackModeCheckBox.isChecked()),
                 yesNo(autoUpdatesCheckBox != null
                         && autoUpdatesCheckBox.isChecked()),
                 yesNo(crashPromptCheckBox != null
@@ -925,6 +951,10 @@ public class SetupWizardActivity extends Activity
         Options.writeBooleanPreference(this, R.string.pref_voice_shortcut_key,
                 voiceShortcutCheckBox != null
                         && voiceShortcutCheckBox.isChecked());
+        Options.writeBooleanPreference(this,
+                R.string.pref_talkback_braille_mode_key,
+                talkBackModeCheckBox != null
+                        && talkBackModeCheckBox.isChecked());
         Options.writeBooleanPreference(this,
                 R.string.pref_auto_check_updates_key,
                 autoUpdatesCheckBox != null && autoUpdatesCheckBox.isChecked());

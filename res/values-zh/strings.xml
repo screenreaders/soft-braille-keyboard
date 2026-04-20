@@ -482,12 +482,13 @@
     <string name="setup_section_profile">使用者設定檔與輸入偏好</string>
     <string name="setup_status_calibration_missing">尚未儲存任何鍵盤校準。在完成校準前，鍵盤會使用預設配置。</string>
     <string name="setup_status_calibration_saved">已儲存的鍵盤校準配置：%1$d。</string>
-    <string name="setup_status_profile_summary">鍵盤回饋：%1$s
-朗讀拼字錯誤：%2$s
-雙空格輸入句點：%3$s
-自動檢查更新：%4$s
-提示回報當機：%5$s
-語音引擎：%6$s</string>
+    <string name="setup_status_profile_summary">Keyboard echo: %1$s
+Speak misspellings: %2$s
+Double-space period: %3$s
+TalkBack braille mode: %4$s
+Automatic update checks: %5$s
+Crash report prompt: %6$s
+Speech engine: %7$s</string>
     <string name="braille_keyboard_test_title">點字鍵盤校準與測試</string>
     <string name="braille_keyboard_test_intro">使用此畫面校準螢幕上的點字鍵盤，並在完成設定前確認輸入正常。</string>
     <string name="braille_keyboard_test_calibration_steps">校準：在下方欄位中打開 Soft Braille Keyboard，先將前三根手指按在螢幕上直到聽到提示，再按下另外三根手指。之後在測試欄位輸入幾個字元。</string>
@@ -1010,4 +1011,10 @@ Bluetooth: %2$s</string>
     <string name="braille_keyboard_talkback_ready">TalkBack passthrough is active for the braille keyboard area.</string>
     <string name="setup_status_accessibility_enabled_for_talkback">Braille accessibility service is enabled. TalkBack-compatible braille keyboard input is ready.</string>
     <string name="setup_status_accessibility_required_for_talkback">TalkBack is active. Enable the Braille accessibility service to use the on-screen braille keyboard without turning TalkBack off.</string>
+    <string name="pref_talkback_braille_mode_default" translatable="false">true</string>
+    <string name="pref_talkback_braille_mode_key" translatable="false">TALKBACK_BRAILLE_MODE</string>
+    <string name="pref_talkback_braille_mode_title">TalkBack braille mode</string>
+    <string name="pref_talkback_braille_mode_summary">Keeps the on-screen braille keyboard compatible with TalkBack touch exploration on Android 11 and newer.</string>
+    <string name="pref_talkback_braille_mode_short_summary">TalkBack mode: %1</string>
+    <string name="setup_status_accessibility_disabled_for_talkback_mode_off">TalkBack is active, but TalkBack braille mode is off. Turn the mode on if you want to keep TalkBack enabled while typing braille on screen.</string>
 </resources>

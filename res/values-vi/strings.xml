@@ -484,12 +484,13 @@ Giọng hiện tại: %2$s</string>
     <string name="setup_section_profile">Hồ sơ người dùng và tùy chọn nhập liệu</string>
     <string name="setup_status_calibration_missing">Chưa có hiệu chuẩn bàn phím nào được lưu. Cho đến khi hiệu chuẩn, bàn phím sẽ dùng bố cục mặc định.</string>
     <string name="setup_status_calibration_saved">Bố cục hiệu chuẩn đã lưu: %1$d.</string>
-    <string name="setup_status_profile_summary">Phản hồi bàn phím: %1$s
-Đọc lỗi chính tả: %2$s
-Dấu chấm sau hai khoảng trắng: %3$s
-Tự động kiểm tra cập nhật: %4$s
-Đề nghị báo cáo lỗi: %5$s
-Bộ máy giọng nói: %6$s</string>
+    <string name="setup_status_profile_summary">Keyboard echo: %1$s
+Speak misspellings: %2$s
+Double-space period: %3$s
+TalkBack braille mode: %4$s
+Automatic update checks: %5$s
+Crash report prompt: %6$s
+Speech engine: %7$s</string>
     <string name="braille_keyboard_test_title">Hiệu chuẩn và kiểm tra bàn phím braille</string>
     <string name="braille_keyboard_test_intro">Dùng màn hình này để hiệu chuẩn bàn phím braille trên màn hình và xác nhận việc nhập liệu hoạt động trước khi hoàn tất cấu hình.</string>
     <string name="braille_keyboard_test_calibration_steps">Hiệu chuẩn: mở Soft Braille Keyboard trong ô bên dưới, giữ ba ngón tay đầu tiên trên màn hình cho đến khi bạn nghe hướng dẫn, sau đó giữ ba ngón tay còn lại. Sau đó nhập vài ký tự vào ô thử nghiệm.</string>
@@ -1012,4 +1013,10 @@ Bluetooth: %2$s</string>
     <string name="braille_keyboard_talkback_ready">TalkBack passthrough is active for the braille keyboard area.</string>
     <string name="setup_status_accessibility_enabled_for_talkback">Braille accessibility service is enabled. TalkBack-compatible braille keyboard input is ready.</string>
     <string name="setup_status_accessibility_required_for_talkback">TalkBack is active. Enable the Braille accessibility service to use the on-screen braille keyboard without turning TalkBack off.</string>
+    <string name="pref_talkback_braille_mode_default" translatable="false">true</string>
+    <string name="pref_talkback_braille_mode_key" translatable="false">TALKBACK_BRAILLE_MODE</string>
+    <string name="pref_talkback_braille_mode_title">TalkBack braille mode</string>
+    <string name="pref_talkback_braille_mode_summary">Keeps the on-screen braille keyboard compatible with TalkBack touch exploration on Android 11 and newer.</string>
+    <string name="pref_talkback_braille_mode_short_summary">TalkBack mode: %1</string>
+    <string name="setup_status_accessibility_disabled_for_talkback_mode_off">TalkBack is active, but TalkBack braille mode is off. Turn the mode on if you want to keep TalkBack enabled while typing braille on screen.</string>
 </resources>

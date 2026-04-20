@@ -161,6 +161,11 @@
          android:summary="@string/pref_voice_shortcut_summary"
          android:defaultValue="@string/pref_voice_shortcut_default" />
          <CheckBoxPreference
+         android:key="@string/pref_talkback_braille_mode_key"
+         android:title="@string/pref_talkback_braille_mode_title"
+         android:summary="@string/pref_talkback_braille_mode_summary"
+         android:defaultValue="@string/pref_talkback_braille_mode_default" />
+         <CheckBoxPreference
          android:key="@string/pref_vibrate_on_exit_key"
          android:title="@string/pref_vibrate_on_exit_title"
          android:defaultValue="@string/pref_vibrate_on_exit_default" />

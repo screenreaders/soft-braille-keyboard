@@ -23,6 +23,7 @@ import java.util.Locale;
 
 import android.Manifest;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.content.pm.PackageManager;
 import android.graphics.Rect;
 import android.inputmethodservice.InputMethodService;
@@ -201,6 +202,12 @@ public class BrailleIME extends InputMethodService implements KeyboardListener {
     }
 
     @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        publishAccessibilityPassthroughRegion();
+    }
+
+    @Override
     public void onDestroy() {
         super.onDestroy();
         if (brailleParser != null) {
@@ -237,7 +244,7 @@ public class BrailleIME extends InputMethodService implements KeyboardListener {
     }
 
     private void publishAccessibilityPassthroughRegion() {
-        if (brailleView == null) {
+        if (brailleView == null || !isTalkBackBrailleModeActive()) {
             clearAccessibilityPassthroughRegion();
             return;
         }
@@ -262,6 +269,15 @@ public class BrailleIME extends InputMethodService implements KeyboardListener {
 
     private void clearAccessibilityPassthroughRegion() {
         BrailleImePassthroughBridge.updateKeyboardRegion(new Rect(), false);
+    }
+
+    private boolean isTalkBackBrailleModeActive() {
+        return Options.getBooleanPreference(this,
+                R.string.pref_talkback_braille_mode_key,
+                Boolean.parseBoolean(getString(
+                        R.string.pref_talkback_braille_mode_default)))
+                && brailleView != null
+                && brailleView.isTalkBackTouchModeActive();
     }
 
     private boolean canStartActivity(Intent intent) {

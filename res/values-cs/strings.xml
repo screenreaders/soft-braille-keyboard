@@ -481,12 +481,13 @@ Aktuální hlas: %2$s</string>
     <string name="setup_section_profile">Uživatelský profil a předvolby psaní</string>
     <string name="setup_status_calibration_missing">Zatím není uložena žádná kalibrace klávesnice. Do kalibrace bude klávesnice používat výchozí rozložení.</string>
     <string name="setup_status_calibration_saved">Uložené kalibrační rozložení klávesnice: %1$d.</string>
-    <string name="setup_status_profile_summary">Odezva klávesnice: %1$s
-Oznamovat pravopisné chyby: %2$s
-Tečka po dvojité mezeře: %3$s
-Automatická kontrola aktualizací: %4$s
-Nabídka hlášení pádu: %5$s
-Hlasový engine: %6$s</string>
+    <string name="setup_status_profile_summary">Keyboard echo: %1$s
+Speak misspellings: %2$s
+Double-space period: %3$s
+TalkBack braille mode: %4$s
+Automatic update checks: %5$s
+Crash report prompt: %6$s
+Speech engine: %7$s</string>
     <string name="braille_keyboard_test_title">Kalibrace a test braillské klávesnice</string>
     <string name="braille_keyboard_test_intro">Použijte tuto obrazovku ke kalibraci braillské klávesnice na obrazovce a k ověření, že psaní funguje, než dokončíte konfiguraci.</string>
     <string name="braille_keyboard_test_calibration_steps">Kalibrace: otevřete Soft Braille Keyboard v poli níže, přidržte první tři prsty na obrazovce, dokud neuslyšíte pokyn, a potom přidržte další tři prsty. Poté napište několik znaků do testovacího pole.</string>
@@ -1009,4 +1010,10 @@ Bluetooth: %2$s</string>
     <string name="braille_keyboard_talkback_ready">TalkBack passthrough is active for the braille keyboard area.</string>
     <string name="setup_status_accessibility_enabled_for_talkback">Braille accessibility service is enabled. TalkBack-compatible braille keyboard input is ready.</string>
     <string name="setup_status_accessibility_required_for_talkback">TalkBack is active. Enable the Braille accessibility service to use the on-screen braille keyboard without turning TalkBack off.</string>
+    <string name="pref_talkback_braille_mode_default" translatable="false">true</string>
+    <string name="pref_talkback_braille_mode_key" translatable="false">TALKBACK_BRAILLE_MODE</string>
+    <string name="pref_talkback_braille_mode_title">TalkBack braille mode</string>
+    <string name="pref_talkback_braille_mode_summary">Keeps the on-screen braille keyboard compatible with TalkBack touch exploration on Android 11 and newer.</string>
+    <string name="pref_talkback_braille_mode_short_summary">TalkBack mode: %1</string>
+    <string name="setup_status_accessibility_disabled_for_talkback_mode_off">TalkBack is active, but TalkBack braille mode is off. Turn the mode on if you want to keep TalkBack enabled while typing braille on screen.</string>
 </resources>

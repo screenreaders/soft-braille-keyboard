@@ -20,9 +20,13 @@ import java.util.concurrent.atomic.AtomicReference;
 public class ActivityLaunchSmokeTest {
 
     @Test
-    public void setupAndPreferenceScreensLaunch() {
+    public void mainAndSetupScreensLaunch() {
         launch(MainActivity.class);
         launch(SetupWizardActivity.class);
+    }
+
+    @Test
+    public void preferenceAndProfileScreensLaunch() {
         launch(PreferenceIME.class);
         launch(UserProfileSetupActivity.class);
         launch(TtsSettingsActivity.class);
