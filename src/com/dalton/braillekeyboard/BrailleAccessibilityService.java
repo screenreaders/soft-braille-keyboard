@@ -19,11 +19,15 @@ package com.dalton.braillekeyboard;
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.ColorSpace;
 import android.graphics.Region;
 import android.graphics.Rect;
+import android.hardware.HardwareBuffer;
 import android.os.Bundle;
 import android.os.Build;
 import android.text.TextUtils;
+import android.view.Display;
 import android.view.View;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
@@ -34,10 +38,21 @@ import com.googlecode.eyesfree.braille.display.DisplayClient;
 import com.googlecode.eyesfree.braille.translate.TranslationResult;
 
 import java.util.ArrayList;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.List;
 
 public class BrailleAccessibilityService extends AccessibilityService
         implements BrailleParser.BrailleParserListener {
+    public interface ScreenshotListener {
+        void onSaved(File file);
+
+        void onError(String reason);
+    }
+
+    private static volatile BrailleAccessibilityService activeInstance;
+
     private DisplayClient displayClient;
     private BrailleParser brailleParser;
     private AccessibilityNodeInfo focusedNode;
@@ -67,6 +82,7 @@ public class BrailleAccessibilityService extends AccessibilityService
             info.flags |= AccessibilityServiceInfo.FLAG_REQUEST_TOUCH_EXPLORATION_MODE;
             setServiceInfo(info);
         }
+        activeInstance = this;
 
         BrailleImePassthroughBridge.registerService(this);
         applyImePassthroughRegion();
@@ -110,9 +126,130 @@ public class BrailleAccessibilityService extends AccessibilityService
             brailleParser.destroy();
             brailleParser = null;
         }
+        if (activeInstance == this) {
+            activeInstance = null;
+        }
         BrailleImePassthroughBridge.unregisterService(this);
         BrailleDisplayPreferences.setServiceStatus(this,
                 getString(R.string.braille_service_status_stopped));
+    }
+
+    public static boolean canCaptureScreens() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
+                && activeInstance != null;
+    }
+
+    public static void captureCurrentScreen(File file,
+            ScreenshotListener listener) {
+        BrailleAccessibilityService service = activeInstance;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R || service == null) {
+            if (listener != null) {
+                listener.onError("screenshot service unavailable");
+            }
+            return;
+        }
+        service.captureCurrentScreenInternal(file, listener);
+    }
+
+    private void captureCurrentScreenInternal(final File file,
+            final ScreenshotListener listener) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            if (listener != null) {
+                listener.onError("unsupported android version");
+            }
+            return;
+        }
+        final int displayId = getDisplay() != null
+                ? getDisplay().getDisplayId() : Display.DEFAULT_DISPLAY;
+        try {
+            takeScreenshot(displayId, getMainExecutor(),
+                    new TakeScreenshotCallback() {
+                        @Override
+                        public void onSuccess(ScreenshotResult result) {
+                            saveScreenshotResult(result, file, listener);
+                        }
+
+                        @Override
+                        public void onFailure(int errorCode) {
+                            if (listener != null) {
+                                listener.onError("takeScreenshot failed: "
+                                        + errorCode);
+                            }
+                        }
+                    });
+        } catch (RuntimeException e) {
+            if (listener != null) {
+                listener.onError("takeScreenshot runtime error");
+            }
+        }
+    }
+
+    private void saveScreenshotResult(ScreenshotResult result, final File file,
+            final ScreenshotListener listener) {
+        if (result == null || file == null) {
+            if (listener != null) {
+                listener.onError("empty screenshot result");
+            }
+            return;
+        }
+        final HardwareBuffer hardwareBuffer = result.getHardwareBuffer();
+        final ColorSpace colorSpace = result.getColorSpace();
+        if (hardwareBuffer == null) {
+            if (listener != null) {
+                listener.onError("missing hardware buffer");
+            }
+            return;
+        }
+        Bitmap hardwareBitmap = null;
+        Bitmap bitmap = null;
+        try {
+            hardwareBitmap = Bitmap.wrapHardwareBuffer(hardwareBuffer,
+                    colorSpace);
+            if (hardwareBitmap == null) {
+                if (listener != null) {
+                    listener.onError("could not wrap hardware buffer");
+                }
+                return;
+            }
+            bitmap = hardwareBitmap.copy(Bitmap.Config.ARGB_8888, false);
+        } finally {
+            hardwareBuffer.close();
+            if (hardwareBitmap != null) {
+                hardwareBitmap.recycle();
+            }
+        }
+        if (bitmap == null) {
+            if (listener != null) {
+                listener.onError("could not copy screenshot bitmap");
+            }
+            return;
+        }
+        File parent = file.getParentFile();
+        if (parent != null && !parent.exists()) {
+            parent.mkdirs();
+        }
+        FileOutputStream stream = null;
+        try {
+            stream = new FileOutputStream(file);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            stream.flush();
+            if (listener != null) {
+                listener.onSaved(file);
+            }
+        } catch (IOException e) {
+            if (listener != null) {
+                listener.onError("could not save screenshot");
+            }
+        } finally {
+            bitmap.recycle();
+            if (stream != null) {
+                try {
+                    stream.close();
+                } catch (IOException ignored) {
+                    // Ignore close failure.
+                }
+            }
+        }
     }
 
     void onImeKeyboardRegionChanged(Rect region, boolean visible) {

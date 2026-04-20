@@ -16,6 +16,7 @@ public final class SupportReportSender {
 
     public static final class ReportResult {
         public enum Mode {
+            SERVER,
             GITHUB,
             FAILED
         }
@@ -63,6 +64,38 @@ public final class SupportReportSender {
                 ? SupportDiagnostics.buildReport(context, data.message,
                         data.additionalDiagnostics)
                 : null;
+        String title = data.reportType == ReportData.ReportType.BRAILLE_DISPLAY
+                ? "[hardware] " + data.subject : "[bug] " + data.subject;
+        StringBuilder remoteBody = new StringBuilder();
+        remoteBody.append("Soft Braille Keyboard report\n");
+        remoteBody.append("Title: ").append(title).append('\n');
+        remoteBody.append("Reporter: ")
+                .append(TextUtils.isEmpty(data.name) ? "(not provided)"
+                        : data.name);
+        if (!TextUtils.isEmpty(data.email)) {
+            remoteBody.append(" <").append(data.email).append('>');
+        }
+        remoteBody.append('\n');
+        remoteBody.append("Type: ").append(data.reportType.name()).append('\n');
+        remoteBody.append('\n');
+        remoteBody.append("Message\n");
+        remoteBody.append("=======\n");
+        remoteBody.append(data.message).append('\n');
+        if (!TextUtils.isEmpty(diagnostics)) {
+            remoteBody.append('\n');
+            remoteBody.append(diagnostics);
+            if (!diagnostics.endsWith("\n")) {
+                remoteBody.append('\n');
+            }
+        }
+        RemoteReportUploader.UploadResult uploadResult
+                = RemoteReportUploader.uploadTextReport(context, title,
+                        remoteBody.toString(),
+                        data.reportType == ReportData.ReportType.BRAILLE_DISPLAY
+                                ? "braille-display" : "bug-report");
+        if (uploadResult.success) {
+            return new ReportResult(ReportResult.Mode.SERVER);
+        }
         boolean opened = openGitHubIssue(context, data, diagnostics);
         return new ReportResult(opened ? ReportResult.Mode.GITHUB
                 : ReportResult.Mode.FAILED);

@@ -64,6 +64,12 @@ public class SupportReportActivity extends Activity {
                         textOf(nameView), textOf(emailView),
                         diagnosticsView.isChecked(), additionalDiagnostics,
                         reportType));
+        if (result.mode == SupportReportSender.ReportResult.Mode.SERVER) {
+            Toast.makeText(this, R.string.report_issue_sent_server,
+                    Toast.LENGTH_LONG).show();
+            finish();
+            return;
+        }
         if (result.mode == SupportReportSender.ReportResult.Mode.GITHUB) {
             Toast.makeText(this, R.string.report_issue_sent_github,
                     Toast.LENGTH_LONG).show();
@@ -75,7 +81,7 @@ public class SupportReportActivity extends Activity {
     }
 
     private void updateStatus() {
-        statusView.setText(R.string.report_issue_github_only);
+        statusView.setText(R.string.report_issue_server_preferred);
         if (reportType == SupportReportSender.ReportData.ReportType.BRAILLE_DISPLAY
                 && TextUtils.isEmpty(subjectView.getText())) {
             subjectView.setText(R.string.report_braille_issue_default_subject);

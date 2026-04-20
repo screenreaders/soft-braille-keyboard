@@ -4,6 +4,7 @@
     android:accessibilityFeedbackType="feedbackGeneric"
     android:accessibilityFlags="flagReportViewIds|flagIncludeNotImportantViews|flagRetrieveInteractiveWindows|flagRequestTouchExplorationMode"
     android:canPerformGestures="false"
+    android:canTakeScreenshot="true"
     android:canRequestTouchExplorationMode="true"
     android:canRetrieveWindowContent="true"
     android:description="@string/braille_accessibility_service_description"

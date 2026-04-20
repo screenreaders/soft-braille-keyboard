@@ -298,6 +298,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
+                android:onClick="onGuidedScreenReport"
+                android:text="@string/button_guided_screen_report" />
+
+            <Button
+                style="@android:style/TextAppearance.Large"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
                 android:onClick="onReportIssue"
                 android:text="@string/button_report_issue" />
 

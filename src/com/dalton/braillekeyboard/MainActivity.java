@@ -338,6 +338,13 @@ public class MainActivity extends Activity
         }
     }
 
+    public void onGuidedScreenReport(View view) {
+        Intent intent = new Intent(this, GuidedScreenReportActivity.class);
+        if (canStartActivity(intent)) {
+            startActivity(intent);
+        }
+    }
+
     public void onExportAppSettings(View view) {
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
