@@ -72,7 +72,6 @@ public class SetupWizardActivity extends Activity
     private Spinner brailleTypeSpinner;
     private Spinner literaryTableSpinner;
     private Spinner computerTableSpinner;
-    private Spinner keyboardDotsSpinner;
     private Spinner keyboardLayoutSpinner;
     private Spinner keyboardStyleSpinner;
 
@@ -279,7 +278,6 @@ public class SetupWizardActivity extends Activity
                 R.id.setup_literary_table_spinner);
         computerTableSpinner = (Spinner) findViewById(
                 R.id.setup_computer_table_spinner);
-        keyboardDotsSpinner = (Spinner) findViewById(R.id.setup_keyboard_dots_spinner);
         keyboardLayoutSpinner = (Spinner) findViewById(
                 R.id.setup_keyboard_layout_spinner);
         keyboardStyleSpinner = (Spinner) findViewById(
@@ -334,10 +332,6 @@ public class SetupWizardActivity extends Activity
                 getString(R.string.grade_literary),
                 getString(R.string.grade_computer)
         });
-        bindSimpleSpinner(keyboardDotsSpinner, new String[] {
-                getString(R.string.user_profile_setup_dots_six),
-                getString(R.string.user_profile_setup_dots_eight)
-        });
         bindSimpleSpinner(keyboardLayoutSpinner, new String[] {
                 getString(R.string.keyboard_auto),
                 getString(R.string.keyboard_vertical),
@@ -382,16 +376,7 @@ public class SetupWizardActivity extends Activity
                         Options.writeStringPreference(SetupWizardActivity.this,
                                 R.string.pref_braille_type_key,
                                 String.valueOf(type.prefValue()));
-                        int dotsSelection = type == BrailleParser.BrailleType.COMPUTER
-                                ? 1 : 0;
-                        if (keyboardDotsSpinner != null
-                                && keyboardDotsSpinner.getSelectedItemPosition()
-                                        != dotsSelection) {
-                            bindingValues = true;
-                            keyboardDotsSpinner.setSelection(dotsSelection);
-                            bindingValues = false;
-                            persistKeyboardDots();
-                        }
+                        syncKeyboardDotsWithBrailleType(type);
                         if (brailleParser != null) {
                             brailleParser.setTranslator(SetupWizardActivity.this);
                         }
@@ -446,15 +431,6 @@ public class SetupWizardActivity extends Activity
 
                     @Override
                     public void onNothingSelected(AdapterView<?> parent) {
-                    }
-                });
-
-        keyboardDotsSpinner.setOnItemSelectedListener(
-                new SimpleItemSelectedListener() {
-                    @Override
-                    public void onItemSelected(int position) {
-                        persistKeyboardDots();
-                        refreshStatuses();
                     }
                 });
 
@@ -585,10 +561,7 @@ public class SetupWizardActivity extends Activity
                     : brailleParser.getBrailleType(this);
             brailleTypeSpinner.setSelection(brailleType
                     == BrailleParser.BrailleType.COMPUTER ? 1 : 0);
-            keyboardDotsSpinner.setSelection(Options.getBooleanPreference(this,
-                    R.string.pref_use_eight_dots_key,
-                    Boolean.parseBoolean(getString(
-                            R.string.pref_use_eight_dots_default))) ? 1 : 0);
+            syncKeyboardDotsWithBrailleType(brailleType);
             int keyboardType = Options.getIntPreference(this,
                     R.string.pref_default_keyboard_key,
                     getString(R.string.pref_default_keyboard_default));
@@ -933,10 +906,10 @@ public class SetupWizardActivity extends Activity
         return getString(value ? R.string.main_status_yes : R.string.main_status_no);
     }
 
-    private void persistKeyboardDots() {
+    private void syncKeyboardDotsWithBrailleType(
+            BrailleParser.BrailleType type) {
         Options.writeBooleanPreference(this, R.string.pref_use_eight_dots_key,
-                keyboardDotsSpinner != null
-                        && keyboardDotsSpinner.getSelectedItemPosition() == 1);
+                type == BrailleParser.BrailleType.COMPUTER);
     }
 
     private void persistProfilePreferences() {
@@ -969,7 +942,10 @@ public class SetupWizardActivity extends Activity
     private void populateTableSpinners() {
         literaryTables.clear();
         computerTables.clear();
-        if (brailleParser != null && brailleParser.getStatus() == BrailleParser.STATUS_OK) {
+        if (brailleParser != null
+                && (brailleParser.getStatus() == BrailleParser.STATUS_OK
+                        || brailleParser.getStatus()
+                                == BrailleParser.STATUS_TABLE_ERROR)) {
             addTableEntries(literaryTables,
                     brailleParser.getTables(BrailleParser.BrailleType.LITERARY));
             addTableEntries(computerTables,
@@ -1019,6 +995,16 @@ public class SetupWizardActivity extends Activity
         }
         String selectedId = Options.getStringPreference(this, keyRes,
                 getString(defaultRes));
+        if (TextUtils.isEmpty(selectedId)
+                || TextUtils.equals(selectedId,
+                        getString(R.string.pref_braille_table_auto))) {
+            BrailleParser.BrailleType type = keyRes
+                    == R.string.pref_braille_computer_table_key
+                            ? BrailleParser.BrailleType.COMPUTER
+                            : BrailleParser.BrailleType.LITERARY;
+            selectedId = brailleParser == null ? getString(defaultRes)
+                    : brailleParser.getDefaultId(this, type);
+        }
         int selection = 0;
         for (int i = 0; i < entries.size(); i++) {
             if (TextUtils.equals(entries.get(i).id, selectedId)) {

@@ -152,7 +152,8 @@ public class PreferenceIME extends PreferenceActivity {
             }
 
             List<TableInfo> tables = new ArrayList<TableInfo>();
-            if (status == BrailleParser.STATUS_OK) {
+            if (status == BrailleParser.STATUS_OK
+                    || status == BrailleParser.STATUS_TABLE_ERROR) {
                 tables = brailleParser.getTables(BrailleType.ALL);
             }
             populateWithTables(tables, entries, entryValues, true, null);
@@ -161,7 +162,8 @@ public class PreferenceIME extends PreferenceActivity {
                     .toArray(new String[entryValues.size()]));
 
             resetLists(entries, entryValues);
-            if (status == BrailleParser.STATUS_OK) {
+            if (status == BrailleParser.STATUS_OK
+                    || status == BrailleParser.STATUS_TABLE_ERROR) {
                 tables = brailleParser.getTables(BrailleType.LITERARY);
             }
             populateWithTables(tables, entries, entryValues, true,
@@ -173,7 +175,8 @@ public class PreferenceIME extends PreferenceActivity {
                     .toArray(new String[entryValues.size()]));
 
             resetLists(entries, entryValues);
-            if (status == BrailleParser.STATUS_OK) {
+            if (status == BrailleParser.STATUS_OK
+                    || status == BrailleParser.STATUS_TABLE_ERROR) {
                 tables = brailleParser.getTables(BrailleType.COMPUTER);
             }
             populateWithTables(tables, entries, entryValues, false,

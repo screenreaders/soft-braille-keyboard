@@ -22,9 +22,9 @@
         <string name="expand_keyboard_talkback">Dotknij tutaj dwukrotnie, aby rozwinąć klawiaturę</string>
     <string name="braille_keyboard_talkback_enable_service">Aby używać ekranowej klawiatury brajlowskiej z TalkBackiem, włącz usługę dostępności brajla w systemowych ustawieniach dostępności Androida.</string>
     <string name="braille_keyboard_talkback_ready">Przepuszczanie TalkBacka jest aktywne dla obszaru klawiatury brajlowskiej.</string>
-    <string name="grade_computer">Brajl komputerowy</string>
+    <string name="grade_computer">Brajl komputerowy (8-punktowy)</string>
     <string name="grade">Domyślny stopień brajla</string>
-        <string name="grade_literary">Brajl literacki</string>
+    <string name="grade_literary">Brajl literacki (6-punktowy)</string>
         <string name="grade_table">Stopień %1$d</string>
     <string name="hide_keyboard">Ukrywanie klawiatury.</string>
     <string name="high">Wysoka</string>

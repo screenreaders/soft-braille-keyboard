@@ -17,7 +17,6 @@ import com.dalton.braillekeyboard.Options.KeyboardType;
 public class UserProfileSetupActivity extends Activity {
     private Spinner startProfileSpinner;
     private Spinner keyboardEchoSpinner;
-    private Spinner dotsSpinner;
     private Spinner keyboardLayoutSpinner;
     private Spinner keyboardStyleSpinner;
     private CheckBox misspellingsCheckBox;
@@ -41,7 +40,6 @@ public class UserProfileSetupActivity extends Activity {
                 R.id.user_profile_start_profile_spinner);
         keyboardEchoSpinner = (Spinner) findViewById(
                 R.id.user_profile_keyboard_echo_spinner);
-        dotsSpinner = (Spinner) findViewById(R.id.user_profile_dots_spinner);
         keyboardLayoutSpinner = (Spinner) findViewById(
                 R.id.user_profile_keyboard_layout_spinner);
         keyboardStyleSpinner = (Spinner) findViewById(
@@ -82,10 +80,6 @@ public class UserProfileSetupActivity extends Activity {
         adapter.setDropDownViewResource(
                 android.R.layout.simple_spinner_dropdown_item);
         keyboardEchoSpinner.setAdapter(adapter);
-        bindSimpleSpinner(dotsSpinner, new String[] {
-                getString(R.string.user_profile_setup_dots_six),
-                getString(R.string.user_profile_setup_dots_eight)
-        });
         bindSimpleSpinner(keyboardLayoutSpinner, new String[] {
                 getString(R.string.keyboard_auto),
                 getString(R.string.keyboard_vertical),
@@ -117,8 +111,7 @@ public class UserProfileSetupActivity extends Activity {
         index = Math.max(0, Math.min(index, echoes.length - 1));
         Options.writeStringPreference(this, R.string.pref_echo_feedback_key,
                 echoes[index].getValue());
-        Options.writeBooleanPreference(this, R.string.pref_use_eight_dots_key,
-                dotsSpinner != null && dotsSpinner.getSelectedItemPosition() == 1);
+        syncKeyboardDotsWithBrailleType();
         Options.writeStringPreference(this, R.string.pref_default_keyboard_key,
                 String.valueOf(keyboardLayoutSpinner == null ? 0
                         : keyboardLayoutSpinner.getSelectedItemPosition()));
@@ -199,12 +192,6 @@ public class UserProfileSetupActivity extends Activity {
                     KeyboardEcho.CHARACTER.getValue());
             keyboardEchoSpinner.setSelection(Math.max(0,
                     Math.min(echoValue, KeyboardEcho.values().length - 1)));
-        }
-        if (dotsSpinner != null) {
-            dotsSpinner.setSelection(Options.getBooleanPreference(this,
-                    R.string.pref_use_eight_dots_key,
-                    Boolean.parseBoolean(getString(
-                            R.string.pref_use_eight_dots_default))) ? 1 : 0);
         }
         if (keyboardLayoutSpinner != null) {
             int keyboardType = Options.getIntPreference(this,
@@ -304,5 +291,15 @@ public class UserProfileSetupActivity extends Activity {
             Options.writeStringPreference(this,
                     R.string.pref_braille_computer_table_key, "en-US-comp8");
         }
+    }
+
+    private void syncKeyboardDotsWithBrailleType() {
+        String brailleType = Options.getStringPreference(this,
+                R.string.pref_braille_type_key,
+                getString(R.string.pref_braille_type_default));
+        Options.writeBooleanPreference(this, R.string.pref_use_eight_dots_key,
+                TextUtils.equals(brailleType,
+                        String.valueOf(
+                                BrailleParser.BrailleType.COMPUTER.prefValue())));
     }
 }

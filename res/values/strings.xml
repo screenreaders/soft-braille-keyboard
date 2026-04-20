@@ -324,9 +324,9 @@ Device table: %3$s</string>
     <string name="expand_keyboard">Tap here to expand the keyboard</string>
     <string name="braille_keyboard_talkback_enable_service">To use the on-screen braille keyboard with TalkBack, enable the Braille accessibility service in Android accessibility settings.</string>
     <string name="braille_keyboard_talkback_ready">TalkBack passthrough is active for the braille keyboard area.</string>
-    <string name="grade_computer">Computer Braille</string>
+    <string name="grade_computer">Computer braille (8-dot)</string>
     <string name="grade">Default Braille grade</string>
-    <string name="grade_literary">Literary Braille</string>
+    <string name="grade_literary">Literary braille (6-dot)</string>
     <string name="grade_table">Grade %1$d</string>
     <string name="hide_keyboard">Hiding the keyboard.</string>
     <string name="high">High</string>
