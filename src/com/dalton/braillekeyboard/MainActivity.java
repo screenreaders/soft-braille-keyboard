@@ -26,9 +26,12 @@ import android.content.DialogInterface;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.view.View;
@@ -70,6 +73,16 @@ public class MainActivity extends Activity
     private boolean wizardAutoLaunched;
     private boolean startupAutoCheckTriggered;
     private boolean pendingCrashPromptShown;
+    private AlertDialog updateDownloadDialog;
+    private long activeUpdateDownloadId = -1L;
+    private String activeUpdateDownloadFallbackUrl;
+    private final Handler updateDownloadHandler = new Handler(Looper.getMainLooper());
+    private final Runnable updateDownloadPoller = new Runnable() {
+        @Override
+        public void run() {
+            pollUpdateDownloadStatus();
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,6 +111,11 @@ public class MainActivity extends Activity
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        stopUpdateDownloadPolling();
+        if (updateDownloadDialog != null) {
+            updateDownloadDialog.dismiss();
+            updateDownloadDialog = null;
+        }
         if (brailleParser != null) {
             brailleParser.destroy();
             brailleParser = null;
@@ -704,15 +722,169 @@ public class MainActivity extends Activity
                     getString(R.string.update_download_description));
             request.setDestinationInExternalFilesDir(this,
                     android.os.Environment.DIRECTORY_DOWNLOADS, fileName);
-            downloadManager.enqueue(request);
-            Toast.makeText(this, R.string.update_download_started,
-                    Toast.LENGTH_LONG).show();
+            long downloadId = downloadManager.enqueue(request);
+            showUpdateDownloadDialog(downloadId, releaseInfo);
         } catch (RuntimeException e) {
             Toast.makeText(this, R.string.update_download_fallback,
                     Toast.LENGTH_LONG).show();
             openUri(TextUtils.isEmpty(releaseInfo.htmlUrl)
                     ? releaseInfo.apkUrl : releaseInfo.htmlUrl);
         }
+    }
+
+    private void showUpdateDownloadDialog(long downloadId,
+            final GitHubReleaseChecker.ReleaseInfo releaseInfo) {
+        stopUpdateDownloadPolling();
+        activeUpdateDownloadId = downloadId;
+        activeUpdateDownloadFallbackUrl = TextUtils.isEmpty(releaseInfo.htmlUrl)
+                ? releaseInfo.apkUrl : releaseInfo.htmlUrl;
+        updateDownloadDialog = new AlertDialog.Builder(this)
+                .setTitle(R.string.update_download_status_title)
+                .setMessage(getString(R.string.update_download_status_preparing))
+                .setNegativeButton(R.string.update_action_background, null)
+                .setPositiveButton(R.string.update_action_install, null)
+                .setNeutralButton(R.string.update_action_open_release,
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog,
+                                    int which) {
+                                openUri(activeUpdateDownloadFallbackUrl);
+                            }
+                        })
+                .create();
+        updateDownloadDialog.setOnShowListener(
+                new DialogInterface.OnShowListener() {
+                    @Override
+                    public void onShow(DialogInterface dialog) {
+                        Button installButton = updateDownloadDialog.getButton(
+                                AlertDialog.BUTTON_POSITIVE);
+                        if (installButton != null) {
+                            installButton.setEnabled(false);
+                            installButton.setOnClickListener(
+                                    new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View view) {
+                                            installDownloadedUpdate(
+                                                    activeUpdateDownloadId,
+                                                    activeUpdateDownloadFallbackUrl);
+                                        }
+                                    });
+                        }
+                    }
+                });
+        updateDownloadDialog.setOnDismissListener(
+                new DialogInterface.OnDismissListener() {
+                    @Override
+                    public void onDismiss(DialogInterface dialog) {
+                        stopUpdateDownloadPolling();
+                    }
+                });
+        updateDownloadDialog.show();
+        pollUpdateDownloadStatus();
+    }
+
+    private void pollUpdateDownloadStatus() {
+        if (activeUpdateDownloadId < 0 || updateDownloadDialog == null) {
+            return;
+        }
+        DownloadManager downloadManager
+                = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+        if (downloadManager == null) {
+            updateDownloadDialog.setMessage(
+                    getString(R.string.update_download_status_failed));
+            return;
+        }
+        DownloadManager.Query query = new DownloadManager.Query();
+        query.setFilterById(activeUpdateDownloadId);
+        Cursor cursor = null;
+        try {
+            cursor = downloadManager.query(query);
+            if (cursor == null || !cursor.moveToFirst()) {
+                updateDownloadDialog.setMessage(
+                        getString(R.string.update_download_status_failed));
+                return;
+            }
+            int status = cursor.getInt(cursor.getColumnIndexOrThrow(
+                    DownloadManager.COLUMN_STATUS));
+            long downloaded = cursor.getLong(cursor.getColumnIndexOrThrow(
+                    DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR));
+            long total = cursor.getLong(cursor.getColumnIndexOrThrow(
+                    DownloadManager.COLUMN_TOTAL_SIZE_BYTES));
+            updateDownloadDialog.setMessage(buildDownloadStatusMessage(status,
+                    downloaded, total));
+            Button installButton = updateDownloadDialog.getButton(
+                    AlertDialog.BUTTON_POSITIVE);
+            if (installButton != null) {
+                installButton.setEnabled(
+                        status == DownloadManager.STATUS_SUCCESSFUL);
+            }
+            if (status == DownloadManager.STATUS_RUNNING
+                    || status == DownloadManager.STATUS_PAUSED
+                    || status == DownloadManager.STATUS_PENDING) {
+                updateDownloadHandler.postDelayed(updateDownloadPoller, 1000);
+            }
+        } catch (RuntimeException e) {
+            updateDownloadDialog.setMessage(
+                    getString(R.string.update_download_status_failed));
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+    }
+
+    private String buildDownloadStatusMessage(int status, long downloaded,
+            long total) {
+        switch (status) {
+        case DownloadManager.STATUS_RUNNING:
+        case DownloadManager.STATUS_PAUSED:
+        case DownloadManager.STATUS_PENDING:
+            if (total > 0) {
+                int percent = (int) ((downloaded * 100L) / total);
+                return getString(R.string.update_download_status_running,
+                        Integer.valueOf(Math.max(0, Math.min(percent, 100))));
+            }
+            return getString(R.string.update_download_status_preparing);
+        case DownloadManager.STATUS_SUCCESSFUL:
+            return getString(R.string.update_download_status_complete);
+        case DownloadManager.STATUS_FAILED:
+        default:
+            return getString(R.string.update_download_status_failed);
+        }
+    }
+
+    private void installDownloadedUpdate(long downloadId, String fallbackUrl) {
+        if (downloadId < 0) {
+            openUri(fallbackUrl);
+            return;
+        }
+        DownloadManager downloadManager
+                = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+        if (downloadManager == null) {
+            openUri(fallbackUrl);
+            return;
+        }
+        Uri apkUri = downloadManager.getUriForDownloadedFile(downloadId);
+        if (apkUri == null) {
+            openUri(fallbackUrl);
+            return;
+        }
+        Intent installIntent = new Intent(Intent.ACTION_VIEW);
+        installIntent.setDataAndType(apkUri,
+                "application/vnd.android.package-archive");
+        installIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        installIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        if (canStartActivity(installIntent)) {
+            startActivity(installIntent);
+        } else {
+            openUri(fallbackUrl);
+        }
+    }
+
+    private void stopUpdateDownloadPolling() {
+        updateDownloadHandler.removeCallbacks(updateDownloadPoller);
+        activeUpdateDownloadId = -1L;
+        activeUpdateDownloadFallbackUrl = null;
     }
 
     private void openUri(String value) {

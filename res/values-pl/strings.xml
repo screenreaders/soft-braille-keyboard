@@ -516,12 +516,23 @@ Bieżąca tablica: %2$s</string>
 Bluetooth: %2$s</string>
     <string name="setup_wizard_title">Konfigurator pierwszego uruchomienia</string>
     <string name="setup_wizard_intro">Wykonaj te kroki, aby włączyć Soft Braille Keyboard, ustawić ją jako klawiaturę domyślną i wybrać tablicę brajlowską. Wyjście na monitor brajlowski jest opcjonalne i potrzebne tylko wtedy, gdy korzystasz z monitora brajlowskiego.</string>
+    <string name="setup_step_indicator_value">Krok %1$d z %2$d: %3$s</string>
+    <string name="setup_intro_keyboard">Najpierw włącz klawiaturę w Androidzie, ustaw ją jako domyślną metodę wprowadzania i wybierz tablice brajlowskie oraz układ klawiatury, od których chcesz zacząć.</string>
+    <string name="setup_intro_calibration">Teraz skalibruj i przetestuj ekranową klawiaturę brajlowską bezpośrednio w polu testowym poniżej. Możesz kalibrować wszystkimi sześcioma palcami naraz albo najpierw trzema, a po komunikacie kolejnymi trzema.</string>
+    <string name="setup_intro_tts">Tutaj wybierzesz silnik mowy, głos i parametry czytania, tak aby klawiatura była od razu gotowa do użycia po zakończeniu wizarda.</string>
+    <string name="setup_intro_profile">Na końcu ustaw preferencje pisania, automatyczne sprawdzanie aktualizacji, pytanie o raport po awarii oraz opcjonalne ustawienia monitora brajlowskiego dla tego profilu użytkownika.</string>
     <string name="setup_section_keyboard">Aktywacja klawiatury</string>
     <string name="setup_section_translation">Translator brajla i tablice</string>
     <string name="setup_section_calibration">Kalibracja i test klawiatury brajlowskiej</string>
     <string name="setup_section_profile">Profil użytkownika i preferencje pisania</string>
     <string name="setup_section_accessibility">Wyjście na monitor brajlowski (opcjonalne)</string>
     <string name="setup_section_permissions">Uprawnienia</string>
+    <string name="setup_label_braille_type">Typ brajla</string>
+    <string name="setup_label_literary_table">Tablica brajla literackiego</string>
+    <string name="setup_label_computer_table">Tablica brajla komputerowego</string>
+    <string name="setup_label_keyboard_dots">Liczba kropek na klawiaturze ekranowej</string>
+    <string name="setup_button_previous">Wstecz</string>
+    <string name="setup_button_next">Dalej</string>
     <string name="setup_finish_button">Zakończ konfigurację</string>
     <string name="setup_status_keyboard_enabled">Soft Braille Keyboard jest włączona w ustawieniach klawiatur Androida.</string>
     <string name="setup_status_keyboard_disabled">Soft Braille Keyboard nie jest jeszcze włączona.</string>
@@ -535,6 +546,7 @@ Bluetooth: %2$s</string>
     <string name="setup_status_bluetooth_missing">Brakuje uprawnienia Bluetooth.</string>
     <string name="setup_bluetooth_not_required">Ta wersja Androida nie wymaga osobnego uprawnienia Bluetooth w runtime.</string>
     <string name="setup_permission_already_granted">To uprawnienie jest już przyznane.</string>
+    <string name="setup_status_braille_display_optional">Uprawnienia monitora brajlowskiego są opcjonalne i są potrzebne tylko wtedy, gdy używasz monitora brajlowskiego przez USB albo Bluetooth.</string>
     <string name="setup_status_usb_info">Uprawnienie USB jest nadawane po podłączeniu monitora brajlowskiego. Użyj diagnostyki monitorów brajlowskich, aby je wywołać.</string>
     <string name="setup_status_braille_loading">Ładowanie stanu translatora brajla…</string>
     <string name="setup_status_braille_missing">Nie ma jeszcze aktywnej tablicy tłumaczenia brajla.</string>
@@ -549,7 +561,7 @@ Propozycja zgłoszenia awarii: %5$s
 Silnik mowy: %6$s</string>
     <string name="braille_keyboard_test_title">Kalibracja i test klawiatury brajlowskiej</string>
     <string name="braille_keyboard_test_intro">Użyj tego ekranu, aby skalibrować ekranową klawiaturę brajlowską i potwierdzić, że pisanie działa przed zakończeniem konfiguracji.</string>
-    <string name="braille_keyboard_test_calibration_steps">Kalibracja: otwórz Soft Braille Keyboard w polu poniżej, przytrzymaj trzy palce jednej ręki na ekranie, aż usłyszysz komunikat, a potem przytrzymaj trzy palce drugiej ręki. Następnie wpisz kilka znaków w polu testowym.</string>
+    <string name="braille_keyboard_test_calibration_steps">Kalibracja: otwórz Soft Braille Keyboard w polu poniżej, a następnie albo przytrzymaj od razu wszystkie sześć palców, albo przytrzymaj pierwsze trzy palce do komunikatu i potem przytrzymaj kolejne trzy. Po tym wpisz kilka znaków w polu testowym.</string>
     <string name="braille_keyboard_test_status_template">Klawiatura włączona: %1$s
 Klawiatura domyślna: %2$s
 Kalibracja: %3$s</string>
@@ -724,7 +736,14 @@ Najnowsze wydanie: %2$s</string>
     <string name="update_download_description">Pobieranie wydania z GitHuba</string>
     <string name="update_download_fallback">Nie udało się rozpocząć bezpośredniego pobierania. Otwieram stronę wydania.</string>
     <string name="update_download_started">Rozpoczęto pobieranie aktualizacji. Po zakończeniu otwórz powiadomienie pobierania.</string>
+    <string name="update_download_status_title">Pobieranie aktualizacji</string>
+    <string name="update_download_status_preparing">Przygotowuję pobieranie pliku APK…</string>
+    <string name="update_download_status_running">Pobieranie w toku: %1$d%%</string>
+    <string name="update_download_status_complete">Pobieranie pliku APK zostało zakończone. Możesz go teraz zainstalować.</string>
+    <string name="update_download_status_failed">Nie udało się zakończyć pobierania pliku APK. Możesz zamiast tego otworzyć stronę wydania.</string>
     <string name="update_download_title">Soft Braille Keyboard %s</string>
+    <string name="update_action_install">Zainstaluj APK</string>
+    <string name="update_action_background">Pobieraj w tle</string>
     <string name="update_no_apk_message">Znaleziono nowsze wydanie na GitHubie, ale nie ma do niego dołączonego pliku APK.
 
 Zainstalowana wersja: %1$s

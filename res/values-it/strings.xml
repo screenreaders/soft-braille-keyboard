@@ -985,4 +985,23 @@ Bluetooth: %2$s</string>
     <string name="txt_id_practice" translatable="false">TXT_PRACTICE</string>
     
     
+    <string name="setup_step_indicator_value">Step %1$d of %2$d: %3$s</string>
+    <string name="setup_intro_keyboard">First enable the keyboard in Android, make it the default input method and choose the braille translation tables and keyboard layout you want to start with.</string>
+    <string name="setup_intro_calibration">Now calibrate and test the on-screen braille keyboard directly in the practice field below. You can calibrate with all six fingers at once or by holding the first three fingers and then the other three after the prompt.</string>
+    <string name="setup_intro_tts">Choose the speech engine, voice and speaking parameters here so the keyboard is immediately usable after the wizard.</string>
+    <string name="setup_intro_profile">Finish the typing preferences, automatic update checks, crash prompts and optional braille display settings for this user profile.</string>
+    <string name="setup_label_braille_type">Braille type</string>
+    <string name="setup_label_literary_table">Literary braille table</string>
+    <string name="setup_label_computer_table">Computer braille table</string>
+    <string name="setup_label_keyboard_dots">On-screen keyboard dots</string>
+    <string name="setup_button_previous">Back</string>
+    <string name="setup_button_next">Next</string>
+    <string name="setup_status_braille_display_optional">Braille display permissions are optional and only needed if you use a USB or Bluetooth braille display.</string>
+    <string name="update_download_status_title">Update download</string>
+    <string name="update_download_status_preparing">Preparing the APK download…</string>
+    <string name="update_download_status_running">Download in progress: %1$d%%</string>
+    <string name="update_download_status_complete">The APK download has finished. You can install it now.</string>
+    <string name="update_download_status_failed">The APK download could not be completed. You can open the release page instead.</string>
+    <string name="update_action_install">Install APK</string>
+    <string name="update_action_background">Keep downloading</string>
 </resources>

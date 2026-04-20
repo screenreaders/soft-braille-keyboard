@@ -1,180 +1,521 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/setup_step_indicator"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/setup_step_intro"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/setup_wizard_intro" />
+
+    <ViewFlipper
+        android:id="@+id/setup_pages"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="12dp"
+        android:layout_weight="1">
+
+        <ScrollView
+            android:id="@+id/setup_page_keyboard"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/setup_section_keyboard"
+                    android:textAppearance="?android:attr/textAppearanceLarge"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/setup_keyboard_status"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp" />
+
+                <TextView
+                    android:id="@+id/setup_default_status"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp" />
+
+                <Button
+                    style="@android:style/TextAppearance.Large"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:onClick="onOpenKeyboardSettings"
+                    android:text="@string/button_keyboard_settings" />
+
+                <Button
+                    style="@android:style/TextAppearance.Large"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:onClick="onChooseDefaultKeyboard"
+                    android:text="@string/button_choose_default_keyboard" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="18dp"
+                    android:text="@string/setup_section_translation"
+                    android:textAppearance="?android:attr/textAppearanceLarge"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/setup_braille_status"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/setup_label_braille_type"
+                    android:textStyle="bold" />
+
+                <Spinner
+                    android:id="@+id/setup_braille_type_spinner"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/setup_label_literary_table"
+                    android:textStyle="bold" />
+
+                <Spinner
+                    android:id="@+id/setup_literary_table_spinner"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/setup_label_computer_table"
+                    android:textStyle="bold" />
+
+                <Spinner
+                    android:id="@+id/setup_computer_table_spinner"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="18dp"
+                    android:text="@string/setup_label_keyboard_dots"
+                    android:textStyle="bold" />
+
+                <Spinner
+                    android:id="@+id/setup_keyboard_dots_spinner"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/pref_default_keyboard_title"
+                    android:textStyle="bold" />
+
+                <Spinner
+                    android:id="@+id/setup_keyboard_layout_spinner"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/pref_keyboard_style_title"
+                    android:textStyle="bold" />
+
+                <Spinner
+                    android:id="@+id/setup_keyboard_style_spinner"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+        </ScrollView>
+
+        <ScrollView
+            android:id="@+id/setup_page_calibration"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/setup_section_calibration"
+                    android:textAppearance="?android:attr/textAppearanceLarge"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/setup_calibration_status"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp" />
+
+                <TextView
+                    android:id="@+id/setup_calibration_instructions"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/braille_keyboard_test_calibration_steps" />
+
+                <Button
+                    style="@android:style/TextAppearance.Large"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:onClick="onOpenKeyboardSettings"
+                    android:text="@string/button_keyboard_settings" />
+
+                <Button
+                    style="@android:style/TextAppearance.Large"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:onClick="onChooseDefaultKeyboard"
+                    android:text="@string/button_choose_default_keyboard" />
+
+                <Button
+                    style="@android:style/TextAppearance.Large"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:onClick="onFocusPracticeField"
+                    android:text="@string/button_braille_keyboard_test_focus" />
+
+                <EditText
+                    android:id="@+id/setup_practice_input"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:hint="@string/try_box"
+                    android:inputType="textCapSentences|textMultiLine" />
+            </LinearLayout>
+        </ScrollView>
+
+        <ScrollView
+            android:id="@+id/setup_page_tts"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/user_profile_setup_speech_title"
+                    android:textAppearance="?android:attr/textAppearanceLarge"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/pref_text_to_speech_screen_summary" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/pref_text_to_speech_engine_title"
+                    android:textStyle="bold" />
+
+                <Spinner
+                    android:id="@+id/setup_tts_engine_spinner"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/pref_text_to_speech_voice_title"
+                    android:textStyle="bold" />
+
+                <Spinner
+                    android:id="@+id/setup_tts_voice_spinner"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <TextView
+                    android:id="@+id/setup_tts_status"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/pref_text_to_speech_loading_voices" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/pref_text_to_speech_rate_title"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/setup_tts_rate_value"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <SeekBar
+                    android:id="@+id/setup_tts_rate_seekbar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/pref_text_to_speech_pitch_title"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/setup_tts_pitch_value"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <SeekBar
+                    android:id="@+id/setup_tts_pitch_seekbar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/pref_text_to_speech_volume_title"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/setup_tts_volume_value"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <SeekBar
+                    android:id="@+id/setup_tts_volume_seekbar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <Button
+                    android:id="@+id/setup_tts_preview_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:onClick="onSpeakTtsPreview"
+                    android:text="@string/pref_text_to_speech_preview_button" />
+            </LinearLayout>
+        </ScrollView>
+
+        <ScrollView
+            android:id="@+id/setup_page_profile"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/setup_section_profile"
+                    android:textAppearance="?android:attr/textAppearanceLarge"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/setup_profile_status"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/pref_echo_feedback_title"
+                    android:textStyle="bold" />
+
+                <Spinner
+                    android:id="@+id/setup_keyboard_echo_spinner"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <CheckBox
+                    android:id="@+id/setup_misspellings_checkbox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/pref_echo_misspellings_title" />
+
+                <CheckBox
+                    android:id="@+id/setup_double_space_checkbox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/pref_double_space_period_title" />
+
+                <CheckBox
+                    android:id="@+id/setup_auto_caps_checkbox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/pref_auto_caps_title" />
+
+                <CheckBox
+                    android:id="@+id/setup_voice_shortcut_checkbox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/pref_voice_shortcut_title" />
+
+                <CheckBox
+                    android:id="@+id/setup_auto_updates_checkbox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/pref_auto_check_updates_title" />
+
+                <CheckBox
+                    android:id="@+id/setup_crash_prompt_checkbox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/pref_prompt_crash_report_title" />
+
+                <CheckBox
+                    android:id="@+id/setup_uses_display_checkbox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/user_profile_setup_uses_display_title" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="18dp"
+                    android:text="@string/setup_section_accessibility"
+                    android:textAppearance="?android:attr/textAppearanceLarge"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/setup_accessibility_status"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp" />
+
+                <Button
+                    style="@android:style/TextAppearance.Large"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:onClick="onOpenAccessibilitySettings"
+                    android:text="@string/button_accessibility_settings" />
+
+                <Button
+                    style="@android:style/TextAppearance.Large"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:onClick="onOpenBrailleDisplayTools"
+                    android:text="@string/button_braille_displays" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="18dp"
+                    android:text="@string/setup_section_permissions"
+                    android:textAppearance="?android:attr/textAppearanceLarge"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/setup_permissions_status"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp" />
+
+                <Button
+                    android:id="@+id/setup_microphone_button"
+                    style="@android:style/TextAppearance.Large"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:onClick="onRequestRecordAudio"
+                    android:text="@string/button_request_microphone_permission" />
+
+                <Button
+                    android:id="@+id/setup_bluetooth_button"
+                    style="@android:style/TextAppearance.Large"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:onClick="onRequestBluetooth"
+                    android:text="@string/button_request_bluetooth_permission" />
+
+                <CheckBox
+                    android:id="@+id/setup_save_profile_checkbox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:text="@string/user_profile_setup_save_named_profile" />
+
+                <EditText
+                    android:id="@+id/setup_profile_name_input"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/user_profile_setup_profile_name_hint"
+                    android:inputType="textCapWords" />
+            </LinearLayout>
+        </ScrollView>
+    </ViewFlipper>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/setup_wizard_intro" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:text="@string/setup_section_keyboard"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/setup_keyboard_status"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp" />
-
-        <TextView
-            android:id="@+id/setup_default_status"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp" />
+        android:layout_marginTop="12dp"
+        android:orientation="horizontal">
 
         <Button
-            style="@android:style/TextAppearance.Large"
-            android:layout_width="match_parent"
+            android:id="@+id/setup_prev_button"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:onClick="onOpenKeyboardSettings"
-            android:text="@string/button_keyboard_settings" />
+            android:layout_weight="1"
+            android:onClick="onPreviousPage"
+            android:text="@string/setup_button_previous" />
 
         <Button
-            style="@android:style/TextAppearance.Large"
-            android:layout_width="match_parent"
+            android:id="@+id/setup_next_button"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:onClick="onChooseDefaultKeyboard"
-            android:text="@string/button_choose_default_keyboard" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:text="@string/setup_section_translation"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/setup_braille_status"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp" />
-
-        <Button
-            style="@android:style/TextAppearance.Large"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="onOpenBrailleTranslationSettings"
-            android:text="@string/button_braille_translation_settings" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:text="@string/setup_section_calibration"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/setup_calibration_status"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp" />
-
-        <Button
-            style="@android:style/TextAppearance.Large"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="onOpenKeyboardCalibrationAndTest"
-            android:text="@string/button_open_keyboard_calibration_test" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:text="@string/setup_section_profile"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/setup_profile_status"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp" />
-
-        <Button
-            style="@android:style/TextAppearance.Large"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="onOpenUserProfileSetup"
-            android:text="@string/button_open_user_profile_setup" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:text="@string/setup_section_accessibility"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/setup_accessibility_status"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp" />
-
-        <Button
-            style="@android:style/TextAppearance.Large"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="onOpenAccessibilitySettings"
-            android:text="@string/button_accessibility_settings" />
-
-        <Button
-            style="@android:style/TextAppearance.Large"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="onOpenBrailleDisplayTools"
-            android:text="@string/button_braille_displays" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:text="@string/setup_section_permissions"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/setup_permissions_status"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp" />
-
-        <Button
-            style="@android:style/TextAppearance.Large"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="onRequestRecordAudio"
-            android:text="@string/button_request_microphone_permission" />
-
-        <Button
-            style="@android:style/TextAppearance.Large"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="onRequestBluetooth"
-            android:text="@string/button_request_bluetooth_permission" />
+            android:layout_marginLeft="8dp"
+            android:layout_weight="1"
+            android:onClick="onNextPage"
+            android:text="@string/setup_button_next" />
 
         <Button
             android:id="@+id/setup_finish_button"
-            style="@android:style/TextAppearance.Large"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
+            android:layout_marginLeft="8dp"
+            android:layout_weight="1"
             android:onClick="onFinishWizard"
             android:text="@string/setup_finish_button" />
-
     </LinearLayout>
-</ScrollView>
+</LinearLayout>

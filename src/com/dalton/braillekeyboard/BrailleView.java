@@ -65,7 +65,7 @@ public class BrailleView extends View {
     private static final long LONG_VIBRATION = 300;
     private static final long MEDIUM_VIBRATION = 125;
     private static final byte NO_DOTS = 0;
-    private static final long LONG_HOLD_DELAY = 1200;
+    private static final long LONG_HOLD_DELAY = 800;
     private static final long QUICK_VIBRATION = 25;
 
     private final AccessibilityManager accessibilityManager;
@@ -484,14 +484,39 @@ public class BrailleView extends View {
     private boolean setPad(int id, int width, int height, boolean autoRotate) {
         final int TOTAL_DOTS = 6;
         final int ONE_SIDE = 3;
+        final int activeDots = countDotsDown(dotsDown);
         // For whatever reason we won't be able to set a pad
         if (requiredTouchTime > System.currentTimeMillis()
-                || countDotsDown(dotsDown) != ONE_SIDE) {
+                || (activeDots != ONE_SIDE && activeDots != TOTAL_DOTS)) {
             return false;
         }
         if (lastDotList.size() != ONE_SIDE && lastDotList.size() != 0) {
             lastDotList.clear();
             return false;
+        }
+
+        if (activeDots == TOTAL_DOTS) {
+            setDotsSevenEight(false, false);
+            Coords[] sixDots = new Coords[TOTAL_DOTS];
+            for (int i = 0, j = 0; i < dotsDown.length && j < sixDots.length; i++) {
+                if (dotsDown[i] != null) {
+                    int localX = dotsDown[i].getSecondX();
+                    int localY = dotsDown[i].getSecondY();
+                    sixDots[j++] = new Coords(localX, localY);
+                }
+            }
+            boolean result = selectPad(sixDots, width, height);
+            if (speech != null) {
+                speech.speak(getContext(), getContext().getString(result
+                        ? pad.padString : R.string.keyboard_error),
+                        Speech.QUEUE_FLUSH);
+            }
+            if (vibrator != null) {
+                vibrator.vibrate(result ? MEDIUM_VIBRATION : QUICK_VIBRATION);
+            }
+            lastDotList.clear();
+            resetDots();
+            return result;
         }
 
         // Add the first three dots to the current dot list.
