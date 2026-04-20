@@ -322,7 +322,12 @@ public class DisplayService extends Service
         for (String action : actions) {
             filter.addAction(action);
         }
-        registerReceiver(mBroadcastReceiver, filter, null, null);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(mBroadcastReceiver, filter,
+                    Context.RECEIVER_NOT_EXPORTED);
+        } else {
+            registerReceiver(mBroadcastReceiver, filter, null, null);
+        }
         mReceiverRegistered = true;
     }
 
