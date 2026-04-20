@@ -18,6 +18,7 @@ package com.dalton.braillekeyboard;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Collections;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -26,6 +27,7 @@ import android.graphics.Paint;
 import android.graphics.Paint.FontMetrics;
 import android.graphics.Paint.Style;
 import android.graphics.Rect;
+import android.os.Build;
 import android.os.Vibrator;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
@@ -226,6 +228,7 @@ public class BrailleView extends View {
         super.onSizeChanged(w, h, oldw, oldh);
         setDisplayParams(w, h);
         loadDefaultPad(w, h);
+        updateSystemGestureExclusion();
     }
 
     @Override
@@ -478,6 +481,7 @@ public class BrailleView extends View {
         }
         invalidate();
         requestLayout();
+        updateSystemGestureExclusion();
     }
 
     private boolean setPad(int id, int width, int height, boolean autoRotate) {
@@ -732,6 +736,7 @@ public class BrailleView extends View {
         if (listener != null) {
             listener.updateFullscreenMode();
         }
+        updateSystemGestureExclusion();
     }
 
     private static int countDotsDown(Coords[] dots) {
@@ -843,6 +848,18 @@ public class BrailleView extends View {
     private boolean isCalibrationGestureActive() {
         return System.currentTimeMillis() > requiredTouchTime
                 && (countDotsDown(dotsDown) >= 3 || !lastDotList.isEmpty());
+    }
+
+    private void updateSystemGestureExclusion() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            return;
+        }
+        if (!isShown() || getWidth() <= 0 || getHeight() <= 0 || shrinkKeyboard) {
+            setSystemGestureExclusionRects(Collections.<Rect>emptyList());
+            return;
+        }
+        Rect exclusionRect = new Rect(0, 0, getWidth(), getHeight());
+        setSystemGestureExclusionRects(Collections.singletonList(exclusionRect));
     }
 
     private static class DisplayParams {

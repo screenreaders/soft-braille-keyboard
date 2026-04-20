@@ -1004,4 +1004,8 @@ Bluetooth: %2$s</string>
     <string name="update_download_status_failed">The APK download could not be completed. You can open the release page instead.</string>
     <string name="update_action_install">Install APK</string>
     <string name="update_action_background">Keep downloading</string>
+    <string name="braille_keyboard_talkback_enable_service">To use the on-screen braille keyboard with TalkBack, enable the Braille accessibility service in Android accessibility settings.</string>
+    <string name="braille_keyboard_talkback_ready">TalkBack passthrough is active for the braille keyboard area.</string>
+    <string name="setup_status_accessibility_enabled_for_talkback">Braille accessibility service is enabled. TalkBack-compatible braille keyboard input is ready.</string>
+    <string name="setup_status_accessibility_required_for_talkback">TalkBack is active. Enable the Braille accessibility service to use the on-screen braille keyboard without turning TalkBack off.</string>
 </resources>

@@ -189,6 +189,18 @@ public class BrailleIME extends InputMethodService implements KeyboardListener {
     }
 
     @Override
+    public void onWindowShown() {
+        super.onWindowShown();
+        publishAccessibilityPassthroughRegion();
+    }
+
+    @Override
+    public void onWindowHidden() {
+        super.onWindowHidden();
+        clearAccessibilityPassthroughRegion();
+    }
+
+    @Override
     public void onDestroy() {
         super.onDestroy();
         if (brailleParser != null) {
