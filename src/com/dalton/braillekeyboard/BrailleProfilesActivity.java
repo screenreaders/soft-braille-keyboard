@@ -192,15 +192,19 @@ public class BrailleProfilesActivity extends Activity
         String activeTableId = activeTable == null
                 ? getString(R.string.no_braille_table)
                 : activeTable.getId();
-        String literaryId = Options.getStringPreference(this,
-                R.string.pref_braille_literary_table_key,
-                getString(R.string.pref_braille_table_auto));
-        String computerId = Options.getStringPreference(this,
-                R.string.pref_braille_computer_table_key,
-                getString(R.string.pref_braille_table_auto));
+        String ttsEngine = Options.getStringPreference(this,
+                R.string.pref_text_to_speech_engine_key, "");
+        if (TextUtils.isEmpty(ttsEngine)) {
+            ttsEngine = getString(R.string.pref_text_to_speech_engine_auto);
+        }
+        String preferredDisplay = BrailleDisplayPreferences
+                .getPreferredDeviceAddress(this);
+        if (TextUtils.isEmpty(preferredDisplay)) {
+            preferredDisplay = getString(R.string.braille_profile_no_device);
+        }
         currentSettingsView.setText(getString(
                 R.string.braille_profiles_current_settings_template,
-                typeLabel, activeTableId, literaryId, computerId));
+                typeLabel, activeTableId, ttsEngine, preferredDisplay));
     }
 
     private void setSelectedProfile(String name) {

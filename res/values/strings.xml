@@ -364,7 +364,7 @@ Device table: %3$s</string>
     <string name="pref_default_computer_braille_table_title">Computer Braille table</string>
     <string name="pref_braille_display_tools_summary">Open braille display diagnostics, command test and device profile tools.</string>
     <string name="pref_braille_display_tools_title">Braille display tools</string>
-    <string name="pref_braille_profiles_summary">Save and switch named braille profiles such as Polish literary and English computer braille.</string>
+    <string name="pref_braille_profiles_summary">Save and switch full user profiles, including braille tables, speech engine, monitor settings and other app preferences.</string>
     <string name="pref_braille_profiles_title">Braille user profiles</string>
     <string name="pref_braille_learn_summary">Open practice mode for braille letters, numbers and punctuation.</string>
     <string name="pref_braille_learn_title">Braille learning mode</string>
@@ -478,8 +478,8 @@ Bluetooth: %2$s</string>
   <string name="braille_export_profiles">Copy braille display profiles</string>
   <string name="braille_import_profiles">Import braille display profiles from clipboard</string>
   <string name="braille_profiles_title">Braille user profiles</string>
-  <string name="braille_profiles_intro">Save the current braille type and both table selections as a named profile, for example Polish literary and English computer braille. Then switch between saved profiles quickly from this screen or the main screen.</string>
-  <string name="braille_profiles_name_hint">Profile name, for example Polish literary</string>
+  <string name="braille_profiles_intro">Save the full current configuration as a named user profile, including braille tables, speech engine, voice settings, monitor settings and other app preferences. Then switch between saved profiles quickly from this screen or the main screen.</string>
+  <string name="braille_profiles_name_hint">Profile name, for example Polish or English</string>
   <string name="braille_profiles_save_current">Save current settings as profile</string>
   <string name="braille_profiles_apply_selected">Apply selected profile</string>
   <string name="braille_profiles_delete_selected">Delete selected profile</string>
@@ -496,8 +496,8 @@ Bluetooth: %2$s</string>
   <string name="braille_profiles_active_value">Active profile: %1$s</string>
   <string name="braille_profiles_current_settings_template">Current braille type: %1$s
 Active table: %2$s
-Literary table preference: %3$s
-Computer table preference: %4$s</string>
+Speech engine: %3$s
+Preferred braille display: %4$s</string>
   <string name="braille_profiles_clip_label">Braille display profiles</string>
   <string name="braille_named_profiles_intro">Save the current braille display configuration, including preferred monitor, per-device table and remaps, as a named profile. Then switch between saved monitor profiles quickly.</string>
   <string name="braille_named_profiles_name_hint">Display profile name, for example Orbit Reader Polish</string>

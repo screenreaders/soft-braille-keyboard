@@ -12,7 +12,9 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public final class BrailleUserProfiles {
     private static final String PREF_PROFILES_JSON = "brailleUserProfilesJson";
@@ -20,16 +22,11 @@ public final class BrailleUserProfiles {
 
     public static final class Profile {
         public final String name;
-        public final int brailleTypeValue;
-        public final String literaryTableId;
-        public final String computerTableId;
+        public final String payload;
 
-        Profile(String name, int brailleTypeValue, String literaryTableId,
-                String computerTableId) {
+        Profile(String name, String payload) {
             this.name = name;
-            this.brailleTypeValue = brailleTypeValue;
-            this.literaryTableId = literaryTableId;
-            this.computerTableId = computerTableId;
+            this.payload = payload;
         }
     }
 
@@ -53,13 +50,10 @@ public final class BrailleUserProfiles {
                     continue;
                 }
                 String name = item.optString("name", "").trim();
-                if (TextUtils.isEmpty(name)) {
-                    continue;
+                String snapshot = item.optString("payload", "");
+                if (!TextUtils.isEmpty(name) && !TextUtils.isEmpty(snapshot)) {
+                    profiles.add(new Profile(name, snapshot));
                 }
-                profiles.add(new Profile(name,
-                        item.optInt("brailleTypeValue", 1),
-                        item.optString("literaryTableId", ""),
-                        item.optString("computerTableId", "")));
             }
         } catch (JSONException e) {
             return new ArrayList<Profile>();
@@ -81,22 +75,31 @@ public final class BrailleUserProfiles {
         if (trimmedName.length() == 0) {
             return false;
         }
-        List<Profile> profiles = getProfiles(context);
-        Profile current = buildCurrentProfile(context, trimmedName);
-        boolean replaced = false;
-        for (int i = 0; i < profiles.size(); i++) {
-            if (trimmedName.equalsIgnoreCase(profiles.get(i).name)) {
-                profiles.set(i, current);
-                replaced = true;
-                break;
+        try {
+            String payload = AppSettingsBackup.exportPreferences(context,
+                    buildExcludedKeys());
+            if (TextUtils.isEmpty(payload)) {
+                return false;
             }
+            List<Profile> profiles = getProfiles(context);
+            Profile current = new Profile(trimmedName, payload);
+            boolean replaced = false;
+            for (int i = 0; i < profiles.size(); i++) {
+                if (trimmedName.equalsIgnoreCase(profiles.get(i).name)) {
+                    profiles.set(i, current);
+                    replaced = true;
+                    break;
+                }
+            }
+            if (!replaced) {
+                profiles.add(current);
+            }
+            persistProfiles(context, profiles);
+            setActiveProfileName(context, trimmedName);
+            return true;
+        } catch (JSONException e) {
+            return false;
         }
-        if (!replaced) {
-            profiles.add(current);
-        }
-        persistProfiles(context, profiles);
-        setActiveProfileName(context, trimmedName);
-        return true;
     }
 
     public static boolean applyProfile(Context context, String name) {
@@ -107,20 +110,17 @@ public final class BrailleUserProfiles {
         if (profile == null) {
             return false;
         }
-        Options.writeStringPreference(context, R.string.pref_braille_type_key,
-                String.valueOf(profile.brailleTypeValue));
-        Options.writeStringPreference(context,
-                R.string.pref_braille_literary_table_key,
-                TextUtils.isEmpty(profile.literaryTableId)
-                        ? context.getString(R.string.pref_braille_table_auto)
-                        : profile.literaryTableId);
-        Options.writeStringPreference(context,
-                R.string.pref_braille_computer_table_key,
-                TextUtils.isEmpty(profile.computerTableId)
-                        ? context.getString(R.string.pref_braille_table_auto)
-                        : profile.computerTableId);
-        setActiveProfileName(context, profile.name);
-        return true;
+        try {
+            int restored = AppSettingsBackup.importPreferences(context,
+                    profile.payload);
+            if (restored <= 0) {
+                return false;
+            }
+            setActiveProfileName(context, profile.name);
+            return true;
+        } catch (JSONException e) {
+            return false;
+        }
     }
 
     public static boolean deleteProfile(Context context, String name) {
@@ -165,16 +165,14 @@ public final class BrailleUserProfiles {
             }
         }
         Profile next = profiles.get(nextIndex);
-        applyProfile(context, next.name);
-        return next;
+        return applyProfile(context, next.name) ? next : null;
     }
 
     public static Profile findProfile(Context context, String name) {
         if (context == null || TextUtils.isEmpty(name)) {
             return null;
         }
-        List<Profile> profiles = getProfiles(context);
-        for (Profile profile : profiles) {
+        for (Profile profile : getProfiles(context)) {
             if (name.equalsIgnoreCase(profile.name)) {
                 return profile;
             }
@@ -211,36 +209,13 @@ public final class BrailleUserProfiles {
         editor.apply();
     }
 
-    private static Profile buildCurrentProfile(Context context, String name) {
-        BrailleParser parser = new BrailleParser(context,
-                new BrailleParser.BrailleParserListener() {
-                    @Override
-                    public void onTranslatorReady(int status) {
-                    }
-                });
-        try {
-            BrailleParser.BrailleType type = parser.getBrailleType(context);
-            String literary = Options.getStringPreference(context,
-                    R.string.pref_braille_literary_table_key,
-                    context.getString(R.string.pref_braille_table_auto));
-            String computer = Options.getStringPreference(context,
-                    R.string.pref_braille_computer_table_key,
-                    context.getString(R.string.pref_braille_table_auto));
-            return new Profile(name, type.prefValue(), literary, computer);
-        } finally {
-            parser.destroy();
-        }
-    }
-
     private static void persistProfiles(Context context, List<Profile> profiles) {
         JSONArray array = new JSONArray();
         for (Profile profile : profiles) {
             JSONObject item = new JSONObject();
             try {
                 item.put("name", profile.name);
-                item.put("brailleTypeValue", profile.brailleTypeValue);
-                item.put("literaryTableId", profile.literaryTableId);
-                item.put("computerTableId", profile.computerTableId);
+                item.put("payload", profile.payload);
                 array.put(item);
             } catch (JSONException e) {
                 // Skip malformed profile serialization and keep the rest.
@@ -253,5 +228,14 @@ public final class BrailleUserProfiles {
 
     private static SharedPreferences getPreferences(Context context) {
         return PreferenceManager.getDefaultSharedPreferences(context);
+    }
+
+    private static Set<String> buildExcludedKeys() {
+        Set<String> excluded = new HashSet<String>();
+        excluded.add(PREF_PROFILES_JSON);
+        excluded.add(PREF_ACTIVE_PROFILE);
+        excluded.add("brailleDisplayNamedProfilesJson");
+        excluded.add("brailleDisplayNamedActiveProfile");
+        return excluded;
     }
 }

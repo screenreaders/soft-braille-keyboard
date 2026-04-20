@@ -450,7 +450,7 @@ Tabela urządzeń: %3$s</string>
     <string name="braille_table_test_no_backward_result">Dla wpisanych komórek nie uzyskano tekstu.</string>
     <string name="pref_braille_display_tools_summary">Otwórz diagnostykę monitora brajlowskiego, test poleceń i narzędzia profili urządzeń.</string>
     <string name="pref_braille_display_tools_title">Narzędzia monitora brajlowskiego</string>
-    <string name="pref_braille_profiles_summary">Zapisuj i przełączaj nazwane profile brajlowskie, na przykład polski literacki i angielski komputerowy.</string>
+    <string name="pref_braille_profiles_summary">Zapisuj i przełączaj pełne profile użytkownika, obejmujące tablice brajlowskie, syntezę mowy, ustawienia monitora i pozostałe preferencje aplikacji.</string>
     <string name="pref_braille_profiles_title">Profile brajlowskie użytkownika</string>
     <string name="pref_braille_learn_summary">Otwórz tryb ćwiczeń liter, cyfr i znaków interpunkcyjnych w brajlu.</string>
     <string name="pref_braille_learn_title">Tryb nauki brajla</string>
@@ -530,8 +530,8 @@ Bluetooth: %2$s</string>
     <string name="braille_export_profiles">Skopiuj profile monitorów brajlowskich</string>
     <string name="braille_import_profiles">Zaimportuj profile monitorów brajlowskich ze schowka</string>
     <string name="braille_profiles_title">Profile brajlowskie użytkownika</string>
-    <string name="braille_profiles_intro">Zapisz bieżący typ brajla i obie wybrane tablice jako nazwany profil, na przykład polski literacki albo angielski komputerowy. Potem możesz szybko przełączać zapisane profile z tego ekranu albo z ekranu głównego.</string>
-    <string name="braille_profiles_name_hint">Nazwa profilu, na przykład Polski literacki</string>
+    <string name="braille_profiles_intro">Zapisz pełną bieżącą konfigurację jako nazwany profil użytkownika, obejmujący tablice brajlowskie, silnik mowy, ustawienia monitora i pozostałe preferencje aplikacji. Potem możesz szybko przełączać zapisane profile z tego ekranu albo z ekranu głównego.</string>
+    <string name="braille_profiles_name_hint">Nazwa profilu, na przykład Polski albo English</string>
     <string name="braille_profiles_save_current">Zapisz bieżące ustawienia jako profil</string>
     <string name="braille_profiles_apply_selected">Zastosuj wybrany profil</string>
     <string name="braille_profiles_delete_selected">Usuń wybrany profil</string>
@@ -548,8 +548,8 @@ Bluetooth: %2$s</string>
     <string name="braille_profiles_active_value">Aktywny profil: %1$s</string>
     <string name="braille_profiles_current_settings_template">Bieżący typ brajla: %1$s
 Aktywna tablica: %2$s
-Preferowana tablica literacka: %3$s
-Preferowana tablica komputerowa: %4$s</string>
+Silnik mowy: %3$s
+Preferowany monitor brajlowski: %4$s</string>
     <string name="braille_profiles_clip_label">Profile monitorów brajlowskich</string>
     <string name="braille_named_profiles_intro">Zapisz bieżącą konfigurację monitora brajlowskiego, w tym preferowany monitor, tabelę per urządzenie i remapy, jako nazwany profil. Potem możesz szybko przełączać zapisane profile monitora.</string>
     <string name="braille_named_profiles_name_hint">Nazwa profilu monitora, na przykład Orbit Reader Polski</string>

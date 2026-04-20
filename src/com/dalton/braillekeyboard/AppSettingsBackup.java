@@ -9,6 +9,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Iterator;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -17,6 +18,11 @@ public final class AppSettingsBackup {
     }
 
     public static String exportPreferences(Context context) throws JSONException {
+        return exportPreferences(context, null);
+    }
+
+    public static String exportPreferences(Context context, Set<String> excludedKeys)
+            throws JSONException {
         SharedPreferences preferences = PreferenceManager
                 .getDefaultSharedPreferences(context);
         Map<String, ?> all = preferences.getAll();
@@ -24,8 +30,13 @@ public final class AppSettingsBackup {
         root.put("format", 1);
         root.put("package", context.getPackageName());
         JSONObject values = new JSONObject();
+        Set<String> excluded = excludedKeys == null
+                ? new HashSet<String>() : new HashSet<String>(excludedKeys);
         for (Map.Entry<String, ?> entry : all.entrySet()) {
             if (entry == null || entry.getKey() == null) {
+                continue;
+            }
+            if (excluded.contains(entry.getKey())) {
                 continue;
             }
             JSONObject item = new JSONObject();
@@ -87,7 +98,7 @@ public final class AppSettingsBackup {
                 editor.putBoolean(key, item.optBoolean("value"));
                 restored++;
             } else if ("int".equals(type)) {
-                editor.putString(key, String.valueOf(item.optInt("value")));
+                editor.putInt(key, item.optInt("value"));
                 restored++;
             } else if ("long".equals(type)) {
                 editor.putLong(key, item.optLong("value"));
