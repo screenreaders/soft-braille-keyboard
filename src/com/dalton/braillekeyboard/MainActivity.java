@@ -22,6 +22,7 @@ import java.util.List;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.DownloadManager;
+import android.content.DialogInterface;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -67,6 +68,8 @@ public class MainActivity extends Activity
     private volatile boolean updateCheckInProgress;
     private BrailleParser brailleParser;
     private boolean wizardAutoLaunched;
+    private boolean startupAutoCheckTriggered;
+    private boolean pendingCrashPromptShown;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +79,8 @@ public class MainActivity extends Activity
         maybeRequestBluetoothPermission();
         updateUIStates();
         maybeLaunchSetupWizard();
+        maybePromptPendingCrashReport();
+        maybeCheckForUpdatesOnStartup();
     }
 
     // Called when we gain or lose focus.
@@ -181,6 +186,13 @@ public class MainActivity extends Activity
         }
     }
 
+    public void onUserProfileSetup(View view) {
+        Intent intent = new Intent(this, UserProfileSetupActivity.class);
+        if (canStartActivity(intent)) {
+            startActivity(intent);
+        }
+    }
+
     public void onBrailleProfiles(View view) {
         Intent intent = new Intent(this, BrailleProfilesActivity.class);
         if (canStartActivity(intent)) {
@@ -240,13 +252,19 @@ public class MainActivity extends Activity
     }
 
     public void onCheckForUpdates(View view) {
+        startUpdateCheck(true);
+    }
+
+    private void startUpdateCheck(final boolean userInitiated) {
         if (updateCheckInProgress) {
             return;
         }
         updateCheckInProgress = true;
-        setUpdateCheckEnabled(false);
-        Toast.makeText(this, R.string.update_check_in_progress,
-                Toast.LENGTH_SHORT).show();
+        if (userInitiated) {
+            setUpdateCheckEnabled(false);
+            Toast.makeText(this, R.string.update_check_in_progress,
+                    Toast.LENGTH_SHORT).show();
+        }
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -276,8 +294,13 @@ public class MainActivity extends Activity
                     @Override
                     public void run() {
                         updateCheckInProgress = false;
-                        setUpdateCheckEnabled(true);
-                        handleUpdateCheckResult(repoInfo, releaseInfo, error);
+                        if (userInitiated) {
+                            setUpdateCheckEnabled(true);
+                            handleUpdateCheckResult(repoInfo, releaseInfo, error);
+                        } else {
+                            handleSilentUpdateCheckResult(repoInfo, releaseInfo,
+                                    error);
+                        }
                     }
                 });
             }
@@ -341,6 +364,61 @@ public class MainActivity extends Activity
         if (canStartActivity(intent)) {
             startActivity(intent);
         }
+    }
+
+    private void maybeCheckForUpdatesOnStartup() {
+        if (startupAutoCheckTriggered || updateCheckInProgress
+                || !Options.getBooleanPreference(this,
+                        R.string.pref_auto_check_updates_key,
+                        Boolean.parseBoolean(getString(
+                                R.string.pref_auto_check_updates_default)))) {
+            return;
+        }
+        startupAutoCheckTriggered = true;
+        startUpdateCheck(false);
+    }
+
+    private void maybePromptPendingCrashReport() {
+        if (pendingCrashPromptShown || !Options.getBooleanPreference(this,
+                R.string.pref_prompt_crash_report_key,
+                Boolean.parseBoolean(getString(
+                        R.string.pref_prompt_crash_report_default)))) {
+            return;
+        }
+        final CrashReportStore.PendingCrash pendingCrash
+                = CrashReportStore.consumePendingCrash(this);
+        if (pendingCrash == null || TextUtils.isEmpty(pendingCrash.details)) {
+            return;
+        }
+        pendingCrashPromptShown = true;
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.crash_report_prompt_title)
+                .setMessage(R.string.crash_report_prompt_message)
+                .setPositiveButton(R.string.crash_report_prompt_action,
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog,
+                                    int which) {
+                                Intent intent = new Intent(MainActivity.this,
+                                        SupportReportActivity.class);
+                                intent.putExtra(
+                                        SupportReportActivity.EXTRA_PREFILL_SUBJECT,
+                                        getString(
+                                                R.string.crash_report_default_subject));
+                                intent.putExtra(
+                                        SupportReportActivity.EXTRA_PREFILL_MESSAGE,
+                                        getString(
+                                                R.string.crash_report_default_message));
+                                intent.putExtra(
+                                        SupportReportSender.EXTRA_ADDITIONAL_DIAGNOSTICS,
+                                        pendingCrash.details);
+                                if (canStartActivity(intent)) {
+                                    startActivity(intent);
+                                }
+                            }
+                        })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
     }
 
     private void exportAppSettingsToUri(Uri uri) {
@@ -478,21 +556,44 @@ public class MainActivity extends Activity
                 BuildConfig.VERSION_NAME)) {
             final String releasePage = TextUtils.isEmpty(releaseInfo.htmlUrl)
                     ? repoInfo.releasesUrl : releaseInfo.htmlUrl;
-            new AlertDialog.Builder(this)
+            AlertDialog.Builder builder = new AlertDialog.Builder(this)
                     .setTitle(R.string.update_up_to_date_title)
                     .setMessage(getString(R.string.update_up_to_date_message,
                             installedVersion, latestVersion))
-                    .setPositiveButton(android.R.string.ok, null)
-                    .setNeutralButton(R.string.update_action_open_release,
-                            new android.content.DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(
-                                        android.content.DialogInterface dialog,
-                                        int which) {
-                                    openUri(releasePage);
-                                }
-                            })
-                    .show();
+                    .setNegativeButton(android.R.string.cancel, null);
+            if (!TextUtils.isEmpty(releaseInfo.apkUrl)) {
+                final GitHubReleaseChecker.ReleaseInfo currentRelease = releaseInfo;
+                builder.setPositiveButton(R.string.update_action_download,
+                        new android.content.DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(
+                                    android.content.DialogInterface dialog,
+                                    int which) {
+                                startReleaseDownload(currentRelease);
+                            }
+                        });
+                builder.setNeutralButton(R.string.update_action_open_release,
+                        new android.content.DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(
+                                    android.content.DialogInterface dialog,
+                                    int which) {
+                                openUri(releasePage);
+                            }
+                        });
+            } else {
+                builder.setPositiveButton(android.R.string.ok, null)
+                        .setNeutralButton(R.string.update_action_open_release,
+                                new android.content.DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(
+                                            android.content.DialogInterface dialog,
+                                            int which) {
+                                        openUri(releasePage);
+                                    }
+                                });
+            }
+            builder.show();
             return;
         }
 
@@ -621,6 +722,18 @@ public class MainActivity extends Activity
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(value));
         if (canStartActivity(intent)) {
             startActivity(intent);
+        }
+    }
+
+    private void handleSilentUpdateCheckResult(
+            GitHubReleaseChecker.RepoInfo repoInfo,
+            GitHubReleaseChecker.ReleaseInfo releaseInfo, Exception error) {
+        if (repoInfo == null || error != null || releaseInfo == null) {
+            return;
+        }
+        if (GitHubReleaseChecker.isNewerThanInstalled(releaseInfo,
+                BuildConfig.VERSION_NAME)) {
+            handleUpdateCheckResult(repoInfo, releaseInfo, null);
         }
     }
 

@@ -32,6 +32,7 @@
         android:required="false" />
 
     <application
+        android:name=".SoftBrailleKeyboardApp"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
@@ -79,6 +80,11 @@
             android:label="@string/braille_table_test_title" />
 
         <activity
+            android:name=".BrailleKeyboardTestActivity"
+            android:exported="false"
+            android:label="@string/braille_keyboard_test_title" />
+
+        <activity
             android:name=".BrailleNotesActivity"
             android:exported="false"
             android:label="@string/braille_notes_title" />
@@ -92,6 +98,11 @@
             android:name=".SetupWizardActivity"
             android:exported="false"
             android:label="@string/setup_wizard_title" />
+
+        <activity
+            android:name=".UserProfileSetupActivity"
+            android:exported="false"
+            android:label="@string/user_profile_setup_title" />
 
         <activity
             android:name=".QuickStartActivity"

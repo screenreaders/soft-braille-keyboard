@@ -32,6 +32,8 @@ public class SetupWizardActivity extends Activity
     private TextView keyboardStatusView;
     private TextView defaultStatusView;
     private TextView brailleStatusView;
+    private TextView calibrationStatusView;
+    private TextView profileStatusView;
     private TextView accessibilityStatusView;
     private TextView permissionsStatusView;
     private Button finishButton;
@@ -45,6 +47,9 @@ public class SetupWizardActivity extends Activity
         keyboardStatusView = (TextView) findViewById(R.id.setup_keyboard_status);
         defaultStatusView = (TextView) findViewById(R.id.setup_default_status);
         brailleStatusView = (TextView) findViewById(R.id.setup_braille_status);
+        calibrationStatusView = (TextView) findViewById(
+                R.id.setup_calibration_status);
+        profileStatusView = (TextView) findViewById(R.id.setup_profile_status);
         accessibilityStatusView = (TextView) findViewById(
                 R.id.setup_accessibility_status);
         permissionsStatusView = (TextView) findViewById(
@@ -103,6 +108,20 @@ public class SetupWizardActivity extends Activity
 
     public void onOpenBrailleTranslationSettings(View view) {
         Intent intent = new Intent(this, PreferenceIME.class);
+        if (canStartActivity(intent)) {
+            startActivity(intent);
+        }
+    }
+
+    public void onOpenKeyboardCalibrationAndTest(View view) {
+        Intent intent = new Intent(this, BrailleKeyboardTestActivity.class);
+        if (canStartActivity(intent)) {
+            startActivity(intent);
+        }
+    }
+
+    public void onOpenUserProfileSetup(View view) {
+        Intent intent = new Intent(this, UserProfileSetupActivity.class);
         if (canStartActivity(intent)) {
             startActivity(intent);
         }
@@ -171,6 +190,16 @@ public class SetupWizardActivity extends Activity
         accessibilityStatusView.setText(accessibilityEnabled
                 ? R.string.setup_status_accessibility_enabled
                 : R.string.setup_status_accessibility_disabled);
+        if (calibrationStatusView != null) {
+            int savedCount = KeyboardCalibrationUtils.countSavedCalibrations(this);
+            calibrationStatusView.setText(savedCount > 0
+                    ? getString(R.string.setup_status_calibration_saved,
+                            savedCount)
+                    : getString(R.string.setup_status_calibration_missing));
+        }
+        if (profileStatusView != null) {
+            profileStatusView.setText(buildProfileStatus());
+        }
         permissionsStatusView.setText(buildPermissionsStatus());
         brailleStatusView.setText(buildBrailleTranslationStatus());
         if (finishButton != null) {
@@ -257,5 +286,55 @@ public class SetupWizardActivity extends Activity
     private boolean canStartActivity(Intent intent) {
         return intent != null && getPackageManager() != null
                 && intent.resolveActivity(getPackageManager()) != null;
+    }
+
+    private String buildProfileStatus() {
+        Options.KeyboardEcho echo = Options.KeyboardEcho.valueOf(
+                Options.getIntPreference(this, R.string.pref_echo_feedback_key,
+                        Options.KeyboardEcho.CHARACTER.getValue()));
+        String echoText;
+        switch (echo) {
+        case NONE:
+            echoText = getString(R.string.keyboard_echo_none);
+            break;
+        case WORD:
+            echoText = getString(R.string.keyboard_echo_word);
+            break;
+        case ALL:
+            echoText = getString(R.string.keyboard_echo_all);
+            break;
+        case CHARACTER:
+        default:
+            echoText = getString(R.string.keyboard_echo_character);
+            break;
+        }
+        String ttsEngine = Options.getStringPreference(this,
+                R.string.pref_text_to_speech_engine_key, "");
+        if (TextUtils.isEmpty(ttsEngine)) {
+            ttsEngine = getString(R.string.pref_text_to_speech_engine_auto);
+        }
+        return getString(R.string.setup_status_profile_summary,
+                echoText,
+                yesNo(Options.getBooleanPreference(this,
+                        R.string.pref_echo_misspellings_key,
+                        Boolean.parseBoolean(getString(
+                                R.string.pref_echo_misspellings_default)))),
+                yesNo(Options.getBooleanPreference(this,
+                        R.string.pref_double_space_period_key,
+                        Boolean.parseBoolean(getString(
+                                R.string.pref_double_space_period_default)))),
+                yesNo(Options.getBooleanPreference(this,
+                        R.string.pref_auto_check_updates_key,
+                        Boolean.parseBoolean(getString(
+                                R.string.pref_auto_check_updates_default)))),
+                yesNo(Options.getBooleanPreference(this,
+                        R.string.pref_prompt_crash_report_key,
+                        Boolean.parseBoolean(getString(
+                                R.string.pref_prompt_crash_report_default)))),
+                ttsEngine);
+    }
+
+    private String yesNo(boolean value) {
+        return getString(value ? R.string.main_status_yes : R.string.main_status_no);
     }
 }

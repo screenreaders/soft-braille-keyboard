@@ -102,6 +102,13 @@
             style="@android:style/TextAppearance.Large"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:onClick="onUserProfileSetup"
+            android:text="@string/button_open_user_profile_setup" />
+
+        <Button
+            style="@android:style/TextAppearance.Large"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:onClick="onBrailleProfiles"
             android:text="@string/button_braille_profiles" />
 

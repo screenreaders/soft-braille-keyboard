@@ -451,4 +451,539 @@ Tabulka zařízení: %3$s</string>
     <string name="update_up_to_date_message">Nainstalovaná verze %1$s je aktuální. 
  Nejnovější verze: %2$s</string>
     <string name="update_up_to_date_title">Aplikace je aktuální</string>
+    <string name="button_open_keyboard_calibration_test">Otevřít kalibraci a test klávesnice</string>
+    <string name="button_braille_keyboard_test_focus">Přesunout fokus do testovacího pole a otevřít klávesnici</string>
+    <string name="button_open_user_profile_setup">Otevřít konfiguraci uživatelského profilu</string>
+    <string name="pref_auto_check_updates_title">Automaticky kontrolovat aktualizace při spuštění aplikace</string>
+    <string name="pref_prompt_crash_report_title">Po restartu nabídnout nahlášení pádu aplikace</string>
+    <string name="user_profile_setup_title">Konfigurace uživatelského profilu</string>
+    <string name="user_profile_setup_intro">Vyberte výchozí nastavení psaní, řeči, aktualizací a hlášení pádů, která se mají uložit do uživatelského profilu už při prvním spuštění.</string>
+    <string name="user_profile_setup_typing_title">Nastavení psaní</string>
+    <string name="user_profile_setup_speech_title">Hlasový engine a hlas</string>
+    <string name="user_profile_setup_updates_title">Aktualizace a hlášení problémů</string>
+    <string name="user_profile_setup_tts_summary_value">Aktuální engine: %1$s
+Aktuální hlas: %2$s</string>
+    <string name="user_profile_setup_save_button">Uložit nastavení uživatelského profilu</string>
+    <string name="user_profile_setup_start_profile_title">Začít s připraveným profilem</string>
+    <string name="user_profile_setup_start_profile_custom">Vlastní</string>
+    <string name="user_profile_setup_start_profile_polish">Polský literární</string>
+    <string name="user_profile_setup_start_profile_english">Anglický počítačový braill</string>
+    <string name="user_profile_setup_dots_title">Body braillské klávesnice</string>
+    <string name="user_profile_setup_dots_six">Šestibodová klávesnice</string>
+    <string name="user_profile_setup_dots_eight">Osmibodová klávesnice</string>
+    <string name="user_profile_setup_uses_display_title">Používám braillský řádek</string>
+    <string name="user_profile_setup_save_named_profile">Uložit tato nastavení jako první pojmenovaný uživatelský profil</string>
+    <string name="user_profile_setup_profile_name_hint">Název profilu, například Polish nebo English</string>
+    <string name="user_profile_setup_default_profile_name_polish">Polish</string>
+    <string name="user_profile_setup_default_profile_name_english">English</string>
+    <string name="user_profile_setup_default_profile_name_custom">Můj profil</string>
+    <string name="setup_section_calibration">Kalibrace a test braillské klávesnice</string>
+    <string name="setup_section_profile">Uživatelský profil a předvolby psaní</string>
+    <string name="setup_status_calibration_missing">Zatím není uložena žádná kalibrace klávesnice. Do kalibrace bude klávesnice používat výchozí rozložení.</string>
+    <string name="setup_status_calibration_saved">Uložené kalibrační rozložení klávesnice: %1$d.</string>
+    <string name="setup_status_profile_summary">Odezva klávesnice: %1$s
+Oznamovat pravopisné chyby: %2$s
+Tečka po dvojité mezeře: %3$s
+Automatická kontrola aktualizací: %4$s
+Nabídka hlášení pádu: %5$s
+Hlasový engine: %6$s</string>
+    <string name="braille_keyboard_test_title">Kalibrace a test braillské klávesnice</string>
+    <string name="braille_keyboard_test_intro">Použijte tuto obrazovku ke kalibraci braillské klávesnice na obrazovce a k ověření, že psaní funguje, než dokončíte konfiguraci.</string>
+    <string name="braille_keyboard_test_calibration_steps">Kalibrace: otevřete Soft Braille Keyboard v poli níže, přidržte první tři prsty na obrazovce, dokud neuslyšíte pokyn, a potom přidržte další tři prsty. Poté napište několik znaků do testovacího pole.</string>
+    <string name="braille_keyboard_test_status_template">Klávesnice povolena: %1$s
+Výchozí klávesnice: %2$s
+Kalibrace: %3$s</string>
+    <string name="crash_report_prompt_title">Aplikace se neočekávaně ukončila</string>
+    <string name="crash_report_prompt_message">Soft Braille Keyboard zaznamenala pád z předchozí relace. Chcete otevřít hlášení podpory s přiloženými podrobnostmi o pádu?</string>
+    <string name="crash_report_prompt_action">Otevřít hlášení pádu</string>
+    <string name="crash_report_default_subject">Hlášení pádu z předchozí relace</string>
+    <string name="crash_report_default_message">Aplikace se neočekávaně ukončila. Podrobnosti o pádu byly přiloženy automaticky. Popište prosím, co jste dělali těsně před pádem.</string>
+
+    <!-- Added from base locale for completeness -->
+    <string name="action_record_audio_permission" translatable="false">ACTION_RECORD_AUDIO_PERMISSION</string>
+    
+    <string name="app_settings_backup_export_failed">The app settings backup could not be exported.</string>
+    
+    <string name="app_settings_backup_exported">App settings were exported to %1$s.</string>
+    
+    <string name="app_settings_backup_file_name">soft-braille-keyboard-settings.json</string>
+    
+    <string name="app_settings_backup_import_empty">The selected file does not contain any app settings.</string>
+  
+    <string name="app_settings_backup_import_failed">The app settings backup could not be imported.</string>
+    
+    <string name="app_settings_backup_imported">Imported %1$d app settings from %2$s.</string>
+    
+    <string name="braille_export_profiles">Copy braille display profiles</string>
+  
+    <string name="braille_export_profiles_file">Export braille display profiles to file</string>
+  
+    <string name="braille_import_profiles">Import braille display profiles from clipboard</string>
+  
+    <string name="braille_import_profiles_file">Import braille display profiles from file</string>
+  
+    <string name="braille_learn_category_letters">Category: letters</string>
+  
+    <string name="braille_learn_category_numbers">Category: numbers</string>
+  
+    <string name="braille_learn_category_punctuation">Category: punctuation</string>
+  
+    <string name="braille_learn_change_category">Change lesson category</string>
+  
+    <string name="braille_learn_change_mode">Change lesson mode</string>
+  
+    <string name="braille_learn_change_order">Change lesson order</string>
+  
+    <string name="braille_learn_check">Check</string>
+  
+    <string name="braille_learn_clear">Clear dots</string>
+  
+    <string name="braille_learn_correct">Correct. %1$s uses dots %2$s.</string>
+  
+    <string name="braille_learn_correct_choice">Correct. Dots %2$s mean %1$s.</string>
+  
+    <string name="braille_learn_dot_button">Dot %1$d: %2$s</string>
+  
+    <string name="braille_learn_dot_off">off</string>
+  
+    <string name="braille_learn_dot_on">on</string>
+  
+    <string name="braille_learn_empty">No lesson items are available for the current braille table and category.</string>
+  
+    <string name="braille_learn_hint">Hint: %1$s uses dots %2$s.</string>
+  
+    <string name="braille_learn_hint_button">Hint</string>
+  
+    <string name="braille_learn_hint_choice">Hint: dots %2$s mean %1$s.</string>
+  
+    <string name="braille_learn_incorrect">Try again. %1$s uses dots %2$s.</string>
+  
+    <string name="braille_learn_incorrect_choice">Incorrect. Dots %2$s mean %1$s.</string>
+  
+    <string name="braille_learn_intro">Practice braille by matching the requested symbol with the correct dots. Lessons use the currently active translation table.</string>
+  
+    <string name="braille_learn_keyboard_hint">Tap here and type one character</string>
+  
+    <string name="braille_learn_keyboard_intro">Type a character with the system keyboard and the app will show the braille dots for the current table.</string>
+  
+    <string name="braille_learn_keyboard_missing">No single-cell braille mapping was found for %1$s in the current table.</string>
+  
+    <string name="braille_learn_keyboard_number_mode">Show numeric keyboard</string>
+  
+    <string name="braille_learn_keyboard_result">Character %1$s uses dots %2$s.</string>
+  
+    <string name="braille_learn_keyboard_symbol_mode">Show symbol keyboard</string>
+  
+    <string name="braille_learn_keyboard_text_mode">Show text keyboard</string>
+  
+    <string name="braille_learn_keyboard_waiting">Waiting for a character from the system keyboard.</string>
+  
+    <string name="braille_learn_mode_dots_to_symbol">Mode: dots to symbol</string>
+  
+    <string name="braille_learn_mode_symbol_to_dots">Mode: symbol to dots</string>
+  
+    <string name="braille_learn_next">Next</string>
+  
+    <string name="braille_learn_no_dots">none</string>
+  
+    <string name="braille_learn_order_random">Order: random practice</string>
+  
+    <string name="braille_learn_order_sequential">Order: sequential lesson</string>
+  
+    <string name="braille_learn_pick_choice">Choose one of the answer buttons.</string>
+  
+    <string name="braille_learn_prefix_capital">capital prefix</string>
+  
+    <string name="braille_learn_prefix_multi_cell">multi-cell sequence</string>
+  
+    <string name="braille_learn_prefix_number">number prefix</string>
+  
+    <string name="braille_learn_progress">Lesson item %1$d of %2$d</string>
+  
+    <string name="braille_learn_prompt">Find symbol: %s</string>
+  
+    <string name="braille_learn_prompt_empty">Waiting for a lesson item.</string>
+  
+    <string name="braille_learn_prompt_from_dots">Which symbol uses dots %s?</string>
+  
+    <string name="braille_learn_ready">Lesson ready.</string>
+  
+    <string name="braille_learn_score">Score: %1$d/%2$d, streak %3$d, best %4$d</string>
+  
+    <string name="braille_learn_selected_dots_value">Selected dots: %s</string>
+  
+    <string name="braille_learn_table_value">Table: %1$s, %2$s</string>
+  
+    <string name="braille_learn_table_waiting">Waiting for braille translation backend.</string>
+  
+    <string name="braille_learn_title">Braille learning mode</string>
+  
+    <string name="braille_learn_waiting">The lesson is still loading.</string>
+  
+    <string name="braille_log_profiles_exported">Braille display profiles copied to the clipboard.</string>
+  
+    <string name="braille_log_profiles_file_export_failed">Could not export braille display profiles to file.</string>
+  
+    <string name="braille_log_profiles_file_exported">Braille display profiles exported to %1$s.</string>
+  
+    <string name="braille_log_profiles_file_import_failed">Could not import braille display profiles from file.</string>
+  
+    <string name="braille_log_profiles_file_imported">Imported %1$d braille display profile entries from %2$s.</string>
+  
+    <string name="braille_log_profiles_import_empty">No braille display profile data was found on the clipboard.</string>
+  
+    <string name="braille_log_profiles_import_failed">Could not import braille display profiles from the clipboard.</string>
+  
+    <string name="braille_log_profiles_imported">Imported %d braille display profile entries from the clipboard.</string>
+  
+    <string name="braille_log_profiles_share_failed">Could not share braille display profiles.</string>
+  
+    <string name="braille_named_profiles_active_none">Active monitor profile: none</string>
+  
+    <string name="braille_named_profiles_active_value">Active monitor profile: %1$s</string>
+  
+    <string name="braille_named_profiles_applied">Applied braille display profile: %1$s.</string>
+  
+    <string name="braille_named_profiles_apply_failed">The braille display profile could not be applied.</string>
+  
+    <string name="braille_named_profiles_apply_selected">Apply selected monitor profile</string>
+  
+    <string name="braille_named_profiles_delete_failed">The braille display profile could not be deleted.</string>
+  
+    <string name="braille_named_profiles_delete_selected">Delete selected monitor profile</string>
+  
+    <string name="braille_named_profiles_deleted">Deleted braille display profile: %1$s.</string>
+  
+    <string name="braille_named_profiles_intro">Save the current braille display configuration, including preferred monitor, per-device table and remaps, as a named profile. Then switch between saved monitor profiles quickly.</string>
+  
+    <string name="braille_named_profiles_name_hint">Display profile name, for example Orbit Reader Polish</string>
+  
+    <string name="braille_named_profiles_name_required">Enter a monitor profile name first.</string>
+  
+    <string name="braille_named_profiles_next">Switch to next saved monitor profile</string>
+  
+    <string name="braille_named_profiles_none">There are no saved braille display profiles yet.</string>
+  
+    <string name="braille_named_profiles_save_current">Save current monitor setup as profile</string>
+  
+    <string name="braille_named_profiles_save_failed">The braille display profile could not be saved.</string>
+  
+    <string name="braille_named_profiles_saved">Saved braille display profile: %1$s.</string>
+  
+    <string name="braille_notes_autosaved">Autosaved to %1$s.</string>
+  
+    <string name="braille_notes_clear">Clear note</string>
+  
+    <string name="braille_notes_cleared">The note was cleared.</string>
+  
+    <string name="braille_notes_create">Create note</string>
+  
+    <string name="braille_notes_delete">Delete note</string>
+  
+    <string name="braille_notes_deleted">The note was deleted.</string>
+  
+    <string name="braille_notes_empty">No saved note yet.</string>
+  
+    <string name="braille_notes_export">Export note to file</string>
+  
+    <string name="braille_notes_export_failed">Could not export the note.</string>
+  
+    <string name="braille_notes_exported">The note was exported to %1$s.</string>
+  
+    <string name="braille_notes_hint">Write your note here</string>
+  
+    <string name="braille_notes_import">Import note from file</string>
+  
+    <string name="braille_notes_import_failed">Could not import the note.</string>
+  
+    <string name="braille_notes_imported">The note was imported from %1$s.</string>
+  
+    <string name="braille_notes_intro">Use this simple notepad with the braille keyboard or the system keyboard. Notes are stored locally on the device.</string>
+  
+    <string name="braille_notes_load">Reload note</string>
+  
+    <string name="braille_notes_load_failed">Could not load the saved note.</string>
+  
+    <string name="braille_notes_loaded">Note loaded from %1$s.</string>
+  
+    <string name="braille_notes_next">Next note</string>
+  
+    <string name="braille_notes_previous">Previous note</string>
+  
+    <string name="braille_notes_save">Save note</string>
+  
+    <string name="braille_notes_save_failed">Could not save the note.</string>
+  
+    <string name="braille_notes_saved">Note saved to %1$s.</string>
+  
+    <string name="braille_notes_share">Share note</string>
+  
+    <string name="braille_notes_title">Braille notes</string>
+  
+    <string name="braille_notes_title_hint">Note title</string>
+  
+    <string name="braille_profiles_active_none">Active profile: none</string>
+  
+    <string name="braille_profiles_active_value">Active profile: %1$s</string>
+  
+    <string name="braille_profiles_applied">Applied braille profile: %1$s.</string>
+  
+    <string name="braille_profiles_apply_failed">The braille profile could not be applied.</string>
+  
+    <string name="braille_profiles_apply_selected">Apply selected profile</string>
+  
+    <string name="braille_profiles_clip_label">Braille display profiles</string>
+  
+    <string name="braille_profiles_current_settings_template">Current braille type: %1$s
+Active table: %2$s
+Speech engine: %3$s
+Preferred braille display: %4$s</string>
+  
+    <string name="braille_profiles_delete_failed">The braille profile could not be deleted.</string>
+  
+    <string name="braille_profiles_delete_selected">Delete selected profile</string>
+  
+    <string name="braille_profiles_deleted">Deleted braille profile: %1$s.</string>
+  
+    <string name="braille_profiles_intro">Save the full current configuration as a named user profile, including braille tables, speech engine, voice settings, monitor settings and other app preferences. Then switch between saved profiles quickly from this screen or the main screen.</string>
+  
+    <string name="braille_profiles_name_hint">Profile name, for example Polish or English</string>
+  
+    <string name="braille_profiles_name_required">Enter a profile name first.</string>
+  
+    <string name="braille_profiles_next">Switch to next saved profile</string>
+  
+    <string name="braille_profiles_none">There are no saved braille profiles yet.</string>
+  
+    <string name="braille_profiles_save_current">Save current settings as profile</string>
+  
+    <string name="braille_profiles_save_failed">The braille profile could not be saved.</string>
+  
+    <string name="braille_profiles_saved">Saved braille profile: %1$s.</string>
+  
+    <string name="braille_profiles_title">Braille user profiles</string>
+  
+    <string name="braille_role_image">Image</string>
+    
+    <string name="braille_role_link">Link</string>
+    
+    <string name="braille_role_pager">Pager</string>
+    
+    <string name="braille_role_progress">Progress</string>
+    
+    <string name="braille_role_slider">Slider</string>
+    
+    <string name="braille_role_tab">Tab</string>
+    
+    <string name="braille_section_named_profiles">Named braille display profiles</string>
+    
+    <string name="braille_service_progress_template">Progress: %1$d of %2$d</string>
+    
+    <string name="braille_share_profiles">Share braille display profiles</string>
+  
+    <string name="braille_state_collapsed">collapsed</string>
+    
+    <string name="braille_state_expanded">expanded</string>
+    
+    <string name="braille_table_test_backward_result">Text: %1$s</string>
+    
+    <string name="braille_table_test_backward_title">Braille to text</string>
+    
+    <string name="braille_table_test_backward_waiting">No back-translation yet.</string>
+    
+    <string name="braille_table_test_cells_hint">Enter cells as dot numbers, for example 145 15 123.</string>
+    
+    <string name="braille_table_test_current_value">%1$d/%2$d: %3$s</string>
+    
+    <string name="braille_table_test_empty_input">Enter text to translate.</string>
+    
+    <string name="braille_table_test_error">The braille translator is not ready.</string>
+    
+    <string name="braille_table_test_forward_result">Cells: %1$s\nCell count: %2$d</string>
+    
+    <string name="braille_table_test_forward_title">Text to braille</string>
+    
+    <string name="braille_table_test_forward_waiting">No forward translation yet.</string>
+    
+    <string name="braille_table_test_intro">Use this screen to switch between braille tables, translate plain text into braille cells and back-translate manually entered dot patterns.</string>
+    
+    <string name="braille_table_test_invalid_cells">Enter at least one valid braille cell.</string>
+    
+    <string name="braille_table_test_loading_tables">Loading braille tables…</string>
+    
+    <string name="braille_table_test_next">Next table</string>
+    
+    <string name="braille_table_test_no_backward_result">No text was produced for the entered cells.</string>
+    
+    <string name="braille_table_test_no_forward_result">No braille cells were produced for this text.</string>
+    
+    <string name="braille_table_test_no_tables">No braille tables are available.</string>
+    
+    <string name="braille_table_test_previous">Previous table</string>
+    
+    <string name="braille_table_test_ready">Braille table tester is ready.</string>
+    
+    <string name="braille_table_test_reload">Reload tables</string>
+    
+    <string name="braille_table_test_source_hint">Enter sample text for the selected table.</string>
+    
+    <string name="braille_table_test_title">Braille table test</string>
+    
+    <string name="braille_table_test_translate_backward">Back-translate cells</string>
+    
+    <string name="braille_table_test_translate_forward">Translate text</string>
+    
+    <string name="braille_table_test_waiting">Waiting for braille translator.</string>
+    
+    <string name="btn_id_default_keyboard" translatable="false">BTN_DEFAULT_KEYBOARD</string>
+    
+    <string name="btn_id_enable" translatable="false">BTN_ENABLED</string>
+    
+    <string name="button_braille_learn">Braille learning mode</string>
+    
+    <string name="button_braille_next_profile">Switch to next braille profile</string>
+    
+    <string name="button_braille_notes">Braille notes</string>
+    
+    <string name="button_braille_profiles">Braille user profiles</string>
+    
+    <string name="button_braille_table_test">Braille table test</string>
+    
+    <string name="button_braille_translation_settings">Open braille translator and table settings</string>
+    
+    <string name="button_export_app_settings">Export app settings to file</string>
+    
+    <string name="button_import_app_settings">Import app settings from file</string>
+    
+    <string name="button_open_setup_wizard">Run first-time setup</string>
+    
+    <string name="button_request_bluetooth_permission">Request Bluetooth permission</string>
+    
+    <string name="button_request_microphone_permission">Request microphone permission</string>
+    
+    <string name="button_tts_settings">Speech engine and voice settings</string>
+    
+    <string name="default_swipe_sensitivity" translatable="false">50</string>
+    
+    <string name="main_section_backup">Backup and restore</string>
+    
+    <string name="main_section_braille">Braille typing and translation</string>
+    
+    <string name="main_section_setup">First-time setup</string>
+    
+    <string name="main_section_speech">Speech and voice</string>
+    
+    <string name="main_section_support">Help and support</string>
+    
+    <string name="main_section_tools">Tools and diagnostics</string>
+    
+    <string name="main_status_braille_profile_none">Active braille profile: none</string>
+    
+    <string name="main_status_braille_profile_value">Active braille profile: %1$s</string>
+    
+    <string name="main_status_braille_template">Braille type: %1$s
+Current table: %2$s</string>
+    
+    <string name="main_status_keyboard_template">Keyboard enabled: %1$s
+Default keyboard: %2$s
+Braille display output: %3$s</string>
+    
+    <string name="main_status_loading">Loading…</string>
+    
+    <string name="main_status_no">No</string>
+    
+    <string name="main_status_permissions_template">Microphone: %1$s
+Bluetooth: %2$s</string>
+    
+    <string name="main_status_setup_ready">Setup complete</string>
+    
+    <string name="main_status_setup_required">Setup still needs attention</string>
+    
+    <string name="main_status_yes">Yes</string>
+    
+    <string name="main_version_value">Installed version: %1$s (%2$d)</string>
+    
+    <string name="pref_braille_learn_summary">Open practice mode for braille letters, numbers and punctuation.</string>
+    
+    <string name="pref_braille_learn_title">Braille learning mode</string>
+    
+    <string name="pref_braille_profiles_summary">Save and switch full user profiles, including braille tables, speech engine, monitor settings and other app preferences.</string>
+    
+    <string name="pref_braille_profiles_title">Braille user profiles</string>
+    
+    <string name="pref_text_to_speech_engine_unavailable">The selected speech engine is unavailable.</string>
+    
+    <string name="pref_text_to_speech_loading_voices">Loading voices for the selected speech engine.</string>
+    
+    <string name="pref_text_to_speech_pitch_title">Pitch</string>
+    
+    <string name="pref_text_to_speech_preview_button">Play sample</string>
+    
+    <string name="pref_text_to_speech_preview_text">Soft Braille Keyboard speech test.</string>
+    
+    <string name="pref_text_to_speech_rate_title">Speech rate</string>
+    
+    <string name="pref_text_to_speech_ready">Speech settings are ready.</string>
+    
+    <string name="pref_text_to_speech_screen_summary">Choose the speech engine and voice here, then adjust rate, pitch and volume on one screen.</string>
+    
+    <string name="pref_text_to_speech_voice_auto">Auto - use engine default voice</string>
+    
+    <string name="pref_text_to_speech_voice_title">Voice</string>
+    
+    <string name="pref_text_to_speech_voice_unknown_locale">Unknown locale</string>
+    
+    <string name="pref_text_to_speech_volume_title">Speech volume</string>
+    
+    <string name="require_record_audio_now" translatable="false">REQUIRE_RECORD_AUDIO</string>
+    
+    <string name="setup_bluetooth_not_required">This Android version does not require a separate Bluetooth runtime permission.</string>
+    
+    <string name="setup_finish_button">Finish setup</string>
+    
+    <string name="setup_permission_already_granted">This permission is already granted.</string>
+    
+    <string name="setup_section_accessibility">Braille display output (optional)</string>
+    
+    <string name="setup_section_keyboard">Keyboard activation</string>
+    
+    <string name="setup_section_permissions">Permissions</string>
+    
+    <string name="setup_section_translation">Braille translator and tables</string>
+    
+    <string name="setup_status_accessibility_disabled">Braille display screen output is disabled. Leave it off if you do not use a braille display.</string>
+    
+    <string name="setup_status_accessibility_enabled">Braille display screen output is enabled in Android accessibility settings.</string>
+    
+    <string name="setup_status_bluetooth_granted">Bluetooth permission granted.</string>
+    
+    <string name="setup_status_bluetooth_missing">Bluetooth permission missing.</string>
+    
+    <string name="setup_status_braille_loading">Loading braille translator status…</string>
+    
+    <string name="setup_status_braille_missing">No active braille translation table is available yet.</string>
+    
+    <string name="setup_status_braille_ready">Current braille translator: %1$s, table %2$s.</string>
+    
+    <string name="setup_status_default_disabled">Soft Braille Keyboard is not the default keyboard yet.</string>
+    
+    <string name="setup_status_default_enabled">Soft Braille Keyboard is currently the default keyboard.</string>
+    
+    <string name="setup_status_keyboard_disabled">Soft Braille Keyboard is not enabled yet.</string>
+    
+    <string name="setup_status_keyboard_enabled">Soft Braille Keyboard is enabled in Android keyboard settings.</string>
+    
+    <string name="setup_status_microphone_granted">Microphone permission granted.</string>
+    
+    <string name="setup_status_microphone_missing">Microphone permission missing.</string>
+    
+    <string name="setup_status_usb_info">USB permission is requested when a braille display is connected. Use braille display diagnostics to request it.</string>
+    
+    <string name="setup_wizard_intro">Follow these steps to enable Soft Braille Keyboard, make it the default keyboard and choose a braille table. Braille display screen output is optional and only needed if you use a braille display.</string>
+    
+    <string name="setup_wizard_title">First-time setup</string>
+    
+    <string name="txt_id_practice" translatable="false">TXT_PRACTICE</string>
+    
+    
 </resources>

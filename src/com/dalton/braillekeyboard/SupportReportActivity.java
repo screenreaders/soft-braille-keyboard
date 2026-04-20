@@ -12,6 +12,10 @@ import android.widget.Toast;
 public class SupportReportActivity extends Activity {
     public static final String EXTRA_REPORT_TYPE =
             "com.dalton.braillekeyboard.EXTRA_REPORT_TYPE";
+    public static final String EXTRA_PREFILL_SUBJECT =
+            "com.dalton.braillekeyboard.EXTRA_PREFILL_SUBJECT";
+    public static final String EXTRA_PREFILL_MESSAGE =
+            "com.dalton.braillekeyboard.EXTRA_PREFILL_MESSAGE";
 
     private EditText subjectView;
     private EditText messageView;
@@ -38,6 +42,7 @@ public class SupportReportActivity extends Activity {
         reportType = "braille_display".equals(type)
                 ? SupportReportSender.ReportData.ReportType.BRAILLE_DISPLAY
                 : SupportReportSender.ReportData.ReportType.GENERAL;
+        applyPrefill();
         updateStatus();
     }
 
@@ -81,5 +86,18 @@ public class SupportReportActivity extends Activity {
     private static String textOf(EditText view) {
         return view == null || view.getText() == null
                 ? "" : view.getText().toString().trim();
+    }
+
+    private void applyPrefill() {
+        String subject = getIntent().getStringExtra(EXTRA_PREFILL_SUBJECT);
+        String message = getIntent().getStringExtra(EXTRA_PREFILL_MESSAGE);
+        if (!TextUtils.isEmpty(subject) && subjectView != null
+                && TextUtils.isEmpty(subjectView.getText())) {
+            subjectView.setText(subject);
+        }
+        if (!TextUtils.isEmpty(message) && messageView != null
+                && TextUtils.isEmpty(messageView.getText())) {
+            messageView.setText(message);
+        }
     }
 }

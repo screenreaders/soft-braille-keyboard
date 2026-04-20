@@ -413,11 +413,14 @@ Tabela urządzeń: %3$s</string>
     <string name="button_braille_learn">Tryb nauki brajla</string>
     <string name="button_braille_notes">Notatki brajlowskie</string>
     <string name="button_braille_displays">Diagnostyka monitorów brajlowskich</string>
+    <string name="button_open_user_profile_setup">Otwórz konfigurację profilu użytkownika</string>
+    <string name="button_braille_keyboard_test_focus">Ustaw fokus pola testowego i otwórz klawiaturę</string>
     <string name="button_braille_table_test">Test tablic brajlowskich</string>
     <string name="button_check_updates">Sprawdź aktualizacje na GitHubie</string>
     <string name="button_export_app_settings">Eksportuj ustawienia programu do pliku</string>
     <string name="button_import_app_settings">Importuj ustawienia programu z pliku</string>
     <string name="button_open_setup_wizard">Uruchom konfigurator pierwszego uruchomienia</string>
+    <string name="button_open_keyboard_calibration_test">Otwórz kalibrację i test klawiatury</string>
     <string name="button_request_bluetooth_permission">Poproś o uprawnienie Bluetooth</string>
     <string name="button_request_microphone_permission">Poproś o uprawnienie mikrofonu</string>
     <string name="button_report_issue">Wyślij raport wsparcia</string>
@@ -465,6 +468,29 @@ Tabela urządzeń: %3$s</string>
     <string name="pref_text_to_speech_preview_text">Próba syntezy mowy Soft Braille Keyboard.</string>
     <string name="pref_text_to_speech_percent_value">%1$d%%</string>
     <string name="pref_text_to_speech_voice_unknown_locale">Nieznana lokalizacja</string>
+    <string name="pref_auto_check_updates_title">Sprawdzaj aktualizacje automatycznie przy uruchomieniu programu</string>
+    <string name="pref_prompt_crash_report_title">Po restarcie proponuj zgłoszenie awarii programu</string>
+    <string name="user_profile_setup_title">Konfiguracja profilu użytkownika</string>
+    <string name="user_profile_setup_intro">Wybierz domyślne ustawienia pisania, mowy, aktualizacji i zgłaszania awarii, które mają zostać zapisane w Twoim profilu użytkownika już przy pierwszym uruchomieniu.</string>
+    <string name="user_profile_setup_typing_title">Ustawienia pisania</string>
+    <string name="user_profile_setup_speech_title">Silnik mowy i głos</string>
+    <string name="user_profile_setup_updates_title">Aktualizacje i raporty problemów</string>
+    <string name="user_profile_setup_tts_summary_value">Bieżący silnik: %1$s
+Bieżący głos: %2$s</string>
+    <string name="user_profile_setup_save_button">Zapisz ustawienia profilu użytkownika</string>
+    <string name="user_profile_setup_start_profile_title">Rozpocznij od gotowego profilu</string>
+    <string name="user_profile_setup_start_profile_custom">Własny</string>
+    <string name="user_profile_setup_start_profile_polish">Polski literacki</string>
+    <string name="user_profile_setup_start_profile_english">Angielski komputerowy</string>
+    <string name="user_profile_setup_dots_title">Punkty klawiatury brajlowskiej</string>
+    <string name="user_profile_setup_dots_six">Klawiatura 6-punktowa</string>
+    <string name="user_profile_setup_dots_eight">Klawiatura 8-punktowa</string>
+    <string name="user_profile_setup_uses_display_title">Używam monitora brajlowskiego</string>
+    <string name="user_profile_setup_save_named_profile">Zapisz te ustawienia jako pierwszy nazwany profil użytkownika</string>
+    <string name="user_profile_setup_profile_name_hint">Nazwa profilu, na przykład Polski albo English</string>
+    <string name="user_profile_setup_default_profile_name_polish">Polski</string>
+    <string name="user_profile_setup_default_profile_name_english">English</string>
+    <string name="user_profile_setup_default_profile_name_custom">Mój profil</string>
     <string name="pref_quick_start_guide_title">Szybki przewodnik</string>
     <string name="pref_quick_start_guide_summary">Otwórz dołączony przewodnik offline dotyczący konfiguracji, pisania i monitorów brajlowskich.</string>
     <string name="main_section_setup">Konfiguracja początkowa</string>
@@ -492,6 +518,8 @@ Bluetooth: %2$s</string>
     <string name="setup_wizard_intro">Wykonaj te kroki, aby włączyć Soft Braille Keyboard, ustawić ją jako klawiaturę domyślną i wybrać tablicę brajlowską. Wyjście na monitor brajlowski jest opcjonalne i potrzebne tylko wtedy, gdy korzystasz z monitora brajlowskiego.</string>
     <string name="setup_section_keyboard">Aktywacja klawiatury</string>
     <string name="setup_section_translation">Translator brajla i tablice</string>
+    <string name="setup_section_calibration">Kalibracja i test klawiatury brajlowskiej</string>
+    <string name="setup_section_profile">Profil użytkownika i preferencje pisania</string>
     <string name="setup_section_accessibility">Wyjście na monitor brajlowski (opcjonalne)</string>
     <string name="setup_section_permissions">Uprawnienia</string>
     <string name="setup_finish_button">Zakończ konfigurację</string>
@@ -511,6 +539,20 @@ Bluetooth: %2$s</string>
     <string name="setup_status_braille_loading">Ładowanie stanu translatora brajla…</string>
     <string name="setup_status_braille_missing">Nie ma jeszcze aktywnej tablicy tłumaczenia brajla.</string>
     <string name="setup_status_braille_ready">Bieżący translator brajla: %1$s, tablica %2$s.</string>
+    <string name="setup_status_calibration_missing">Nie ma jeszcze zapisanej kalibracji klawiatury. Do czasu kalibracji klawiatura będzie używać układu domyślnego.</string>
+    <string name="setup_status_calibration_saved">Zapisane układy kalibracji klawiatury: %1$d.</string>
+    <string name="setup_status_profile_summary">Echo klawiatury: %1$s
+Odczytuj błędy pisowni: %2$s
+Kropka po dwóch spacjach: %3$s
+Automatyczne sprawdzanie aktualizacji: %4$s
+Propozycja zgłoszenia awarii: %5$s
+Silnik mowy: %6$s</string>
+    <string name="braille_keyboard_test_title">Kalibracja i test klawiatury brajlowskiej</string>
+    <string name="braille_keyboard_test_intro">Użyj tego ekranu, aby skalibrować ekranową klawiaturę brajlowską i potwierdzić, że pisanie działa przed zakończeniem konfiguracji.</string>
+    <string name="braille_keyboard_test_calibration_steps">Kalibracja: otwórz Soft Braille Keyboard w polu poniżej, przytrzymaj trzy palce jednej ręki na ekranie, aż usłyszysz komunikat, a potem przytrzymaj trzy palce drugiej ręki. Następnie wpisz kilka znaków w polu testowym.</string>
+    <string name="braille_keyboard_test_status_template">Klawiatura włączona: %1$s
+Klawiatura domyślna: %2$s
+Kalibracja: %3$s</string>
     <string name="app_settings_backup_exported">Ustawienia programu zostały wyeksportowane do %1$s.</string>
     <string name="app_settings_backup_imported">Zaimportowano %1$d ustawień programu z %2$s.</string>
     <string name="app_settings_backup_export_failed">Nie udało się wyeksportować kopii ustawień programu.</string>
@@ -530,6 +572,11 @@ Bluetooth: %2$s</string>
     <string name="report_issue_subject_required">Wpisz krótki tytuł problemu.</string>
     <string name="report_issue_message_required">Opisz problem przed wysłaniem raportu.</string>
     <string name="report_issue_sent_github">Diagnostyka została skopiowana. Otwieram szkic issue na GitHubie.</string>
+    <string name="crash_report_prompt_title">Program zamknął się nieoczekiwanie</string>
+    <string name="crash_report_prompt_message">Soft Braille Keyboard zapisała awarię z poprzedniej sesji. Czy chcesz otworzyć raport wsparcia z dołączonym opisem awarii?</string>
+    <string name="crash_report_prompt_action">Otwórz raport awarii</string>
+    <string name="crash_report_default_subject">Raport awarii z poprzedniej sesji</string>
+    <string name="crash_report_default_message">Program zamknął się nieoczekiwanie. Szczegóły awarii zostały dołączone automatycznie. Opisz proszę, co robiłeś tuż przed awarią.</string>
     <string name="report_issue_failed">Nie udało się przygotować raportu.</string>
     <string name="braille_export_profiles">Skopiuj profile monitorów brajlowskich</string>
     <string name="braille_import_profiles">Zaimportuj profile monitorów brajlowskich ze schowka</string>
@@ -689,4 +736,21 @@ Najnowsze wydanie: %2$s</string>
     <string name="update_up_to_date_message">Zainstalowana wersja %1$s jest aktualna.
 Najnowsze wydanie: %2$s</string>
     <string name="update_up_to_date_title">Aplikacja jest aktualna</string>
+
+    <!-- Added from base locale for completeness -->
+    <string name="action_record_audio_permission" translatable="false">ACTION_RECORD_AUDIO_PERMISSION</string>
+    
+    <string name="app_settings_backup_file_name">soft-braille-keyboard-settings.json</string>
+    
+    <string name="btn_id_default_keyboard" translatable="false">BTN_DEFAULT_KEYBOARD</string>
+    
+    <string name="btn_id_enable" translatable="false">BTN_ENABLED</string>
+    
+    <string name="default_swipe_sensitivity" translatable="false">50</string>
+    
+    <string name="require_record_audio_now" translatable="false">REQUIRE_RECORD_AUDIO</string>
+    
+    <string name="txt_id_practice" translatable="false">TXT_PRACTICE</string>
+    
+    
 </resources>

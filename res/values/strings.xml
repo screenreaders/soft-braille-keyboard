@@ -69,6 +69,12 @@
     <string name="pref_text_to_speech_volume_key" translatable="false">TEXT_TO_SPEECH_VOLUME</string>
     <string name="pref_text_to_speech_settings_key" translatable="false">TEXT_TO_SPEECH_SETTINGS</string>
     <string name="pref_setup_wizard_completed_key" translatable="false">SETUP_WIZARD_COMPLETED</string>
+    <string name="pref_auto_check_updates_default" translatable="false">true</string>
+    <string name="pref_auto_check_updates_key" translatable="false">AUTO_CHECK_UPDATES</string>
+    <string name="pref_prompt_crash_report_default" translatable="false">true</string>
+    <string name="pref_prompt_crash_report_key" translatable="false">PROMPT_CRASH_REPORT</string>
+    <string name="pref_user_uses_braille_display_default" translatable="false">false</string>
+    <string name="pref_user_uses_braille_display_key" translatable="false">USER_USES_BRAILLE_DISPLAY</string>
     <string name="pref_two_hand_calibration_default" translatable="false">true</string>
     <string name="pref_two_hand_calibration_key" translatable="false">TWO_HAND_CALIBRATE</string>
     <string name="pref_use_eight_dots_default" translatable="false">false</string>
@@ -262,11 +268,14 @@ Device table: %3$s</string>
     <string name="button_braille_learn">Braille learning mode</string>
     <string name="button_braille_notes">Braille notes</string>
     <string name="button_braille_displays">Braille display diagnostics</string>
+    <string name="button_open_user_profile_setup">Open user profile setup</string>
+    <string name="button_braille_keyboard_test_focus">Focus practice field and open keyboard</string>
     <string name="button_braille_table_test">Braille table test</string>
     <string name="button_check_updates">Check for updates on GitHub</string>
     <string name="button_export_app_settings">Export app settings to file</string>
     <string name="button_import_app_settings">Import app settings from file</string>
     <string name="button_open_setup_wizard">Run first-time setup</string>
+    <string name="button_open_keyboard_calibration_test">Open keyboard calibration and test</string>
     <string name="button_request_bluetooth_permission">Request Bluetooth permission</string>
     <string name="button_request_microphone_permission">Request microphone permission</string>
     <string name="button_report_issue">Send support report</string>
@@ -411,6 +420,29 @@ Device table: %3$s</string>
     <string name="pref_text_to_speech_preview_text">Soft Braille Keyboard speech test.</string>
     <string name="pref_text_to_speech_percent_value">%1$d%%</string>
     <string name="pref_text_to_speech_voice_unknown_locale">Unknown locale</string>
+    <string name="pref_auto_check_updates_title">Check for updates automatically when the app starts</string>
+    <string name="pref_prompt_crash_report_title">Offer to report crashes after the app restarts</string>
+    <string name="user_profile_setup_title">User profile setup</string>
+    <string name="user_profile_setup_intro">Choose the typing, speech, update and crash-reporting defaults that should be saved in your user profile from the first launch.</string>
+    <string name="user_profile_setup_typing_title">Typing preferences</string>
+    <string name="user_profile_setup_speech_title">Speech engine and voice</string>
+    <string name="user_profile_setup_updates_title">Updates and problem reports</string>
+    <string name="user_profile_setup_tts_summary_value">Current engine: %1$s
+Current voice: %2$s</string>
+    <string name="user_profile_setup_save_button">Save user profile settings</string>
+    <string name="user_profile_setup_start_profile_title">Start with a ready profile</string>
+    <string name="user_profile_setup_start_profile_custom">Custom</string>
+    <string name="user_profile_setup_start_profile_polish">Polish literary</string>
+    <string name="user_profile_setup_start_profile_english">English computer braille</string>
+    <string name="user_profile_setup_dots_title">Braille keyboard dots</string>
+    <string name="user_profile_setup_dots_six">6-dot keyboard</string>
+    <string name="user_profile_setup_dots_eight">8-dot keyboard</string>
+    <string name="user_profile_setup_uses_display_title">I use a braille display</string>
+    <string name="user_profile_setup_save_named_profile">Save these settings as the first named user profile</string>
+    <string name="user_profile_setup_profile_name_hint">Profile name, for example Polish or English</string>
+    <string name="user_profile_setup_default_profile_name_polish">Polish</string>
+    <string name="user_profile_setup_default_profile_name_english">English</string>
+    <string name="user_profile_setup_default_profile_name_custom">My profile</string>
     <string name="pref_quick_start_guide_key" translatable="false">QUICK_START_GUIDE</string>
     <string name="pref_quick_start_guide_title">Quick start guide</string>
     <string name="pref_quick_start_guide_summary">Open the bundled offline guide for setup, typing and braille displays.</string>
@@ -439,6 +471,8 @@ Bluetooth: %2$s</string>
     <string name="setup_wizard_intro">Follow these steps to enable Soft Braille Keyboard, make it the default keyboard and choose a braille table. Braille display screen output is optional and only needed if you use a braille display.</string>
     <string name="setup_section_keyboard">Keyboard activation</string>
     <string name="setup_section_translation">Braille translator and tables</string>
+    <string name="setup_section_calibration">Braille keyboard calibration and test</string>
+    <string name="setup_section_profile">User profile and typing preferences</string>
     <string name="setup_section_accessibility">Braille display output (optional)</string>
     <string name="setup_section_permissions">Permissions</string>
     <string name="setup_finish_button">Finish setup</string>
@@ -458,6 +492,20 @@ Bluetooth: %2$s</string>
     <string name="setup_status_braille_loading">Loading braille translator status…</string>
     <string name="setup_status_braille_missing">No active braille translation table is available yet.</string>
     <string name="setup_status_braille_ready">Current braille translator: %1$s, table %2$s.</string>
+    <string name="setup_status_calibration_missing">No saved keyboard calibration yet. The keyboard will use the default layout until you calibrate it.</string>
+    <string name="setup_status_calibration_saved">Saved keyboard calibration layouts: %1$d.</string>
+    <string name="setup_status_profile_summary">Keyboard echo: %1$s
+Speak misspellings: %2$s
+Double-space period: %3$s
+Automatic update checks: %4$s
+Crash report prompt: %5$s
+Speech engine: %6$s</string>
+    <string name="braille_keyboard_test_title">Braille keyboard calibration and test</string>
+    <string name="braille_keyboard_test_intro">Use this screen to calibrate the on-screen braille keyboard and confirm that typing works before you finish setup.</string>
+    <string name="braille_keyboard_test_calibration_steps">Calibration: open Soft Braille Keyboard in the field below, hold your first three fingers on the screen until you hear the prompt, then hold the other three fingers. After that, type a few characters in the practice field.</string>
+    <string name="braille_keyboard_test_status_template">Keyboard enabled: %1$s
+Default keyboard: %2$s
+Calibration: %3$s</string>
     <string name="app_settings_backup_file_name">soft-braille-keyboard-settings.json</string>
     <string name="app_settings_backup_exported">App settings were exported to %1$s.</string>
     <string name="app_settings_backup_imported">Imported %1$d app settings from %2$s.</string>
@@ -478,6 +526,11 @@ Bluetooth: %2$s</string>
   <string name="report_issue_subject_required">Enter a short problem title.</string>
   <string name="report_issue_message_required">Describe the problem before sending the report.</string>
   <string name="report_issue_sent_github">Diagnostics copied. Opening a GitHub issue draft.</string>
+  <string name="crash_report_prompt_title">The app closed unexpectedly</string>
+  <string name="crash_report_prompt_message">Soft Braille Keyboard recorded a crash from the previous session. Do you want to open a support report with the crash details attached?</string>
+  <string name="crash_report_prompt_action">Open crash report</string>
+  <string name="crash_report_default_subject">Crash report from previous session</string>
+  <string name="crash_report_default_message">The app closed unexpectedly. The crash details were attached automatically. Please describe what you were doing just before the crash.</string>
   <string name="report_issue_failed">The report could not be prepared.</string>
   <string name="braille_export_profiles">Copy braille display profiles</string>
   <string name="braille_import_profiles">Import braille display profiles from clipboard</string>
