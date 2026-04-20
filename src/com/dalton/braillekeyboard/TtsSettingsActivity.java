@@ -9,12 +9,12 @@ import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.Voice;
 import android.text.TextUtils;
+import android.view.KeyEvent;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.SeekBar;
-import android.widget.Spinner;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -27,13 +27,14 @@ import java.util.Set;
 public class TtsSettingsActivity extends Activity {
     private static final int MIN_PERCENT = 50;
     private static final int MAX_PERCENT = 200;
+    private static final int STEP_PERCENT = 5;
 
-    private Spinner engineSpinner;
-    private Spinner voiceSpinner;
+    private RadioGroup engineGroup;
+    private RadioGroup voiceGroup;
     private TextView statusView;
-    private TextView rateValueView;
-    private TextView pitchValueView;
-    private TextView volumeValueView;
+    private TextView rateLabelView;
+    private TextView pitchLabelView;
+    private TextView volumeLabelView;
     private SeekBar rateSeekBar;
     private SeekBar pitchSeekBar;
     private SeekBar volumeSeekBar;
@@ -51,69 +52,81 @@ public class TtsSettingsActivity extends Activity {
         setContentView(R.layout.activity_tts_settings);
         setTitle(R.string.pref_text_to_speech_title);
 
-        engineSpinner = (Spinner) findViewById(R.id.tts_engine_spinner);
-        voiceSpinner = (Spinner) findViewById(R.id.tts_voice_spinner);
+        engineGroup = (RadioGroup) findViewById(R.id.tts_engine_group);
+        voiceGroup = (RadioGroup) findViewById(R.id.tts_voice_group);
         statusView = (TextView) findViewById(R.id.tts_status);
-        rateValueView = (TextView) findViewById(R.id.tts_rate_value);
-        pitchValueView = (TextView) findViewById(R.id.tts_pitch_value);
-        volumeValueView = (TextView) findViewById(R.id.tts_volume_value);
+        rateLabelView = (TextView) findViewById(R.id.tts_rate_label);
+        pitchLabelView = (TextView) findViewById(R.id.tts_pitch_label);
+        volumeLabelView = (TextView) findViewById(R.id.tts_volume_label);
         rateSeekBar = (SeekBar) findViewById(R.id.tts_rate_seekbar);
         pitchSeekBar = (SeekBar) findViewById(R.id.tts_pitch_seekbar);
         volumeSeekBar = (SeekBar) findViewById(R.id.tts_volume_seekbar);
-        Button previewButton = (Button) findViewById(R.id.tts_preview_button);
 
-        setupSeekBar(rateSeekBar, rateValueView,
+        setupSeekBar(rateSeekBar, rateLabelView,
+                R.string.pref_text_to_speech_rate_title,
                 R.string.pref_text_to_speech_rate_key,
-                R.string.pref_text_to_speech_rate_default);
-        setupSeekBar(pitchSeekBar, pitchValueView,
+                R.string.pref_text_to_speech_rate_default,
+                R.id.tts_rate_decrease, R.id.tts_rate_increase);
+        setupSeekBar(pitchSeekBar, pitchLabelView,
+                R.string.pref_text_to_speech_pitch_title,
                 R.string.pref_text_to_speech_pitch_key,
-                R.string.pref_text_to_speech_pitch_default);
-        setupSeekBar(volumeSeekBar, volumeValueView,
+                R.string.pref_text_to_speech_pitch_default,
+                R.id.tts_pitch_decrease, R.id.tts_pitch_increase);
+        setupSeekBar(volumeSeekBar, volumeLabelView,
+                R.string.pref_text_to_speech_volume_title,
                 R.string.pref_text_to_speech_volume_key,
-                R.string.pref_text_to_speech_volume_default);
+                R.string.pref_text_to_speech_volume_default,
+                R.id.tts_volume_decrease, R.id.tts_volume_increase);
 
-        engineSpinner.setOnItemSelectedListener(
-                new AdapterView.OnItemSelectedListener() {
-                    @Override
-                    public void onItemSelected(AdapterView<?> parent, View view,
-                            int position, long id) {
-                        if (suppressEngineCallback || position < 0
-                                || position >= engineOptions.size()) {
-                            return;
+        if (engineGroup != null) {
+            engineGroup.setOnCheckedChangeListener(
+                    new RadioGroup.OnCheckedChangeListener() {
+                        @Override
+                        public void onCheckedChanged(RadioGroup group,
+                                int checkedId) {
+                            if (suppressEngineCallback || checkedId == View.NO_ID) {
+                                return;
+                            }
+                            View checkedView = group.findViewById(checkedId);
+                            if (!(checkedView instanceof RadioButton)) {
+                                return;
+                            }
+                            Object tag = checkedView.getTag();
+                            String engineName = tag == null ? "" : tag.toString();
+                            Options.writeStringPreference(
+                                    TtsSettingsActivity.this,
+                                    R.string.pref_text_to_speech_engine_key,
+                                    engineName);
+                            rebuildTtsForEngine(engineName);
                         }
-                        String engineName = engineOptions.get(position).name;
-                        Options.writeStringPreference(TtsSettingsActivity.this,
-                                R.string.pref_text_to_speech_engine_key,
-                                engineName);
-                        rebuildTtsForEngine(engineName);
-                    }
+                    });
+        }
 
-                    @Override
-                    public void onNothingSelected(AdapterView<?> parent) {
-                    }
-                });
-
-        voiceSpinner.setOnItemSelectedListener(
-                new AdapterView.OnItemSelectedListener() {
-                    @Override
-                    public void onItemSelected(AdapterView<?> parent, View view,
-                            int position, long id) {
-                        if (suppressVoiceCallback || position < 0
-                                || position >= voiceOptions.size()) {
-                            return;
+        if (voiceGroup != null) {
+            voiceGroup.setOnCheckedChangeListener(
+                    new RadioGroup.OnCheckedChangeListener() {
+                        @Override
+                        public void onCheckedChanged(RadioGroup group,
+                                int checkedId) {
+                            if (suppressVoiceCallback || checkedId == View.NO_ID) {
+                                return;
+                            }
+                            View checkedView = group.findViewById(checkedId);
+                            if (!(checkedView instanceof RadioButton)) {
+                                return;
+                            }
+                            Object tag = checkedView.getTag();
+                            String voiceName = tag == null ? "" : tag.toString();
+                            Options.writeStringPreference(
+                                    TtsSettingsActivity.this,
+                                    R.string.pref_text_to_speech_voice_key,
+                                    voiceName);
+                            applySelectedVoice();
                         }
-                        String voiceName = voiceOptions.get(position).name;
-                        Options.writeStringPreference(TtsSettingsActivity.this,
-                                R.string.pref_text_to_speech_voice_key,
-                                voiceName);
-                        applySelectedVoice();
-                    }
+                    });
+        }
 
-                    @Override
-                    public void onNothingSelected(AdapterView<?> parent) {
-                    }
-                });
-
+        Button previewButton = (Button) findViewById(R.id.tts_preview_button);
         if (previewButton != null) {
             previewButton.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -123,7 +136,7 @@ public class TtsSettingsActivity extends Activity {
             });
         }
 
-        populateEngineSpinner();
+        populateEngineGroup();
         rebuildTtsForEngine(getSelectedEngineName());
     }
 
@@ -133,22 +146,26 @@ public class TtsSettingsActivity extends Activity {
         shutdownTts();
     }
 
-    private void setupSeekBar(SeekBar seekBar, final TextView valueView,
-            final int keyRes, int defaultRes) {
-        if (seekBar == null || valueView == null) {
+    private void setupSeekBar(final SeekBar seekBar, final TextView labelView,
+            final int titleRes, final int keyRes, int defaultRes,
+            int decreaseButtonId, int increaseButtonId) {
+        if (seekBar == null || labelView == null) {
             return;
         }
         final int currentValue = clampPercent(Options.getIntPreference(this,
                 keyRes, getString(defaultRes)));
         seekBar.setMax(MAX_PERCENT - MIN_PERCENT);
+        seekBar.setKeyProgressIncrement(STEP_PERCENT);
         seekBar.setProgress(currentValue - MIN_PERCENT);
-        updatePercentLabel(valueView, currentValue);
+        updateParameterLabel(labelView, titleRes, currentValue);
+        seekBar.setContentDescription(buildParameterLabel(titleRes, currentValue));
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress,
                     boolean fromUser) {
                 int value = progress + MIN_PERCENT;
-                updatePercentLabel(valueView, value);
+                updateParameterLabel(labelView, titleRes, value);
+                seekBar.setContentDescription(buildParameterLabel(titleRes, value));
                 if (fromUser) {
                     Options.writeStringPreference(TtsSettingsActivity.this,
                             keyRes, String.valueOf(value));
@@ -164,9 +181,54 @@ public class TtsSettingsActivity extends Activity {
             public void onStopTrackingTouch(SeekBar seekBar) {
             }
         });
+        seekBar.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View view, int keyCode, KeyEvent event) {
+                if (event.getAction() != KeyEvent.ACTION_DOWN) {
+                    return false;
+                }
+                if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+                    stepSeekBar(seekBar, keyRes, STEP_PERCENT);
+                    return true;
+                } else if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+                    stepSeekBar(seekBar, keyRes, -STEP_PERCENT);
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        View decreaseButton = findViewById(decreaseButtonId);
+        if (decreaseButton != null) {
+            decreaseButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    stepSeekBar(seekBar, keyRes, -STEP_PERCENT);
+                }
+            });
+        }
+        View increaseButton = findViewById(increaseButtonId);
+        if (increaseButton != null) {
+            increaseButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    stepSeekBar(seekBar, keyRes, STEP_PERCENT);
+                }
+            });
+        }
     }
 
-    private void populateEngineSpinner() {
+    private void stepSeekBar(SeekBar seekBar, int keyRes, int delta) {
+        if (seekBar == null) {
+            return;
+        }
+        int target = clampPercent((seekBar.getProgress() + MIN_PERCENT) + delta);
+        seekBar.setProgress(target - MIN_PERCENT);
+        Options.writeStringPreference(this, keyRes, String.valueOf(target));
+        applyCurrentSpeechParameters();
+    }
+
+    private void populateEngineGroup() {
         engineOptions.clear();
         engineOptions.add(new EngineOption("",
                 getString(R.string.pref_text_to_speech_engine_auto)));
@@ -199,12 +261,7 @@ public class TtsSettingsActivity extends Activity {
                     }
                 });
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-                android.R.layout.simple_spinner_item, getEngineLabels());
-        adapter.setDropDownViewResource(
-                android.R.layout.simple_spinner_dropdown_item);
-        engineSpinner.setAdapter(adapter);
-        setEngineSelection(getSelectedEngineName());
+        populateRadioGroup(engineGroup, engineOptions, getSelectedEngineName());
     }
 
     private void addEngineOption(String packageName, String label) {
@@ -220,29 +277,15 @@ public class TtsSettingsActivity extends Activity {
                 TextUtils.isEmpty(label) ? packageName : label));
     }
 
-    private void setEngineSelection(String engineName) {
-        suppressEngineCallback = true;
-        try {
-            int selection = 0;
-            for (int i = 0; i < engineOptions.size(); i++) {
-                if (TextUtils.equals(engineOptions.get(i).name, engineName)) {
-                    selection = i;
-                    break;
-                }
-            }
-            engineSpinner.setSelection(selection);
-        } finally {
-            suppressEngineCallback = false;
-        }
-    }
-
     private void rebuildTtsForEngine(String engineName) {
         shutdownTts();
-        populateVoiceSpinner(null);
-        statusView.setText(R.string.pref_text_to_speech_loading_voices);
+        populateVoiceGroup(null);
+        if (statusView != null) {
+            statusView.setText(R.string.pref_text_to_speech_loading_voices);
+        }
 
-        final String requestedEngine = TextUtils.isEmpty(engineName) ? null
-                : engineName;
+        final String requestedEngine = TextUtils.isEmpty(engineName)
+                ? null : engineName;
         try {
             tts = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
                 @Override
@@ -252,23 +295,31 @@ public class TtsSettingsActivity extends Activity {
                     }
                     if (status == TextToSpeech.SUCCESS) {
                         applyCurrentSpeechParameters();
-                        populateVoiceSpinner(tts);
-                        statusView.setText(R.string.pref_text_to_speech_ready);
+                        populateVoiceGroup(tts);
+                        if (statusView != null) {
+                            statusView.setText(
+                                    R.string.pref_text_to_speech_ready);
+                        }
                     } else {
-                        populateVoiceSpinner(null);
-                        statusView.setText(
-                                R.string.pref_text_to_speech_engine_unavailable);
+                        populateVoiceGroup(null);
+                        if (statusView != null) {
+                            statusView.setText(
+                                    R.string.pref_text_to_speech_engine_unavailable);
+                        }
                     }
                 }
             }, requestedEngine);
         } catch (RuntimeException e) {
             tts = null;
-            populateVoiceSpinner(null);
-            statusView.setText(R.string.pref_text_to_speech_engine_unavailable);
+            populateVoiceGroup(null);
+            if (statusView != null) {
+                statusView.setText(
+                        R.string.pref_text_to_speech_engine_unavailable);
+            }
         }
     }
 
-    private void populateVoiceSpinner(TextToSpeech activeTts) {
+    private void populateVoiceGroup(TextToSpeech activeTts) {
         voiceOptions.clear();
         voiceOptions.add(new VoiceOption("",
                 getString(R.string.pref_text_to_speech_voice_auto)));
@@ -300,12 +351,6 @@ public class TtsSettingsActivity extends Activity {
                     }
                 });
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-                android.R.layout.simple_spinner_item, getVoiceLabels());
-        adapter.setDropDownViewResource(
-                android.R.layout.simple_spinner_dropdown_item);
-        voiceSpinner.setAdapter(adapter);
-
         String selectedVoiceName = Options.getStringPreference(this,
                 R.string.pref_text_to_speech_voice_key,
                 getString(R.string.pref_text_to_speech_voice_default));
@@ -321,23 +366,38 @@ public class TtsSettingsActivity extends Activity {
             Options.writeStringPreference(this,
                     R.string.pref_text_to_speech_voice_key, "");
         }
-        setVoiceSelection(selectedVoiceName);
+        populateRadioGroup(voiceGroup, voiceOptions, selectedVoiceName);
         applySelectedVoice();
     }
 
-    private void setVoiceSelection(String voiceName) {
-        suppressVoiceCallback = true;
+    private <T extends LabeledOption> void populateRadioGroup(RadioGroup group,
+            List<T> options, String selectedName) {
+        if (group == null) {
+            return;
+        }
+        if (group == engineGroup) {
+            suppressEngineCallback = true;
+        } else if (group == voiceGroup) {
+            suppressVoiceCallback = true;
+        }
         try {
-            int selection = 0;
-            for (int i = 0; i < voiceOptions.size(); i++) {
-                if (TextUtils.equals(voiceOptions.get(i).name, voiceName)) {
-                    selection = i;
-                    break;
+            group.removeAllViews();
+            for (T option : options) {
+                RadioButton button = new RadioButton(this);
+                button.setId(View.generateViewId());
+                button.setTag(option.getName());
+                button.setText(option.getLabel());
+                group.addView(button);
+                if (TextUtils.equals(option.getName(), selectedName)) {
+                    button.setChecked(true);
                 }
             }
-            voiceSpinner.setSelection(selection);
         } finally {
-            suppressVoiceCallback = false;
+            if (group == engineGroup) {
+                suppressEngineCallback = false;
+            } else if (group == voiceGroup) {
+                suppressVoiceCallback = false;
+            }
         }
     }
 
@@ -367,8 +427,8 @@ public class TtsSettingsActivity extends Activity {
                 return;
             }
             for (Voice voice : voices) {
-                if (voice != null && TextUtils.equals(voice.getName(),
-                        selectedVoiceName)) {
+                if (voice != null
+                        && TextUtils.equals(voice.getName(), selectedVoiceName)) {
                     tts.setVoice(voice);
                     return;
                 }
@@ -404,22 +464,6 @@ public class TtsSettingsActivity extends Activity {
         }
     }
 
-    private List<String> getEngineLabels() {
-        List<String> labels = new ArrayList<String>(engineOptions.size());
-        for (EngineOption option : engineOptions) {
-            labels.add(option.label);
-        }
-        return labels;
-    }
-
-    private List<String> getVoiceLabels() {
-        List<String> labels = new ArrayList<String>(voiceOptions.size());
-        for (VoiceOption option : voiceOptions) {
-            labels.add(option.label);
-        }
-        return labels;
-    }
-
     private String getSelectedEngineName() {
         String value = Options.getStringPreference(this,
                 R.string.pref_text_to_speech_engine_key, "");
@@ -434,7 +478,8 @@ public class TtsSettingsActivity extends Activity {
         String localeLabel = locale == null ? ""
                 : locale.getDisplayName(locale);
         if (TextUtils.isEmpty(localeLabel)) {
-            localeLabel = getString(R.string.pref_text_to_speech_voice_unknown_locale);
+            localeLabel = getString(
+                    R.string.pref_text_to_speech_voice_unknown_locale);
         }
         return TextUtils.isEmpty(voice.getName()) ? localeLabel
                 : localeLabel + " - " + voice.getName();
@@ -445,11 +490,15 @@ public class TtsSettingsActivity extends Activity {
                 + MIN_PERCENT);
     }
 
-    private void updatePercentLabel(TextView view, int value) {
+    private void updateParameterLabel(TextView view, int titleRes, int value) {
         if (view != null) {
-            view.setText(getString(R.string.pref_text_to_speech_percent_value,
-                    clampPercent(value)));
+            view.setText(buildParameterLabel(titleRes, value));
         }
+    }
+
+    private String buildParameterLabel(int titleRes, int value) {
+        return getString(R.string.pref_text_to_speech_slider_label,
+                getString(titleRes), Integer.valueOf(clampPercent(value)));
     }
 
     private int clampPercent(int value) {
@@ -462,7 +511,13 @@ public class TtsSettingsActivity extends Activity {
         return value;
     }
 
-    private static class EngineOption {
+    private interface LabeledOption {
+        String getName();
+
+        String getLabel();
+    }
+
+    private static class EngineOption implements LabeledOption {
         final String name;
         final String label;
 
@@ -470,15 +525,35 @@ public class TtsSettingsActivity extends Activity {
             this.name = name;
             this.label = label;
         }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public String getLabel() {
+            return label;
+        }
     }
 
-    private static class VoiceOption {
+    private static class VoiceOption implements LabeledOption {
         final String name;
         final String label;
 
         VoiceOption(String name, String label) {
             this.name = name;
             this.label = label;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public String getLabel() {
+            return label;
         }
     }
 }

@@ -377,7 +377,9 @@ public class BrailleView extends View {
                 // for if they want to calibrate.
                 // Only record the time for the first touch.
                 requiredTouchTime = requiredTouchTime == 0 ? System
-                        .currentTimeMillis() + LONG_HOLD_DELAY
+                        .currentTimeMillis() + (KeyboardCalibrationUtils
+                                .isCalibrationModeRequested() ? 0
+                                        : LONG_HOLD_DELAY)
                         : requiredTouchTime;
 
                 if (!updatePointer(dotsDown, id, x, y, true)
@@ -525,6 +527,7 @@ public class BrailleView extends View {
                 }
             }
             boolean result = selectPad(sixDots, width, height);
+            KeyboardCalibrationUtils.clearCalibrationMode();
             if (speech != null) {
                 speech.speak(getContext(), getContext().getString(result
                         ? pad.padString : R.string.keyboard_error),
@@ -557,6 +560,7 @@ public class BrailleView extends View {
             }
             boolean result;
             if ((result = selectPad(sixDots, width, height))) {
+                KeyboardCalibrationUtils.clearCalibrationMode();
                 if (speech != null) {
                     speech.speak(getContext(), getContext()
                             .getString(pad.padString), Speech.QUEUE_FLUSH);
@@ -565,6 +569,7 @@ public class BrailleView extends View {
                     vibrator.vibrate(MEDIUM_VIBRATION);
                 }
             } else {
+                KeyboardCalibrationUtils.clearCalibrationMode();
                 if (speech != null) {
                     speech.speak(getContext(),
                             getContext().getString(R.string.keyboard_error),

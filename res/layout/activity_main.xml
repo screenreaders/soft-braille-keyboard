@@ -10,9 +10,10 @@
         android:padding="16dp">
 
         <TextView
+            android:id="@+id/main_app_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/main_section_setup"
+            android:text="@string/app_name"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:textStyle="bold" />
 
@@ -23,220 +24,291 @@
             android:layout_marginTop="6dp"
             android:textIsSelectable="true" />
 
-        <TextView
-            android:id="@+id/main_setup_status"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:text="@string/main_status_loading" />
+            android:layout_marginTop="16dp"
+            android:background="@drawable/main_tile_background"
+            android:orientation="vertical"
+            android:padding="16dp">
 
-        <TextView
-            android:id="@+id/main_keyboard_status"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:text="@string/main_status_loading" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/main_tile_setup_title"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/main_permissions_status"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:text="@string/main_status_loading" />
+            <TextView
+                android:id="@+id/main_setup_summary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/main_status_loading" />
 
-        <Button
-            android:id="@+id/btn_setup_wizard"
-            style="@android:style/TextAppearance.Large"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:onClick="onSetupWizard"
-            android:text="@string/button_open_setup_wizard" />
+            <Button
+                android:id="@+id/btn_setup_wizard"
+                style="@android:style/TextAppearance.Large"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:onClick="onSetupWizard"
+                android:text="@string/button_open_setup_wizard" />
 
-        <Button
-            android:id="@+id/btn_enable"
-            style="@android:style/TextAppearance.Large"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="onKeyboardSettings"
-            android:text="@string/button_keyboard_settings" />
+            <Button
+                android:id="@+id/btn_enable"
+                style="@android:style/TextAppearance.Large"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:onClick="onKeyboardSettings"
+                android:text="@string/button_keyboard_settings" />
 
-        <Button
-            android:id="@+id/btn_default_keyboard"
-            style="@android:style/TextAppearance.Large"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="onDefaultInputMethod"
-            android:text="@string/button_choose_default_keyboard" />
+            <Button
+                android:id="@+id/btn_default_keyboard"
+                style="@android:style/TextAppearance.Large"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:onClick="onDefaultInputMethod"
+                android:text="@string/button_choose_default_keyboard" />
 
-        <Button
-            style="@android:style/TextAppearance.Large"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="onAccessibilitySettings"
-            android:text="@string/button_accessibility_settings" />
+            <Button
+                android:id="@+id/btn_check_updates"
+                style="@android:style/TextAppearance.Large"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:onClick="onKeyboardCalibrationTest"
+                android:text="@string/button_open_keyboard_calibration_test" />
+        </LinearLayout>
 
-        <TextView
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:text="@string/main_section_braille"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textStyle="bold" />
+            android:layout_marginTop="12dp"
+            android:background="@drawable/main_tile_background"
+            android:orientation="vertical"
+            android:padding="16dp">
 
-        <TextView
-            android:id="@+id/main_braille_status"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:text="@string/main_status_loading" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/main_tile_braille_title"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textStyle="bold" />
 
-        <Button
-            style="@android:style/TextAppearance.Large"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="onBrailleTranslationSettings"
-            android:text="@string/button_braille_translation_settings" />
+            <TextView
+                android:id="@+id/main_braille_summary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/main_status_loading" />
 
-        <Button
-            style="@android:style/TextAppearance.Large"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="onUserProfileSetup"
-            android:text="@string/button_open_user_profile_setup" />
+            <Button
+                style="@android:style/TextAppearance.Large"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:onClick="onBrailleTranslationSettings"
+                android:text="@string/button_braille_translation_settings" />
 
-        <Button
-            style="@android:style/TextAppearance.Large"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="onBrailleProfiles"
-            android:text="@string/button_braille_profiles" />
+            <Button
+                style="@android:style/TextAppearance.Large"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:onClick="onBrailleProfiles"
+                android:text="@string/button_braille_profiles" />
 
-        <Button
-            style="@android:style/TextAppearance.Large"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="onNextBrailleProfile"
-            android:text="@string/button_braille_next_profile" />
+            <Button
+                style="@android:style/TextAppearance.Large"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:onClick="onNextBrailleProfile"
+                android:text="@string/button_braille_next_profile" />
 
-        <Button
-            style="@android:style/TextAppearance.Large"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="onBrailleTableTest"
-            android:text="@string/button_braille_table_test" />
+            <Button
+                style="@android:style/TextAppearance.Large"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:onClick="onBrailleLearn"
+                android:text="@string/button_braille_learn" />
 
-        <Button
-            style="@android:style/TextAppearance.Large"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="onBrailleLearn"
-            android:text="@string/button_braille_learn" />
+            <Button
+                style="@android:style/TextAppearance.Large"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:onClick="onBrailleTableTest"
+                android:text="@string/button_braille_table_test" />
+        </LinearLayout>
 
-        <Button
-            style="@android:style/TextAppearance.Large"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:onClick="onBrailleNotes"
-            android:text="@string/button_braille_notes" />
+            android:layout_marginTop="12dp"
+            android:background="@drawable/main_tile_background"
+            android:orientation="vertical"
+            android:padding="16dp">
 
-        <EditText
-            android:id="@+id/txt_practice"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:hint="@string/try_box"
-            android:inputType="textCapSentences|textMultiLine"
-            android:visibility="gone" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/main_tile_speech_title"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textStyle="bold" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:text="@string/main_section_speech"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textStyle="bold" />
+            <TextView
+                android:id="@+id/main_speech_summary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/main_status_loading" />
 
-        <Button
-            style="@android:style/TextAppearance.Large"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="onTtsSettings"
-            android:text="@string/button_tts_settings" />
+            <Button
+                style="@android:style/TextAppearance.Large"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:onClick="onTtsSettings"
+                android:text="@string/button_tts_settings" />
+        </LinearLayout>
 
-        <TextView
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:text="@string/main_section_tools"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textStyle="bold" />
+            android:layout_marginTop="12dp"
+            android:background="@drawable/main_tile_background"
+            android:orientation="vertical"
+            android:padding="16dp">
 
-        <Button
-            style="@android:style/TextAppearance.Large"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="onBrailleDisplays"
-            android:text="@string/button_braille_displays" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/main_tile_display_title"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textStyle="bold" />
 
-        <Button
-            style="@android:style/TextAppearance.Large"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="onAppSettings"
-            android:text="@string/action_settings" />
+            <TextView
+                android:id="@+id/main_display_summary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/main_status_loading" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:text="@string/main_section_backup"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textStyle="bold" />
+            <Button
+                style="@android:style/TextAppearance.Large"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:onClick="onBrailleDisplays"
+                android:text="@string/button_braille_displays" />
 
-        <Button
-            style="@android:style/TextAppearance.Large"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="onExportAppSettings"
-            android:text="@string/button_export_app_settings" />
+            <Button
+                style="@android:style/TextAppearance.Large"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:onClick="onAccessibilitySettings"
+                android:text="@string/button_accessibility_settings" />
+        </LinearLayout>
 
-        <Button
-            style="@android:style/TextAppearance.Large"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:onClick="onImportAppSettings"
-            android:text="@string/button_import_app_settings" />
+            android:layout_marginTop="12dp"
+            android:background="@drawable/main_tile_background"
+            android:orientation="vertical"
+            android:padding="16dp">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:text="@string/main_section_support"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textStyle="bold" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/main_tile_app_title"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textStyle="bold" />
 
-        <Button
-            android:id="@+id/btn_check_updates"
-            style="@android:style/TextAppearance.Large"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="onCheckForUpdates"
-            android:text="@string/button_check_updates" />
+            <TextView
+                android:id="@+id/main_app_summary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/main_status_loading" />
 
-        <Button
-            style="@android:style/TextAppearance.Large"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="onReportIssue"
-            android:text="@string/button_report_issue" />
+            <Button
+                style="@android:style/TextAppearance.Large"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:onClick="onCheckForUpdates"
+                android:text="@string/button_check_updates" />
 
-        <Button
-            style="@android:style/TextAppearance.Large"
+            <Button
+                style="@android:style/TextAppearance.Large"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:onClick="onExportAppSettings"
+                android:text="@string/button_export_app_settings" />
+
+            <Button
+                style="@android:style/TextAppearance.Large"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:onClick="onImportAppSettings"
+                android:text="@string/button_import_app_settings" />
+
+            <Button
+                style="@android:style/TextAppearance.Large"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:onClick="onAppSettings"
+                android:text="@string/action_settings" />
+        </LinearLayout>
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:onClick="onURL"
-            android:text="@string/button_more_info" />
+            android:layout_marginTop="12dp"
+            android:background="@drawable/main_tile_background"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/main_tile_help_title"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/main_help_summary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/main_help_summary" />
+
+            <Button
+                style="@android:style/TextAppearance.Large"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:onClick="onReportIssue"
+                android:text="@string/button_report_issue" />
+
+            <Button
+                style="@android:style/TextAppearance.Large"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:onClick="onURL"
+                android:text="@string/button_more_info" />
+        </LinearLayout>
 
     </LinearLayout>
 </ScrollView>

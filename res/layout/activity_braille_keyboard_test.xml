@@ -47,6 +47,14 @@
             style="@android:style/TextAppearance.Large"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:onClick="onStartCalibration"
+            android:text="@string/button_start_keyboard_calibration" />
+
+        <Button
+            style="@android:style/TextAppearance.Large"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:onClick="onFocusPracticeField"
             android:text="@string/button_braille_keyboard_test_focus" />
 

@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class BrailleKeyboardTestActivity extends Activity {
     private TextView statusView;
@@ -61,6 +62,13 @@ public class BrailleKeyboardTestActivity extends Activity {
             inputManager.showSoftInput(practiceView,
                     InputMethodManager.SHOW_IMPLICIT);
         }
+    }
+
+    public void onStartCalibration(View view) {
+        KeyboardCalibrationUtils.requestCalibrationMode();
+        Toast.makeText(this, R.string.braille_keyboard_test_calibration_armed,
+                Toast.LENGTH_LONG).show();
+        onFocusPracticeField(view);
     }
 
     public void onDone(View view) {

@@ -278,9 +278,10 @@ Device table: %3$s</string>
     <string name="button_import_app_settings">Import app settings from file</string>
     <string name="button_open_setup_wizard">Run first-time setup</string>
     <string name="button_open_keyboard_calibration_test">Open keyboard calibration and test</string>
+    <string name="button_start_keyboard_calibration">Start calibration now</string>
     <string name="button_request_bluetooth_permission">Request Bluetooth permission</string>
     <string name="button_request_microphone_permission">Request microphone permission</string>
-    <string name="button_report_issue">Send support report</string>
+    <string name="button_report_issue">Send bug report</string>
     <string name="button_report_braille_issue">Report braille display problem</string>
     <string name="button_choose_default_keyboard">Set Soft Braille Keyboard as the default keyboard</string>
     <string name="button_keyboard_settings">Enable Soft Braille Keyboard</string>
@@ -423,6 +424,9 @@ Device table: %3$s</string>
     <string name="pref_text_to_speech_preview_button">Play sample</string>
     <string name="pref_text_to_speech_preview_text">Soft Braille Keyboard speech test.</string>
     <string name="pref_text_to_speech_percent_value">%1$d%%</string>
+    <string name="pref_text_to_speech_slider_label">%1$s: %2$d%%</string>
+    <string name="pref_text_to_speech_decrease">-</string>
+    <string name="pref_text_to_speech_increase">+</string>
     <string name="pref_text_to_speech_voice_unknown_locale">Unknown locale</string>
     <string name="pref_auto_check_updates_title">Check for updates automatically when the app starts</string>
     <string name="pref_prompt_crash_report_title">Offer to report crashes after the app restarts</string>
@@ -464,6 +468,7 @@ Current voice: %2$s</string>
     <string name="main_status_setup_required">Setup still needs attention</string>
     <string name="main_status_yes">Yes</string>
     <string name="main_status_no">No</string>
+    <string name="main_status_not_required">not required</string>
     <string name="main_status_loading">Loading…</string>
     <string name="main_status_keyboard_template">Keyboard enabled: %1$s
 Default keyboard: %2$s
@@ -474,6 +479,32 @@ Current table: %2$s</string>
     <string name="main_status_braille_profile_none">Active braille profile: none</string>
     <string name="main_status_permissions_template">Microphone: %1$s
 Bluetooth: %2$s</string>
+    <string name="main_status_none">none</string>
+    <string name="main_status_calibration_ready">saved</string>
+    <string name="main_status_calibration_missing_short">not saved</string>
+    <string name="main_tile_setup_title">Keyboard setup</string>
+    <string name="main_tile_braille_title">Braille and profiles</string>
+    <string name="main_tile_speech_title">Speech and voice</string>
+    <string name="main_tile_display_title">Braille display</string>
+    <string name="main_tile_app_title">App and updates</string>
+    <string name="main_tile_help_title">Help and bug reports</string>
+    <string name="main_setup_summary_template">Status: %1$s
+Keyboard enabled: %2$s
+Default keyboard: %3$s
+Calibration: %4$s</string>
+    <string name="main_braille_summary_loading">Loading braille translator and tables…</string>
+    <string name="main_braille_summary_template">Braille type: %1$s
+Current table: %2$s
+Active profile: %3$s</string>
+    <string name="main_speech_summary_template">Engine: %1$s
+Voice: %2$s</string>
+    <string name="main_display_summary_template">Screen output enabled: %1$s
+Bluetooth permission: %2$s
+USB permission: %3$s</string>
+    <string name="main_display_summary_usb">requested when a display is connected</string>
+    <string name="main_app_summary_template">Microphone: %1$s
+Automatic update checks: %2$s</string>
+    <string name="main_help_summary">Use the quick guide for setup help and the bug report screen when something is not working correctly.</string>
     <string name="setup_wizard_title">First-time setup</string>
     <string name="setup_wizard_intro">Follow these steps to enable Soft Braille Keyboard, make it the default keyboard and choose a braille table. Braille display screen output is optional and only needed if you use a braille display.</string>
     <string name="setup_step_indicator_value">Step %1$d of %2$d: %3$s</string>
@@ -526,6 +557,7 @@ Speech engine: %7$s</string>
     <string name="braille_keyboard_test_title">Braille keyboard calibration and test</string>
     <string name="braille_keyboard_test_intro">Use this screen to calibrate the on-screen braille keyboard and confirm that typing works before you finish setup.</string>
     <string name="braille_keyboard_test_calibration_steps">Calibration: open Soft Braille Keyboard in the field below, then either hold all six fingers at once or hold your first three fingers until you hear the prompt and then hold the other three fingers. After that, type a few characters in the practice field.</string>
+    <string name="braille_keyboard_test_calibration_armed">Calibration mode is ready. Open the keyboard and place all six fingers or three fingers plus three fingers.</string>
     <string name="braille_keyboard_test_status_template">Keyboard enabled: %1$s
 Default keyboard: %2$s
 Calibration: %3$s</string>
@@ -839,6 +871,7 @@ Latest release: %2$s</string>
     <string name="update_download_title">Soft Braille Keyboard %s</string>
     <string name="update_action_install">Install APK</string>
     <string name="update_action_background">Keep downloading</string>
+    <string name="update_install_permission_required">Allow Soft Braille Keyboard to install downloaded APK files, then press Install APK again.</string>
     <string name="update_no_apk_message">A newer GitHub release was found, but no APK asset is attached.
 
 Installed version: %1$s

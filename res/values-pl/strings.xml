@@ -428,9 +428,10 @@ Tabela urządzeń: %3$s</string>
     <string name="button_import_app_settings">Importuj ustawienia programu z pliku</string>
     <string name="button_open_setup_wizard">Uruchom konfigurator pierwszego uruchomienia</string>
     <string name="button_open_keyboard_calibration_test">Otwórz kalibrację i test klawiatury</string>
+    <string name="button_start_keyboard_calibration">Rozpocznij kalibrację teraz</string>
     <string name="button_request_bluetooth_permission">Poproś o uprawnienie Bluetooth</string>
     <string name="button_request_microphone_permission">Poproś o uprawnienie mikrofonu</string>
-    <string name="button_report_issue">Wyślij raport wsparcia</string>
+    <string name="button_report_issue">Wyślij raport błędu</string>
     <string name="button_report_braille_issue">Zgłoś problem z monitorem brajlowskim</string>
     <string name="button_tts_settings">Ustawienia silnika mowy i głosu</string>
     <string name="braille_table_test_title">Test tablic brajlowskich</string>
@@ -474,6 +475,9 @@ Tabela urządzeń: %3$s</string>
     <string name="pref_text_to_speech_preview_button">Odtwórz próbkę</string>
     <string name="pref_text_to_speech_preview_text">Próba syntezy mowy Soft Braille Keyboard.</string>
     <string name="pref_text_to_speech_percent_value">%1$d%%</string>
+    <string name="pref_text_to_speech_slider_label">%1$s: %2$d%%</string>
+    <string name="pref_text_to_speech_decrease">-</string>
+    <string name="pref_text_to_speech_increase">+</string>
     <string name="pref_text_to_speech_voice_unknown_locale">Nieznana lokalizacja</string>
     <string name="pref_auto_check_updates_title">Sprawdzaj aktualizacje automatycznie przy uruchomieniu programu</string>
     <string name="pref_prompt_crash_report_title">Po restarcie proponuj zgłoszenie awarii programu</string>
@@ -511,6 +515,7 @@ Bieżący głos: %2$s</string>
     <string name="main_status_setup_required">Konfiguracja wymaga dokończenia</string>
     <string name="main_status_yes">Tak</string>
     <string name="main_status_no">Nie</string>
+    <string name="main_status_not_required">nie dotyczy</string>
     <string name="main_status_loading">Ładowanie…</string>
     <string name="main_status_keyboard_template">Klawiatura włączona: %1$s
 Klawiatura domyślna: %2$s
@@ -521,6 +526,32 @@ Bieżąca tablica: %2$s</string>
     <string name="main_status_braille_profile_none">Aktywny profil brajlowski: brak</string>
     <string name="main_status_permissions_template">Mikrofon: %1$s
 Bluetooth: %2$s</string>
+    <string name="main_status_none">brak</string>
+    <string name="main_status_calibration_ready">zapisana</string>
+    <string name="main_status_calibration_missing_short">brak</string>
+    <string name="main_tile_setup_title">Klawiatura</string>
+    <string name="main_tile_braille_title">Brajl i profile</string>
+    <string name="main_tile_speech_title">Mowa i głosy</string>
+    <string name="main_tile_display_title">Monitor brajlowski</string>
+    <string name="main_tile_app_title">Program i aktualizacje</string>
+    <string name="main_tile_help_title">Pomoc i zgłoszenia</string>
+    <string name="main_setup_summary_template">Stan: %1$s
+Klawiatura włączona: %2$s
+Klawiatura domyślna: %3$s
+Kalibracja: %4$s</string>
+    <string name="main_braille_summary_loading">Ładowanie translatora brajla i tablic…</string>
+    <string name="main_braille_summary_template">Typ brajla: %1$s
+Bieżąca tablica: %2$s
+Aktywny profil: %3$s</string>
+    <string name="main_speech_summary_template">Silnik: %1$s
+Głos: %2$s</string>
+    <string name="main_display_summary_template">Wyjście ekranowe: %1$s
+Bluetooth: %2$s
+USB: %3$s</string>
+    <string name="main_display_summary_usb">po podłączeniu monitora</string>
+    <string name="main_app_summary_template">Mikrofon: %1$s
+Automatyczne sprawdzanie aktualizacji: %2$s</string>
+    <string name="main_help_summary">Użyj szybkiego przewodnika do konfiguracji, a ekranu raportu błędu, gdy coś działa nieprawidłowo.</string>
     <string name="setup_wizard_title">Konfigurator pierwszego uruchomienia</string>
     <string name="setup_wizard_intro">Wykonaj te kroki, aby włączyć Soft Braille Keyboard, ustawić ją jako klawiaturę domyślną i wybrać tablicę brajlowską. Wyjście na monitor brajlowski jest opcjonalne i potrzebne tylko wtedy, gdy korzystasz z monitora brajlowskiego.</string>
     <string name="setup_step_indicator_value">Krok %1$d z %2$d: %3$s</string>
@@ -573,6 +604,7 @@ Silnik mowy: %7$s</string>
     <string name="braille_keyboard_test_title">Kalibracja i test klawiatury brajlowskiej</string>
     <string name="braille_keyboard_test_intro">Użyj tego ekranu, aby skalibrować ekranową klawiaturę brajlowską i potwierdzić, że pisanie działa przed zakończeniem konfiguracji.</string>
     <string name="braille_keyboard_test_calibration_steps">Kalibracja: otwórz Soft Braille Keyboard w polu poniżej, a następnie albo przytrzymaj od razu wszystkie sześć palców, albo przytrzymaj pierwsze trzy palce do komunikatu i potem przytrzymaj kolejne trzy. Po tym wpisz kilka znaków w polu testowym.</string>
+    <string name="braille_keyboard_test_calibration_armed">Tryb kalibracji jest gotowy. Otwórz klawiaturę i połóż od razu sześć palców albo trzy plus trzy palce.</string>
     <string name="braille_keyboard_test_status_template">Klawiatura włączona: %1$s
 Klawiatura domyślna: %2$s
 Kalibracja: %3$s</string>
@@ -755,6 +787,7 @@ Najnowsze wydanie: %2$s</string>
     <string name="update_download_title">Soft Braille Keyboard %s</string>
     <string name="update_action_install">Zainstaluj APK</string>
     <string name="update_action_background">Pobieraj w tle</string>
+    <string name="update_install_permission_required">Zezwól aplikacji Soft Braille Keyboard na instalowanie pobranych plików APK, a potem naciśnij ponownie Zainstaluj APK.</string>
     <string name="update_no_apk_message">Znaleziono nowsze wydanie na GitHubie, ale nie ma do niego dołączonego pliku APK.
 
 Zainstalowana wersja: %1$s

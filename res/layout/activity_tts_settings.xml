@@ -15,86 +15,141 @@
             android:text="@string/pref_text_to_speech_screen_summary" />
 
         <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="@string/pref_text_to_speech_engine_title"
-            android:textStyle="bold" />
-
-        <Spinner
-            android:id="@+id/tts_engine_spinner"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="@string/pref_text_to_speech_voice_title"
-            android:textStyle="bold" />
-
-        <Spinner
-            android:id="@+id/tts_voice_spinner"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
-        <TextView
             android:id="@+id/tts_status"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="12dp"
             android:text="@string/pref_text_to_speech_loading_voices" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="@string/pref_text_to_speech_rate_title"
+            android:layout_marginTop="18dp"
+            android:text="@string/pref_text_to_speech_engine_title"
             android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/tts_rate_value"
+        <RadioGroup
+            android:id="@+id/tts_engine_group"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
-        <SeekBar
-            android:id="@+id/tts_rate_seekbar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="vertical" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="@string/pref_text_to_speech_pitch_title"
+            android:layout_marginTop="18dp"
+            android:text="@string/pref_text_to_speech_voice_title"
             android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/tts_pitch_value"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
-        <SeekBar
-            android:id="@+id/tts_pitch_seekbar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
-        <TextView
+        <RadioGroup
+            android:id="@+id/tts_voice_group"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="@string/pref_text_to_speech_volume_title"
-            android:textStyle="bold" />
+            android:layout_marginTop="8dp"
+            android:orientation="vertical" />
 
         <TextView
-            android:id="@+id/tts_volume_value"
+            android:id="@+id/tts_rate_label"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:textStyle="bold" />
 
-        <SeekBar
-            android:id="@+id/tts_volume_seekbar"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/tts_rate_decrease"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/pref_text_to_speech_decrease" />
+
+            <SeekBar
+                android:id="@+id/tts_rate_seekbar"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp" />
+
+            <Button
+                android:id="@+id/tts_rate_increase"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/pref_text_to_speech_increase" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tts_pitch_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/tts_pitch_decrease"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/pref_text_to_speech_decrease" />
+
+            <SeekBar
+                android:id="@+id/tts_pitch_seekbar"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp" />
+
+            <Button
+                android:id="@+id/tts_pitch_increase"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/pref_text_to_speech_increase" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tts_volume_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/tts_volume_decrease"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/pref_text_to_speech_decrease" />
+
+            <SeekBar
+                android:id="@+id/tts_volume_seekbar"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp" />
+
+            <Button
+                android:id="@+id/tts_volume_increase"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/pref_text_to_speech_increase" />
+        </LinearLayout>
 
         <Button
             android:id="@+id/tts_preview_button"

@@ -38,7 +38,6 @@ import android.view.View;
 import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -264,6 +263,13 @@ public class MainActivity extends Activity
 
     public void onBrailleNotes(View view) {
         Intent intent = new Intent(this, BrailleNotesActivity.class);
+        if (canStartActivity(intent)) {
+            startActivity(intent);
+        }
+    }
+
+    public void onKeyboardCalibrationTest(View view) {
+        Intent intent = new Intent(this, BrailleKeyboardTestActivity.class);
         if (canStartActivity(intent)) {
             startActivity(intent);
         }
@@ -869,9 +875,24 @@ public class MainActivity extends Activity
             openUri(fallbackUrl);
             return;
         }
-        Intent installIntent = new Intent(Intent.ACTION_VIEW);
-        installIntent.setDataAndType(apkUri,
-                "application/vnd.android.package-archive");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                && !getPackageManager().canRequestPackageInstalls()) {
+            Toast.makeText(this, R.string.update_install_permission_required,
+                    Toast.LENGTH_LONG).show();
+            Intent permissionIntent = new Intent(
+                    Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                    Uri.parse("package:" + getPackageName()));
+            if (canStartActivity(permissionIntent)) {
+                startActivity(permissionIntent);
+            } else {
+                openUri(fallbackUrl);
+            }
+            return;
+        }
+        Intent installIntent = new Intent(Intent.ACTION_INSTALL_PACKAGE);
+        installIntent.setData(apkUri);
+        installIntent.putExtra(Intent.EXTRA_NOT_UNKNOWN_SOURCE, true);
+        installIntent.putExtra(Intent.EXTRA_RETURN_RESULT, true);
         installIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         installIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         if (canStartActivity(installIntent)) {
@@ -916,41 +937,43 @@ public class MainActivity extends Activity
                 Context.INPUT_METHOD_SERVICE);
         Button btnEnable = (Button) findViewById(R.id.btn_enable);
         Button btnDefaultKeyboard = (Button) findViewById(R.id.btn_default_keyboard);
-        EditText text = (EditText) findViewById(R.id.txt_practice);
-        if (btnEnable == null || btnDefaultKeyboard == null || text == null) {
+        if (btnEnable == null || btnDefaultKeyboard == null) {
             return;
         }
-        TextView setupStatus = (TextView) findViewById(R.id.main_setup_status);
         TextView versionStatus = (TextView) findViewById(R.id.main_version_status);
-        TextView keyboardStatus = (TextView) findViewById(R.id.main_keyboard_status);
-        TextView brailleStatus = (TextView) findViewById(R.id.main_braille_status);
-        TextView permissionsStatus = (TextView) findViewById(
-                R.id.main_permissions_status);
+        TextView setupSummary = (TextView) findViewById(R.id.main_setup_summary);
+        TextView brailleSummary = (TextView) findViewById(R.id.main_braille_summary);
+        TextView speechSummary = (TextView) findViewById(R.id.main_speech_summary);
+        TextView displaySummary = (TextView) findViewById(R.id.main_display_summary);
+        TextView appSummary = (TextView) findViewById(R.id.main_app_summary);
+        TextView helpSummary = (TextView) findViewById(R.id.main_help_summary);
         if (versionStatus != null) {
             versionStatus.setText(getString(R.string.main_version_value,
                     BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE));
         }
         btnEnable.setEnabled(true);
         btnDefaultKeyboard.setEnabled(false);
-        text.setVisibility(View.GONE);
         boolean enabled = false;
         boolean isDefault = false;
         if (inputManager == null) {
-            bindStatusViews(setupStatus, keyboardStatus, brailleStatus,
-                    permissionsStatus, false, false, false);
+            bindStatusViews(setupSummary, brailleSummary, speechSummary,
+                    displaySummary, appSummary, helpSummary, false, false,
+                    false);
             return;
         }
         List<InputMethodInfo> list;
         try {
             list = inputManager.getEnabledInputMethodList();
         } catch (RuntimeException e) {
-            bindStatusViews(setupStatus, keyboardStatus, brailleStatus,
-                    permissionsStatus, false, false, false);
+            bindStatusViews(setupSummary, brailleSummary, speechSummary,
+                    displaySummary, appSummary, helpSummary, false, false,
+                    false);
             return;
         }
         if (list == null || list.isEmpty()) {
-            bindStatusViews(setupStatus, keyboardStatus, brailleStatus,
-                    permissionsStatus, false, false, false);
+            bindStatusViews(setupSummary, brailleSummary, speechSummary,
+                    displaySummary, appSummary, helpSummary, false, false,
+                    false);
             return;
         }
 
@@ -964,55 +987,59 @@ public class MainActivity extends Activity
                         Settings.Secure.DEFAULT_INPUT_METHOD);
                 if (info.getId() != null && info.getId().equals(id)) {
                     // SBK is default so disable make sbk default button and
-                    // show the sample text field.
+                    // update the state summary.
                     isDefault = true;
                     btnDefaultKeyboard.setEnabled(false);
-                    text.setVisibility(View.VISIBLE);
                 }
                 break;
             }
         }
-        bindStatusViews(setupStatus, keyboardStatus, brailleStatus,
-                permissionsStatus, enabled, isDefault,
+        bindStatusViews(setupSummary, brailleSummary, speechSummary,
+                displaySummary, appSummary, helpSummary, enabled, isDefault,
                 isBrailleAccessibilityEnabled());
     }
 
-    private void bindStatusViews(TextView setupStatus, TextView keyboardStatus,
-            TextView brailleStatus, TextView permissionsStatus, boolean enabled,
+    private void bindStatusViews(TextView setupSummary, TextView brailleSummary,
+            TextView speechSummary, TextView displaySummary,
+            TextView appSummary, TextView helpSummary, boolean enabled,
             boolean isDefault, boolean accessibilityEnabled) {
-        if (setupStatus != null) {
-            setupStatus.setText(enabled && isDefault
-                    ? R.string.main_status_setup_ready
-                    : R.string.main_status_setup_required);
+        if (setupSummary != null) {
+            setupSummary.setText(buildSetupSummary(enabled, isDefault,
+                    accessibilityEnabled));
         }
-        if (keyboardStatus != null) {
-            keyboardStatus.setText(getString(R.string.main_status_keyboard_template,
-                    yesNo(enabled), yesNo(isDefault),
-                    yesNo(accessibilityEnabled)));
+        if (brailleSummary != null) {
+            brailleSummary.setText(buildBrailleSummary());
         }
-        if (brailleStatus != null) {
-            brailleStatus.setText(buildBrailleStatus());
+        if (speechSummary != null) {
+            speechSummary.setText(buildSpeechSummary());
         }
-        if (permissionsStatus != null) {
-            permissionsStatus.setText(getString(
-                    R.string.main_status_permissions_template,
-                    yesNo(ContextCompat.checkSelfPermission(this,
-                            Manifest.permission.RECORD_AUDIO)
-                            == PackageManager.PERMISSION_GRANTED),
-                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
-                            ? yesNo(ContextCompat.checkSelfPermission(this,
-                                    Manifest.permission.BLUETOOTH_CONNECT)
-                                    == PackageManager.PERMISSION_GRANTED)
-                            : getString(R.string.main_status_yes)));
+        if (displaySummary != null) {
+            displaySummary.setText(buildDisplaySummary(accessibilityEnabled));
+        }
+        if (appSummary != null) {
+            appSummary.setText(buildAppSummary());
+        }
+        if (helpSummary != null) {
+            helpSummary.setText(getString(R.string.main_help_summary));
         }
     }
 
-    private String buildBrailleStatus() {
+    private String buildSetupSummary(boolean enabled, boolean isDefault,
+            boolean accessibilityEnabled) {
+        String setupState = getString(enabled && isDefault
+                ? R.string.main_status_setup_ready
+                : R.string.main_status_setup_required);
+        String calibrationState = KeyboardCalibrationUtils.hasSavedCalibration(this)
+                ? getString(R.string.main_status_calibration_ready)
+                : getString(R.string.main_status_calibration_missing_short);
+        return getString(R.string.main_setup_summary_template, setupState,
+                yesNo(enabled), yesNo(isDefault), calibrationState);
+    }
+
+    private String buildBrailleSummary() {
         if (brailleParser == null
                 || brailleParser.getStatus() == BrailleParser.STATUS_PREPARING) {
-            return getString(R.string.main_status_braille_template,
-                    getString(R.string.main_status_loading),
-                    getString(R.string.main_status_loading));
+            return getString(R.string.main_braille_summary_loading);
         }
         BrailleParser.BrailleType type = brailleParser.getBrailleType(this);
         TableInfo table = brailleParser.getTable(this);
@@ -1022,14 +1049,49 @@ public class MainActivity extends Activity
         String tableLabel = table == null || TextUtils.isEmpty(table.getId())
                 ? getString(R.string.no_braille_table)
                 : table.getId();
-        StringBuilder sb = new StringBuilder(getString(
-                R.string.main_status_braille_template, typeLabel, tableLabel));
         String activeProfile = BrailleUserProfiles.getActiveProfileName(this);
-        sb.append('\n').append(TextUtils.isEmpty(activeProfile)
-                ? getString(R.string.main_status_braille_profile_none)
-                : getString(R.string.main_status_braille_profile_value,
-                        activeProfile));
-        return sb.toString();
+        return getString(R.string.main_braille_summary_template, typeLabel,
+                tableLabel, TextUtils.isEmpty(activeProfile)
+                        ? getString(R.string.main_status_none)
+                        : activeProfile);
+    }
+
+    private String buildSpeechSummary() {
+        String engine = Options.getStringPreference(this,
+                R.string.pref_text_to_speech_engine_key, "");
+        String voice = Options.getStringPreference(this,
+                R.string.pref_text_to_speech_voice_key, "");
+        if (TextUtils.isEmpty(engine)) {
+            engine = getString(R.string.pref_text_to_speech_engine_auto);
+        }
+        if (TextUtils.isEmpty(voice)) {
+            voice = getString(R.string.pref_text_to_speech_voice_auto);
+        }
+        return getString(R.string.main_speech_summary_template, engine, voice);
+    }
+
+    private String buildDisplaySummary(boolean accessibilityEnabled) {
+        String bluetoothState = Build.VERSION.SDK_INT < Build.VERSION_CODES.S
+                ? getString(R.string.main_status_not_required)
+                : yesNo(ContextCompat.checkSelfPermission(this,
+                        Manifest.permission.BLUETOOTH_CONNECT)
+                        == PackageManager.PERMISSION_GRANTED);
+        return getString(R.string.main_display_summary_template,
+                yesNo(accessibilityEnabled),
+                bluetoothState,
+                getString(R.string.main_display_summary_usb));
+    }
+
+    private String buildAppSummary() {
+        boolean microphoneGranted = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.RECORD_AUDIO)
+                == PackageManager.PERMISSION_GRANTED;
+        String autoCheck = yesNo(Options.getBooleanPreference(this,
+                R.string.pref_auto_check_updates_key,
+                Boolean.parseBoolean(getString(
+                        R.string.pref_auto_check_updates_default))));
+        return getString(R.string.main_app_summary_template,
+                yesNo(microphoneGranted), autoCheck);
     }
 
     private boolean isBrailleAccessibilityEnabled() {
