@@ -19,6 +19,7 @@ package com.dalton.braillekeyboard;
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.content.Intent;
+import android.graphics.Region;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Build;
@@ -29,7 +30,6 @@ import android.view.accessibility.AccessibilityNodeInfo;
 
 import com.googlecode.eyesfree.braille.display.BrailleDisplayProperties;
 import com.googlecode.eyesfree.braille.display.BrailleInputEvent;
-import com.googlecode.eyesfree.braille.display.Display;
 import com.googlecode.eyesfree.braille.display.DisplayClient;
 import com.googlecode.eyesfree.braille.translate.TranslationResult;
 
@@ -46,6 +46,8 @@ public class BrailleAccessibilityService extends AccessibilityService
     private int[] lastVisiblePositions = new int[0];
     private int lastCursorPosition;
     private int panOffset;
+    private final Rect imeKeyboardRegion = new Rect();
+    private boolean imeKeyboardVisible;
 
     @Override
     public void onCreate() {
@@ -62,9 +64,12 @@ public class BrailleAccessibilityService extends AccessibilityService
         AccessibilityServiceInfo info = getServiceInfo();
         if (info != null) {
             info.flags |= AccessibilityServiceInfo.FLAG_REPORT_VIEW_IDS;
+            info.flags |= AccessibilityServiceInfo.FLAG_REQUEST_TOUCH_EXPLORATION_MODE;
             setServiceInfo(info);
         }
 
+        BrailleImePassthroughBridge.registerService(this);
+        applyImePassthroughRegion();
         connectDisplayClient();
         updateDisplayedContent(null, null);
     }
@@ -105,8 +110,39 @@ public class BrailleAccessibilityService extends AccessibilityService
             brailleParser.destroy();
             brailleParser = null;
         }
+        BrailleImePassthroughBridge.unregisterService(this);
         BrailleDisplayPreferences.setServiceStatus(this,
                 getString(R.string.braille_service_status_stopped));
+    }
+
+    void onImeKeyboardRegionChanged(Rect region, boolean visible) {
+        if (region != null) {
+            imeKeyboardRegion.set(region);
+        } else {
+            imeKeyboardRegion.setEmpty();
+        }
+        imeKeyboardVisible = visible && !imeKeyboardRegion.isEmpty();
+        applyImePassthroughRegion();
+    }
+
+    private void applyImePassthroughRegion() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            return;
+        }
+        Region passthroughRegion = new Region();
+        if (imeKeyboardVisible && !imeKeyboardRegion.isEmpty()) {
+            passthroughRegion.set(imeKeyboardRegion);
+        }
+        int displayId = android.view.Display.DEFAULT_DISPLAY;
+        if (getDisplay() != null) {
+            displayId = getDisplay().getDisplayId();
+        }
+        try {
+            setTouchExplorationPassthroughRegion(displayId, passthroughRegion);
+            setGestureDetectionPassthroughRegion(displayId, passthroughRegion);
+        } catch (RuntimeException e) {
+            // Keep the service alive even if passthrough is rejected.
+        }
     }
 
     @Override
@@ -125,23 +161,23 @@ public class BrailleAccessibilityService extends AccessibilityService
         }
         displayClient = new DisplayClient(this);
         displayClient.setOnConnectionStateChangeListener(
-                new Display.OnConnectionStateChangeListener() {
+                new com.googlecode.eyesfree.braille.display.Display.OnConnectionStateChangeListener() {
                     @Override
                     public void onConnectionStateChanged(int state) {
                         BrailleDisplayPreferences.setServiceStatus(
                                 BrailleAccessibilityService.this,
                                 buildStatusText(state));
-                        if (state == Display.STATE_CONNECTED) {
+                        if (state == com.googlecode.eyesfree.braille.display.Display.STATE_CONNECTED) {
                             panOffset = 0;
                             updateDisplayedContent(null, null);
-                        } else if (state == Display.STATE_NOT_CONNECTED) {
+                        } else if (state == com.googlecode.eyesfree.braille.display.Display.STATE_NOT_CONNECTED) {
                             lastTranslation = null;
                             lastVisiblePositions = new int[0];
                         }
                     }
                 });
         displayClient.setOnConnectionChangeProgressListener(
-                new Display.OnConnectionChangeProgressListener() {
+                new com.googlecode.eyesfree.braille.display.Display.OnConnectionChangeProgressListener() {
                     @Override
                     public void onConnectionChangeProgress(String description) {
                         BrailleDisplayPreferences.setServiceStatus(
@@ -153,7 +189,7 @@ public class BrailleAccessibilityService extends AccessibilityService
                     }
                 });
         displayClient.setOnInputEventListener(
-                new Display.OnInputEventListener() {
+                new com.googlecode.eyesfree.braille.display.Display.OnInputEventListener() {
                     @Override
                     public void onInputEvent(BrailleInputEvent inputEvent) {
                         handleDisplayInput(inputEvent);
@@ -356,7 +392,7 @@ public class BrailleAccessibilityService extends AccessibilityService
         lastVisiblePositions = visiblePositions;
         displayClient.displayDots(visibleCells, lastRenderedText, visiblePositions);
         BrailleDisplayPreferences.setServiceStatus(this, buildStatusText(
-                Display.STATE_CONNECTED));
+                com.googlecode.eyesfree.braille.display.Display.STATE_CONNECTED));
     }
 
     private boolean panDisplay(int delta) {
@@ -1032,13 +1068,13 @@ public class BrailleAccessibilityService extends AccessibilityService
                 : tableOverride;
         String connectionText;
         switch (connectionState) {
-        case Display.STATE_CONNECTED:
+        case com.googlecode.eyesfree.braille.display.Display.STATE_CONNECTED:
             connectionText = getString(R.string.braille_status_connected);
             break;
-        case Display.STATE_ERROR:
+        case com.googlecode.eyesfree.braille.display.Display.STATE_ERROR:
             connectionText = getString(R.string.braille_status_error);
             break;
-        case Display.STATE_NOT_CONNECTED:
+        case com.googlecode.eyesfree.braille.display.Display.STATE_NOT_CONNECTED:
         default:
             connectionText = getString(R.string.braille_status_disconnected);
             break;

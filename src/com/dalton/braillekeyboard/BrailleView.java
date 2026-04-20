@@ -243,12 +243,10 @@ public class BrailleView extends View {
             // user preference.
             if (accessibilityManager != null
                     && accessibilityManager.isTouchExplorationEnabled()) {
-                // Display a message saying that talkback needs to be disabled.
-                // canvas.drawText(
-                // getContext().getString(R.string.switch_off_talkback),
-                // displayParams.x, displayParams.y, paint);
                 setContentDescription(getContext().getString(
-                        R.string.switch_off_talkback));
+                        BrailleImePassthroughBridge.isPassthroughActive()
+                                ? R.string.braille_keyboard_talkback_ready
+                                : R.string.braille_keyboard_talkback_enable_service));
             } else {
                 setContentDescription(null);
             }
@@ -310,9 +308,10 @@ public class BrailleView extends View {
                         getContext().getString(
                                 R.string.expand_keyboard_talkback),
                         Speech.QUEUE_FLUSH);
-            } else {
+            } else if (!BrailleImePassthroughBridge.isPassthroughActive()) {
                 speech.speak(getContext(),
-                        getContext().getString(R.string.switch_off_talkback),
+                        getContext().getString(
+                                R.string.braille_keyboard_talkback_enable_service),
                         Speech.QUEUE_FLUSH);
             }
         }

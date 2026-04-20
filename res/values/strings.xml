@@ -319,6 +319,8 @@ Device table: %3$s</string>
     <string name="end_of_text">End of text</string>
     <string name="expand_keyboard_talkback">Double tap here to expand the keyboard</string>
     <string name="expand_keyboard">Tap here to expand the keyboard</string>
+    <string name="braille_keyboard_talkback_enable_service">To use the on-screen braille keyboard with TalkBack, enable the Braille accessibility service in Android accessibility settings.</string>
+    <string name="braille_keyboard_talkback_ready">TalkBack passthrough is active for the braille keyboard area.</string>
     <string name="grade_computer">Computer Braille</string>
     <string name="grade">Default Braille grade</string>
     <string name="grade_literary">Literary Braille</string>
@@ -493,6 +495,8 @@ Bluetooth: %2$s</string>
     <string name="setup_status_default_disabled">Soft Braille Keyboard is not the default keyboard yet.</string>
     <string name="setup_status_accessibility_enabled">Braille display screen output is enabled in Android accessibility settings.</string>
     <string name="setup_status_accessibility_disabled">Braille display screen output is disabled. Leave it off if you do not use a braille display.</string>
+    <string name="setup_status_accessibility_enabled_for_talkback">Braille accessibility service is enabled. TalkBack-compatible braille keyboard input is ready.</string>
+    <string name="setup_status_accessibility_required_for_talkback">TalkBack is active. Enable the Braille accessibility service to use the on-screen braille keyboard without turning TalkBack off.</string>
     <string name="setup_status_microphone_granted">Microphone permission granted.</string>
     <string name="setup_status_microphone_missing">Microphone permission missing.</string>
     <string name="setup_status_bluetooth_granted">Bluetooth permission granted.</string>

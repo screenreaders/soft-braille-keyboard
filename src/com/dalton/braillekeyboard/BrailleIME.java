@@ -24,6 +24,7 @@ import java.util.Locale;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Rect;
 import android.inputmethodservice.InputMethodService;
 import android.inputmethodservice.Keyboard;
 import android.os.SystemClock;
@@ -70,6 +71,15 @@ public class BrailleIME extends InputMethodService implements KeyboardListener {
     private long lastFallbackCommitAt;
     private String lastFallbackCommitText;
     private int lastFallbackCommitCursor = -1;
+    private final View.OnLayoutChangeListener brailleViewLayoutListener =
+            new View.OnLayoutChangeListener() {
+                @Override
+                public void onLayoutChange(View v, int left, int top, int right,
+                        int bottom, int oldLeft, int oldTop, int oldRight,
+                        int oldBottom) {
+                    publishAccessibilityPassthroughRegion();
+                }
+            };
 
     @Override
     public void onCreate() {
@@ -89,8 +99,12 @@ public class BrailleIME extends InputMethodService implements KeyboardListener {
     @Override
     public View onCreateInputView() {
         super.onCreateInputView();
+        if (brailleView != null) {
+            brailleView.removeOnLayoutChangeListener(brailleViewLayoutListener);
+        }
         brailleView = (BrailleView) getLayoutInflater().inflate(
                 R.layout.keyboard, null);
+        brailleView.addOnLayoutChangeListener(brailleViewLayoutListener);
 
         if (!Options.getBooleanPreference(this,
                 R.string.pref_has_asked_record_audio_key, false)) {
@@ -157,6 +171,7 @@ public class BrailleIME extends InputMethodService implements KeyboardListener {
         }
         brailleParser.setTranslator(this);
         syncKeyboardDotsWithBrailleType();
+        publishAccessibilityPassthroughRegion();
     }
 
     @Override
@@ -170,6 +185,7 @@ public class BrailleIME extends InputMethodService implements KeyboardListener {
         if (brailleView != null) {
             brailleView.close();
         }
+        clearAccessibilityPassthroughRegion();
     }
 
     @Override
@@ -179,6 +195,13 @@ public class BrailleIME extends InputMethodService implements KeyboardListener {
             brailleParser.destroy();
             brailleParser = null;
         }
+        clearAccessibilityPassthroughRegion();
+    }
+
+    @Override
+    public void updateFullscreenMode() {
+        super.updateFullscreenMode();
+        publishAccessibilityPassthroughRegion();
     }
 
     @Override
@@ -197,7 +220,36 @@ public class BrailleIME extends InputMethodService implements KeyboardListener {
             if (brailleView != null) {
                 brailleView.setLocale(getLocale());
             }
+            publishAccessibilityPassthroughRegion();
         }
+    }
+
+    private void publishAccessibilityPassthroughRegion() {
+        if (brailleView == null) {
+            clearAccessibilityPassthroughRegion();
+            return;
+        }
+        brailleView.post(new Runnable() {
+            @Override
+            public void run() {
+                if (brailleView == null || !brailleView.isShown()
+                        || brailleView.getWidth() <= 0
+                        || brailleView.getHeight() <= 0) {
+                    clearAccessibilityPassthroughRegion();
+                    return;
+                }
+                int[] location = new int[2];
+                brailleView.getLocationOnScreen(location);
+                Rect region = new Rect(location[0], location[1],
+                        location[0] + brailleView.getWidth(),
+                        location[1] + brailleView.getHeight());
+                BrailleImePassthroughBridge.updateKeyboardRegion(region, true);
+            }
+        });
+    }
+
+    private void clearAccessibilityPassthroughRegion() {
+        BrailleImePassthroughBridge.updateKeyboardRegion(new Rect(), false);
     }
 
     private boolean canStartActivity(Intent intent) {

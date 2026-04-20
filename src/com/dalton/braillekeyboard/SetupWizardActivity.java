@@ -13,6 +13,7 @@ import android.speech.tts.TextToSpeech;
 import android.speech.tts.Voice;
 import android.text.TextUtils;
 import android.view.View;
+import android.view.accessibility.AccessibilityManager;
 import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
@@ -692,9 +693,8 @@ public class SetupWizardActivity extends Activity
                     : getString(R.string.setup_status_calibration_missing));
         }
         if (accessibilityStatusView != null) {
-            accessibilityStatusView.setText(accessibilityEnabled
-                    ? R.string.setup_status_accessibility_enabled
-                    : R.string.setup_status_accessibility_disabled);
+            accessibilityStatusView.setText(buildAccessibilityStatus(
+                    accessibilityEnabled));
         }
         if (permissionsStatusView != null) {
             permissionsStatusView.setText(buildPermissionsStatus());
@@ -736,7 +736,8 @@ public class SetupWizardActivity extends Activity
         if (finishButton != null) {
             finishButton.setVisibility(currentPage == PAGE_PROFILE
                     ? View.VISIBLE : View.GONE);
-            finishButton.setEnabled(true);
+            finishButton.setEnabled(!requiresAccessibilityForTalkBack()
+                    || isBrailleAccessibilityEnabled());
         }
     }
 
@@ -818,6 +819,23 @@ public class SetupWizardActivity extends Activity
         return enabledServices != null
                 && enabledServices.contains(getPackageName() + "/"
                         + BrailleAccessibilityService.class.getName());
+    }
+
+    private boolean requiresAccessibilityForTalkBack() {
+        AccessibilityManager manager = (AccessibilityManager) getSystemService(
+                Context.ACCESSIBILITY_SERVICE);
+        return manager != null && manager.isTouchExplorationEnabled();
+    }
+
+    private String buildAccessibilityStatus(boolean accessibilityEnabled) {
+        if (requiresAccessibilityForTalkBack()) {
+            return getString(accessibilityEnabled
+                    ? R.string.setup_status_accessibility_enabled_for_talkback
+                    : R.string.setup_status_accessibility_required_for_talkback);
+        }
+        return getString(accessibilityEnabled
+                ? R.string.setup_status_accessibility_enabled
+                : R.string.setup_status_accessibility_disabled);
     }
 
     private String buildPermissionsStatus() {
