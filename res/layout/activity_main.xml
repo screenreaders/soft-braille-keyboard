@@ -17,6 +17,13 @@
             android:textStyle="bold" />
 
         <TextView
+            android:id="@+id/main_version_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:textIsSelectable="true" />
+
+        <TextView
             android:id="@+id/main_setup_status"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

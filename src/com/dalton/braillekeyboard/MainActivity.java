@@ -28,7 +28,6 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.view.View;
@@ -602,8 +601,8 @@ public class MainActivity extends Activity
                             : releaseInfo.getDisplayVersion()));
             request.setDescription(
                     getString(R.string.update_download_description));
-            request.setDestinationInExternalPublicDir(
-                    Environment.DIRECTORY_DOWNLOADS, fileName);
+            request.setDestinationInExternalFilesDir(this,
+                    android.os.Environment.DIRECTORY_DOWNLOADS, fileName);
             downloadManager.enqueue(request);
             Toast.makeText(this, R.string.update_download_started,
                     Toast.LENGTH_LONG).show();
@@ -637,10 +636,15 @@ public class MainActivity extends Activity
             return;
         }
         TextView setupStatus = (TextView) findViewById(R.id.main_setup_status);
+        TextView versionStatus = (TextView) findViewById(R.id.main_version_status);
         TextView keyboardStatus = (TextView) findViewById(R.id.main_keyboard_status);
         TextView brailleStatus = (TextView) findViewById(R.id.main_braille_status);
         TextView permissionsStatus = (TextView) findViewById(
                 R.id.main_permissions_status);
+        if (versionStatus != null) {
+            versionStatus.setText(getString(R.string.main_version_value,
+                    BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE));
+        }
         btnEnable.setEnabled(true);
         btnDefaultKeyboard.setEnabled(false);
         text.setVisibility(View.GONE);
