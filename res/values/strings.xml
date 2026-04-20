@@ -22,6 +22,7 @@
     <string name="pref_accessibility_tools_key" translatable="false">ACCESSIBILITY_TOOLS</string>
     <string name="pref_braille_learn_key" translatable="false">BRAILLE_LEARN</string>
     <string name="pref_braille_display_tools_key" translatable="false">BRAILLE_DISPLAY_TOOLS</string>
+    <string name="pref_braille_profiles_key" translatable="false">BRAILLE_USER_PROFILES</string>
     <string name="pref_category_braille_key" translatable="false">BRAILLE_CATEGORY_KEY</string>
     <string name="pref_category_feedback_key" translatable="false">KEYBOARD_FEEDBACK_Category</string>
     <string name="pref_category_keyboard_key" translatable="false">KEYBOARD_CATEGORY</string>
@@ -66,6 +67,8 @@
     <string name="pref_text_to_speech_voice_key" translatable="false">TEXT_TO_SPEECH_VOICE</string>
     <string name="pref_text_to_speech_volume_default" translatable="false">100</string>
     <string name="pref_text_to_speech_volume_key" translatable="false">TEXT_TO_SPEECH_VOLUME</string>
+    <string name="pref_text_to_speech_settings_key" translatable="false">TEXT_TO_SPEECH_SETTINGS</string>
+    <string name="pref_setup_wizard_completed_key" translatable="false">SETUP_WIZARD_COMPLETED</string>
     <string name="pref_two_hand_calibration_default" translatable="false">true</string>
     <string name="pref_two_hand_calibration_key" translatable="false">TWO_HAND_CALIBRATE</string>
     <string name="pref_use_eight_dots_default" translatable="false">false</string>
@@ -215,6 +218,7 @@ Meaning: %2$s</string>
     <string name="braille_section_devices">Recognized paired displays</string>
     <string name="braille_section_log">Live event log</string>
     <string name="braille_section_profiles">Device profiles</string>
+    <string name="braille_section_named_profiles">Named braille display profiles</string>
     <string name="braille_section_properties">Connected display properties</string>
     <string name="braille_section_remap">Per-device binding remap</string>
     <string name="braille_section_status">Connection status</string>
@@ -251,26 +255,37 @@ Device table: %3$s</string>
     <string name="braille_usb_permission_granted">usb permission granted</string>
     <string name="braille_usb_permission_missing">usb permission missing</string>
     <string name="braille_ime">Soft Braille Keyboard</string>
-    <string name="button_accessibility_settings">Open accessibility settings for braille display output</string>
+    <string name="button_accessibility_settings">Open Android accessibility settings for braille display output</string>
+    <string name="button_braille_profiles">Braille user profiles</string>
+    <string name="button_braille_next_profile">Switch to next braille profile</string>
+    <string name="button_braille_translation_settings">Open braille translator and table settings</string>
     <string name="button_braille_learn">Braille learning mode</string>
     <string name="button_braille_notes">Braille notes</string>
     <string name="button_braille_displays">Braille display diagnostics</string>
     <string name="button_braille_table_test">Braille table test</string>
     <string name="button_check_updates">Check for updates on GitHub</string>
+    <string name="button_export_app_settings">Export app settings to file</string>
+    <string name="button_import_app_settings">Import app settings from file</string>
+    <string name="button_open_setup_wizard">Run first-time setup</string>
+    <string name="button_request_bluetooth_permission">Request Bluetooth permission</string>
+    <string name="button_request_microphone_permission">Request microphone permission</string>
     <string name="button_report_issue">Send support report</string>
     <string name="button_report_braille_issue">Report braille display problem</string>
     <string name="button_choose_default_keyboard">Set Soft Braille Keyboard as the default keyboard</string>
     <string name="button_keyboard_settings">Enable Soft Braille Keyboard</string>
     <string name="button_more_info">Read the quick start guide</string>
+    <string name="button_tts_settings">Speech engine and voice settings</string>
     <string name="braille_table_test_title">Braille table test</string>
     <string name="braille_table_test_intro">Use this screen to switch between braille tables, translate plain text into braille cells and back-translate manually entered dot patterns.</string>
     <string name="braille_table_test_waiting">Waiting for braille translator.</string>
     <string name="braille_table_test_error">The braille translator is not ready.</string>
     <string name="braille_table_test_ready">Braille table tester is ready.</string>
     <string name="braille_table_test_no_tables">No braille tables are available.</string>
+    <string name="braille_table_test_loading_tables">Loading braille tables…</string>
     <string name="braille_table_test_current_value">%1$d/%2$d: %3$s</string>
     <string name="braille_table_test_previous">Previous table</string>
     <string name="braille_table_test_next">Next table</string>
+    <string name="braille_table_test_reload">Reload tables</string>
     <string name="braille_table_test_forward_title">Text to braille</string>
     <string name="braille_table_test_source_hint">Enter sample text for the selected table.</string>
     <string name="braille_table_test_translate_forward">Translate text</string>
@@ -349,6 +364,8 @@ Device table: %3$s</string>
     <string name="pref_default_computer_braille_table_title">Computer Braille table</string>
     <string name="pref_braille_display_tools_summary">Open braille display diagnostics, command test and device profile tools.</string>
     <string name="pref_braille_display_tools_title">Braille display tools</string>
+    <string name="pref_braille_profiles_summary">Save and switch named braille profiles such as Polish literary and English computer braille.</string>
+    <string name="pref_braille_profiles_title">Braille user profiles</string>
     <string name="pref_braille_learn_summary">Open practice mode for braille letters, numbers and punctuation.</string>
     <string name="pref_braille_learn_title">Braille learning mode</string>
     <string name="pref_accessibility_tools_summary">Open Android accessibility settings to enable braille display screen output.</string>
@@ -386,9 +403,63 @@ Device table: %3$s</string>
     <string name="pref_text_to_speech_pitch_title">Pitch</string>
     <string name="pref_text_to_speech_volume_title">Speech volume</string>
     <string name="pref_text_to_speech_title">Text To Speech Settings</string>
-  <string name="pref_quick_start_guide_key" translatable="false">QUICK_START_GUIDE</string>
-  <string name="pref_quick_start_guide_title">Quick start guide</string>
-  <string name="pref_quick_start_guide_summary">Open the bundled offline guide for setup, typing and braille displays.</string>
+    <string name="pref_text_to_speech_screen_summary">Choose the speech engine and voice here, then adjust rate, pitch and volume on one screen.</string>
+    <string name="pref_text_to_speech_loading_voices">Loading voices for the selected speech engine.</string>
+    <string name="pref_text_to_speech_ready">Speech settings are ready.</string>
+    <string name="pref_text_to_speech_engine_unavailable">The selected speech engine is unavailable.</string>
+    <string name="pref_text_to_speech_preview_button">Play sample</string>
+    <string name="pref_text_to_speech_preview_text">Soft Braille Keyboard speech test.</string>
+    <string name="pref_text_to_speech_percent_value">%1$d%%</string>
+    <string name="pref_text_to_speech_voice_unknown_locale">Unknown locale</string>
+    <string name="pref_quick_start_guide_key" translatable="false">QUICK_START_GUIDE</string>
+    <string name="pref_quick_start_guide_title">Quick start guide</string>
+    <string name="pref_quick_start_guide_summary">Open the bundled offline guide for setup, typing and braille displays.</string>
+    <string name="main_section_setup">First-time setup</string>
+    <string name="main_section_braille">Braille typing and translation</string>
+    <string name="main_section_speech">Speech and voice</string>
+    <string name="main_section_tools">Tools and diagnostics</string>
+    <string name="main_section_backup">Backup and restore</string>
+    <string name="main_section_support">Help and support</string>
+    <string name="main_status_setup_ready">Setup complete</string>
+    <string name="main_status_setup_required">Setup still needs attention</string>
+    <string name="main_status_yes">Yes</string>
+    <string name="main_status_no">No</string>
+    <string name="main_status_loading">Loading…</string>
+    <string name="main_status_keyboard_template">Keyboard enabled: %1$s
+Default keyboard: %2$s
+Braille display output: %3$s</string>
+    <string name="main_status_braille_template">Braille type: %1$s
+Current table: %2$s</string>
+    <string name="main_status_braille_profile_value">Active braille profile: %1$s</string>
+    <string name="main_status_braille_profile_none">Active braille profile: none</string>
+    <string name="main_status_permissions_template">Microphone: %1$s
+Bluetooth: %2$s</string>
+    <string name="setup_wizard_title">First-time setup</string>
+    <string name="setup_wizard_intro">Follow these steps to enable Soft Braille Keyboard, make it the default keyboard, choose a braille table and turn on braille display screen output.</string>
+    <string name="setup_section_keyboard">Keyboard activation</string>
+    <string name="setup_section_translation">Braille translator and tables</string>
+    <string name="setup_section_accessibility">Braille display output</string>
+    <string name="setup_section_permissions">Permissions</string>
+    <string name="setup_finish_button">Finish setup</string>
+    <string name="setup_status_keyboard_enabled">Soft Braille Keyboard is enabled in Android keyboard settings.</string>
+    <string name="setup_status_keyboard_disabled">Soft Braille Keyboard is not enabled yet.</string>
+    <string name="setup_status_default_enabled">Soft Braille Keyboard is currently the default keyboard.</string>
+    <string name="setup_status_default_disabled">Soft Braille Keyboard is not the default keyboard yet.</string>
+    <string name="setup_status_accessibility_enabled">Braille display screen output is enabled in Android accessibility settings.</string>
+    <string name="setup_status_accessibility_disabled">Braille display screen output is still disabled.</string>
+    <string name="setup_status_microphone_granted">Microphone permission granted.</string>
+    <string name="setup_status_microphone_missing">Microphone permission missing.</string>
+    <string name="setup_status_bluetooth_granted">Bluetooth permission granted.</string>
+    <string name="setup_status_bluetooth_missing">Bluetooth permission missing.</string>
+    <string name="setup_status_braille_loading">Loading braille translator status…</string>
+    <string name="setup_status_braille_missing">No active braille translation table is available yet.</string>
+    <string name="setup_status_braille_ready">Current braille translator: %1$s, table %2$s.</string>
+    <string name="app_settings_backup_file_name">soft-braille-keyboard-settings.json</string>
+    <string name="app_settings_backup_exported">App settings were exported to %1$s.</string>
+    <string name="app_settings_backup_imported">Imported %1$d app settings from %2$s.</string>
+    <string name="app_settings_backup_export_failed">The app settings backup could not be exported.</string>
+    <string name="app_settings_backup_import_failed">The app settings backup could not be imported.</string>
+    <string name="app_settings_backup_import_empty">The selected file does not contain any app settings.</string>
   <string name="github_issue_clip_label">Support diagnostics</string>
   <string name="report_issue_title">Support report</string>
   <string name="report_issue_intro">Use this form to send a crash or hardware report. The app opens a prefilled GitHub issue and copies diagnostics to the clipboard so testers can report real device behavior.</string>
@@ -406,7 +477,44 @@ Device table: %3$s</string>
   <string name="report_issue_failed">The report could not be prepared.</string>
   <string name="braille_export_profiles">Copy braille display profiles</string>
   <string name="braille_import_profiles">Import braille display profiles from clipboard</string>
+  <string name="braille_profiles_title">Braille user profiles</string>
+  <string name="braille_profiles_intro">Save the current braille type and both table selections as a named profile, for example Polish literary and English computer braille. Then switch between saved profiles quickly from this screen or the main screen.</string>
+  <string name="braille_profiles_name_hint">Profile name, for example Polish literary</string>
+  <string name="braille_profiles_save_current">Save current settings as profile</string>
+  <string name="braille_profiles_apply_selected">Apply selected profile</string>
+  <string name="braille_profiles_delete_selected">Delete selected profile</string>
+  <string name="braille_profiles_next">Switch to next saved profile</string>
+  <string name="braille_profiles_name_required">Enter a profile name first.</string>
+  <string name="braille_profiles_saved">Saved braille profile: %1$s.</string>
+  <string name="braille_profiles_save_failed">The braille profile could not be saved.</string>
+  <string name="braille_profiles_applied">Applied braille profile: %1$s.</string>
+  <string name="braille_profiles_apply_failed">The braille profile could not be applied.</string>
+  <string name="braille_profiles_deleted">Deleted braille profile: %1$s.</string>
+  <string name="braille_profiles_delete_failed">The braille profile could not be deleted.</string>
+  <string name="braille_profiles_none">There are no saved braille profiles yet.</string>
+  <string name="braille_profiles_active_none">Active profile: none</string>
+  <string name="braille_profiles_active_value">Active profile: %1$s</string>
+  <string name="braille_profiles_current_settings_template">Current braille type: %1$s
+Active table: %2$s
+Literary table preference: %3$s
+Computer table preference: %4$s</string>
   <string name="braille_profiles_clip_label">Braille display profiles</string>
+  <string name="braille_named_profiles_intro">Save the current braille display configuration, including preferred monitor, per-device table and remaps, as a named profile. Then switch between saved monitor profiles quickly.</string>
+  <string name="braille_named_profiles_name_hint">Display profile name, for example Orbit Reader Polish</string>
+  <string name="braille_named_profiles_save_current">Save current monitor setup as profile</string>
+  <string name="braille_named_profiles_apply_selected">Apply selected monitor profile</string>
+  <string name="braille_named_profiles_delete_selected">Delete selected monitor profile</string>
+  <string name="braille_named_profiles_next">Switch to next saved monitor profile</string>
+  <string name="braille_named_profiles_name_required">Enter a monitor profile name first.</string>
+  <string name="braille_named_profiles_saved">Saved braille display profile: %1$s.</string>
+  <string name="braille_named_profiles_save_failed">The braille display profile could not be saved.</string>
+  <string name="braille_named_profiles_applied">Applied braille display profile: %1$s.</string>
+  <string name="braille_named_profiles_apply_failed">The braille display profile could not be applied.</string>
+  <string name="braille_named_profiles_deleted">Deleted braille display profile: %1$s.</string>
+  <string name="braille_named_profiles_delete_failed">The braille display profile could not be deleted.</string>
+  <string name="braille_named_profiles_none">There are no saved braille display profiles yet.</string>
+  <string name="braille_named_profiles_active_none">Active monitor profile: none</string>
+  <string name="braille_named_profiles_active_value">Active monitor profile: %1$s</string>
   <string name="braille_share_profiles">Share braille display profiles</string>
   <string name="braille_export_profiles_file">Export braille display profiles to file</string>
   <string name="braille_import_profiles_file">Import braille display profiles from file</string>

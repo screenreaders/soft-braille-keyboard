@@ -35,6 +35,9 @@ import android.text.TextUtils;
 import android.text.method.ScrollingMovementMethod;
 import android.view.View;
 import android.view.accessibility.AccessibilityManager;
+import android.widget.ArrayAdapter;
+import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.core.app.ActivityCompat;
@@ -69,12 +72,17 @@ public class BrailleDisplayActivity extends Activity {
     private TextView progressView;
     private TextView serviceView;
     private TextView profileView;
+    private TextView namedProfileView;
     private TextView commandView;
     private TextView contentView;
     private TextView remapView;
     private TextView devicesView;
     private TextView displayPropsView;
     private TextView eventLogView;
+    private EditText namedProfileNameInput;
+    private Spinner namedProfileSpinner;
+    private ArrayAdapter<String> namedProfileAdapter;
+    private final List<String> namedProfileNames = new java.util.ArrayList<String>();
     private int selectedBindingIndex;
 
     @Override
@@ -87,13 +95,26 @@ public class BrailleDisplayActivity extends Activity {
         progressView = (TextView) findViewById(R.id.braille_progress);
         serviceView = (TextView) findViewById(R.id.braille_service_status);
         profileView = (TextView) findViewById(R.id.braille_profile_status);
+        namedProfileView = (TextView) findViewById(
+                R.id.braille_named_profile_status);
         commandView = (TextView) findViewById(R.id.braille_command_status);
         contentView = (TextView) findViewById(R.id.braille_content_status);
         remapView = (TextView) findViewById(R.id.braille_remap_status);
         devicesView = (TextView) findViewById(R.id.braille_devices);
         displayPropsView = (TextView) findViewById(R.id.braille_properties);
         eventLogView = (TextView) findViewById(R.id.braille_event_log);
+        namedProfileNameInput = (EditText) findViewById(
+                R.id.braille_named_profile_name);
+        namedProfileSpinner = (Spinner) findViewById(
+                R.id.braille_named_profile_spinner);
         eventLogView.setMovementMethod(new ScrollingMovementMethod());
+        if (namedProfileSpinner != null) {
+            namedProfileAdapter = new ArrayAdapter<String>(this,
+                    android.R.layout.simple_spinner_item, namedProfileNames);
+            namedProfileAdapter.setDropDownViewResource(
+                    android.R.layout.simple_spinner_dropdown_item);
+            namedProfileSpinner.setAdapter(namedProfileAdapter);
+        }
 
         maybeRequestBluetoothPermission();
         connectDisplayClient();
@@ -259,6 +280,63 @@ public class BrailleDisplayActivity extends Activity {
         BrailleDisplayPreferences.clearDeviceTable(this, address);
         appendLog(getString(R.string.braille_log_profile_table_global, address));
         refreshAll();
+    }
+
+    public void onSaveNamedBrailleProfile(View view) {
+        String name = namedProfileNameInput == null ? null
+                : namedProfileNameInput.getText().toString().trim();
+        if (TextUtils.isEmpty(name)) {
+            appendLog(getString(R.string.braille_named_profiles_name_required));
+            return;
+        }
+        if (BrailleDisplayNamedProfiles.saveCurrentProfile(this, name)) {
+            appendLog(getString(R.string.braille_named_profiles_saved, name));
+            refreshAll();
+            setSelectedNamedProfile(name);
+        } else {
+            appendLog(getString(R.string.braille_named_profiles_save_failed));
+        }
+    }
+
+    public void onApplyNamedBrailleProfile(View view) {
+        String name = getSelectedNamedProfile();
+        if (TextUtils.isEmpty(name)) {
+            appendLog(getString(R.string.braille_named_profiles_none));
+            return;
+        }
+        if (BrailleDisplayNamedProfiles.applyProfile(this, name)) {
+            appendLog(getString(R.string.braille_named_profiles_applied, name));
+            refreshAll();
+        } else {
+            appendLog(getString(R.string.braille_named_profiles_apply_failed));
+        }
+    }
+
+    public void onDeleteNamedBrailleProfile(View view) {
+        String name = getSelectedNamedProfile();
+        if (TextUtils.isEmpty(name)) {
+            appendLog(getString(R.string.braille_named_profiles_none));
+            return;
+        }
+        if (BrailleDisplayNamedProfiles.deleteProfile(this, name)) {
+            appendLog(getString(R.string.braille_named_profiles_deleted, name));
+            refreshAll();
+        } else {
+            appendLog(getString(R.string.braille_named_profiles_delete_failed));
+        }
+    }
+
+    public void onCycleNamedBrailleProfile(View view) {
+        BrailleDisplayNamedProfiles.Profile profile =
+                BrailleDisplayNamedProfiles.cycleToNextProfile(this);
+        if (profile == null) {
+            appendLog(getString(R.string.braille_named_profiles_none));
+            return;
+        }
+        appendLog(getString(R.string.braille_named_profiles_applied,
+                profile.name));
+        refreshAll();
+        setSelectedNamedProfile(profile.name);
     }
 
     public void onExportBrailleProfiles(View view) {
@@ -536,6 +614,7 @@ public class BrailleDisplayActivity extends Activity {
     private void refreshServiceSection() {
         serviceView.setText(buildAccessibilityStatus());
         profileView.setText(buildProfileSummary());
+        refreshNamedProfilesSection();
         String lastCommand = BrailleDisplayPreferences.getServiceCommand(this);
         commandView.setText(TextUtils.isEmpty(lastCommand)
                 ? getString(R.string.braille_command_waiting)
@@ -906,6 +985,54 @@ public class BrailleDisplayActivity extends Activity {
                 ? getString(R.string.braille_profile_table_global)
                 : targetTable);
         return sb.toString();
+    }
+
+    private void refreshNamedProfilesSection() {
+        if (namedProfileView != null) {
+            String active = BrailleDisplayNamedProfiles.getActiveProfileName(this);
+            namedProfileView.setText(TextUtils.isEmpty(active)
+                    ? getString(R.string.braille_named_profiles_active_none)
+                    : getString(R.string.braille_named_profiles_active_value,
+                            active));
+        }
+        if (namedProfileAdapter != null) {
+            String active = BrailleDisplayNamedProfiles.getActiveProfileName(this);
+            namedProfileNames.clear();
+            for (BrailleDisplayNamedProfiles.Profile profile
+                    : BrailleDisplayNamedProfiles.getProfiles(this)) {
+                namedProfileNames.add(profile.name);
+            }
+            namedProfileAdapter.notifyDataSetChanged();
+            if (!TextUtils.isEmpty(active)) {
+                setSelectedNamedProfile(active);
+            } else if (!namedProfileNames.isEmpty() && namedProfileSpinner != null) {
+                namedProfileSpinner.setSelection(0);
+            }
+            if (namedProfileNameInput != null
+                    && TextUtils.isEmpty(namedProfileNameInput.getText())) {
+                namedProfileNameInput.setText(active == null ? "" : active);
+            }
+        }
+    }
+
+    private void setSelectedNamedProfile(String name) {
+        if (namedProfileSpinner == null || TextUtils.isEmpty(name)) {
+            return;
+        }
+        for (int i = 0; i < namedProfileNames.size(); i++) {
+            if (name.equalsIgnoreCase(namedProfileNames.get(i))) {
+                namedProfileSpinner.setSelection(i);
+                return;
+            }
+        }
+    }
+
+    private String getSelectedNamedProfile() {
+        if (namedProfileSpinner == null) {
+            return null;
+        }
+        Object item = namedProfileSpinner.getSelectedItem();
+        return item == null ? null : String.valueOf(item);
     }
 
     private String buildRemapSummary() {

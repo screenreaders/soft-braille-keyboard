@@ -101,6 +101,10 @@
              android:title="@string/pref_braille_learn_title"
              android:summary="@string/pref_braille_learn_summary" />
          <Preference
+             android:key="@string/pref_braille_profiles_key"
+             android:title="@string/pref_braille_profiles_title"
+             android:summary="@string/pref_braille_profiles_summary" />
+         <Preference
              android:key="@string/pref_accessibility_tools_key"
              android:title="@string/pref_accessibility_tools_title"
              android:summary="@string/pref_accessibility_tools_summary" />
@@ -129,29 +133,10 @@
          android:summary="@string/pref_echo_misspellings_summary"
          android:defaultValue="@string/pref_echo_misspellings_default" />
          </PreferenceScreen>
-         <PreferenceScreen
-             android:title="@string/pref_text_to_speech_title" >
-         <ListPreference
-             android:key="@string/pref_text_to_speech_engine_key"
-             android:title="@string/pref_text_to_speech_engine_title"
-             android:defaultValue="" />
-         <ListPreference
-             android:key="@string/pref_text_to_speech_voice_key"
-             android:title="@string/pref_text_to_speech_voice_title"
-             android:defaultValue="@string/pref_text_to_speech_voice_default" />
-         <ListPreference
-             android:key="@string/pref_text_to_speech_rate_key"
-             android:title="@string/pref_text_to_speech_rate_title"
-             android:defaultValue="@string/pref_text_to_speech_rate_default" />
-         <ListPreference
-             android:key="@string/pref_text_to_speech_pitch_key"
-             android:title="@string/pref_text_to_speech_pitch_title"
-             android:defaultValue="@string/pref_text_to_speech_pitch_default" />
-         <ListPreference
-             android:key="@string/pref_text_to_speech_volume_key"
-             android:title="@string/pref_text_to_speech_volume_title"
-             android:defaultValue="@string/pref_text_to_speech_volume_default" />
-         </PreferenceScreen>
+         <Preference
+             android:key="@string/pref_text_to_speech_settings_key"
+             android:title="@string/pref_text_to_speech_title"
+             android:summary="@string/pref_text_to_speech_screen_summary" />
          <PreferenceScreen
          android:key="@string/pref_category_misc_key"
          android:title="@string/pref_category_misc_title" >

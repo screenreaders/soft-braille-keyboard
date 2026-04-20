@@ -2,6 +2,8 @@ package com.dalton.braillekeyboard;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
@@ -17,9 +19,24 @@ import java.util.Locale;
 
 public class BrailleTableTestActivity extends Activity
         implements BrailleParser.BrailleParserListener {
+    private static final int MAX_RETRY_ATTEMPTS = 5;
+    private static final long RETRY_DELAY_MS = 800L;
+
+    private final Handler handler = new Handler(Looper.getMainLooper());
+    private final Runnable retryRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (!isFinishing()) {
+                startTranslatorLoad(true);
+            }
+        }
+    };
+
     private BrailleParser brailleParser;
     private final List<TableInfo> tables = new ArrayList<TableInfo>();
     private int currentTableIndex;
+    private int retryAttempts;
+    private boolean loadingTranslator = true;
 
     private TextView currentTableView;
     private TextView statusView;
@@ -41,14 +58,23 @@ public class BrailleTableTestActivity extends Activity
         cellsInputView = (EditText) findViewById(R.id.braille_table_test_cells_input);
         backwardResultView = (TextView) findViewById(R.id.braille_table_test_backward_result);
 
-        brailleParser = new BrailleParser(this, this);
         statusView.setText(R.string.braille_table_test_waiting);
+        startTranslatorLoad(false);
         updateTableUi();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (loadingTranslator || tables.isEmpty()) {
+            startTranslatorLoad(false);
+        }
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        handler.removeCallbacks(retryRunnable);
         if (brailleParser != null) {
             brailleParser.destroy();
             brailleParser = null;
@@ -57,28 +83,45 @@ public class BrailleTableTestActivity extends Activity
 
     @Override
     public void onTranslatorReady(int status) {
-        if (status != BrailleParser.STATUS_OK || brailleParser == null) {
-            statusView.setText(R.string.braille_table_test_error);
+        loadingTranslator = false;
+        handler.removeCallbacks(retryRunnable);
+        if (brailleParser == null) {
             return;
         }
+
         tables.clear();
-        List<TableInfo> allTables = brailleParser.getTables(
-                BrailleParser.BrailleType.ALL);
-        if (allTables != null) {
-            tables.addAll(allTables);
+        if (status == BrailleParser.STATUS_OK
+                || status == BrailleParser.STATUS_TABLE_ERROR) {
+            loadAvailableTables();
         }
-        Collections.sort(tables, new java.util.Comparator<TableInfo>() {
-            @Override
-            public int compare(TableInfo left, TableInfo right) {
-                return formatTableLabel(left).compareToIgnoreCase(
-                        formatTableLabel(right));
-            }
-        });
-        currentTableIndex = findCurrentTableIndex();
+
+        if (!tables.isEmpty()) {
+            currentTableIndex = findCurrentTableIndex();
+            updateTableUi();
+            statusView.setText(R.string.braille_table_test_ready);
+            retryAttempts = 0;
+            return;
+        }
+
+        if (retryAttempts < MAX_RETRY_ATTEMPTS) {
+            retryAttempts++;
+            loadingTranslator = true;
+            statusView.setText(R.string.braille_table_test_waiting);
+            updateTableUi();
+            handler.postDelayed(retryRunnable, RETRY_DELAY_MS);
+            return;
+        }
+
         updateTableUi();
-        statusView.setText(tables.isEmpty()
-                ? getString(R.string.braille_table_test_no_tables)
-                : getString(R.string.braille_table_test_ready));
+        statusView.setText(status == BrailleParser.STATUS_OK
+                || status == BrailleParser.STATUS_TABLE_ERROR
+                ? R.string.braille_table_test_no_tables
+                : R.string.braille_table_test_error);
+    }
+
+    public void onReloadTables(View view) {
+        retryAttempts = 0;
+        startTranslatorLoad(true);
     }
 
     public void onPreviousTable(View view) {
@@ -149,7 +192,9 @@ public class BrailleTableTestActivity extends Activity
             return;
         }
         currentTableView.setText(table == null
-                ? getString(R.string.braille_table_test_no_tables)
+                ? getString(loadingTranslator
+                        ? R.string.braille_table_test_loading_tables
+                        : R.string.braille_table_test_no_tables)
                 : getString(R.string.braille_table_test_current_value,
                         currentTableIndex + 1, tables.size(),
                         formatTableLabel(table)));
@@ -241,5 +286,55 @@ public class BrailleTableTestActivity extends Activity
             cells.add(Byte.valueOf((byte) mask));
         }
         return cells.isEmpty() ? null : cells.toArray(new Byte[cells.size()]);
+    }
+
+    private void startTranslatorLoad(boolean forceRecreate) {
+        if (forceRecreate && brailleParser != null) {
+            brailleParser.destroy();
+            brailleParser = null;
+        }
+        if (brailleParser == null) {
+            brailleParser = new BrailleParser(this, this);
+        }
+        loadingTranslator = true;
+        statusView.setText(R.string.braille_table_test_waiting);
+        updateTableUi();
+    }
+
+    private void loadAvailableTables() {
+        addTables(brailleParser.getTables(BrailleParser.BrailleType.ALL));
+        if (tables.isEmpty()) {
+            addTables(brailleParser.getTables(BrailleParser.BrailleType.LITERARY));
+            addTables(brailleParser.getTables(BrailleParser.BrailleType.COMPUTER));
+        }
+        Collections.sort(tables, new java.util.Comparator<TableInfo>() {
+            @Override
+            public int compare(TableInfo left, TableInfo right) {
+                return formatTableLabel(left).compareToIgnoreCase(
+                        formatTableLabel(right));
+            }
+        });
+    }
+
+    private void addTables(List<TableInfo> source) {
+        if (source == null) {
+            return;
+        }
+        for (TableInfo table : source) {
+            if (table == null) {
+                continue;
+            }
+            boolean exists = false;
+            for (TableInfo existing : tables) {
+                if (existing != null && TextUtils.equals(existing.getId(),
+                        table.getId())) {
+                    exists = true;
+                    break;
+                }
+            }
+            if (!exists) {
+                tables.add(table);
+            }
+        }
     }
 }

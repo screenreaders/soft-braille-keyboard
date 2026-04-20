@@ -77,6 +77,61 @@
             android:layout_height="wrap_content"
             android:textIsSelectable="true" />
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/braille_section_named_profiles"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/braille_named_profiles_intro" />
+
+        <TextView
+            android:id="@+id/braille_named_profile_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:textIsSelectable="true" />
+
+        <EditText
+            android:id="@+id/braille_named_profile_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/braille_named_profiles_name_hint"
+            android:inputType="textCapWords" />
+
+        <Spinner
+            android:id="@+id/braille_named_profile_spinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="onSaveNamedBrailleProfile"
+            android:text="@string/braille_named_profiles_save_current" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="onApplyNamedBrailleProfile"
+            android:text="@string/braille_named_profiles_apply_selected" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="onCycleNamedBrailleProfile"
+            android:text="@string/braille_named_profiles_next" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="onDeleteNamedBrailleProfile"
+            android:text="@string/braille_named_profiles_delete_selected" />
+
         <Button
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

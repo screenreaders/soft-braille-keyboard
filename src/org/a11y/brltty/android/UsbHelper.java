@@ -123,7 +123,7 @@ public final class UsbHelper {
                                 | PendingIntent.FLAG_IMMUTABLE
                         : PendingIntent.FLAG_UPDATE_CURRENT);
         manager.requestPermission(device, pendingIntent);
-        return false;
+        return true;
     }
 
     private static UsbManager getUsbManager() {

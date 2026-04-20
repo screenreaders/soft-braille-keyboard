@@ -31,21 +31,25 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
 import android.text.TextUtils;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import org.json.JSONException;
+import com.googlecode.eyesfree.braille.translate.TableInfo;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import org.json.JSONException;
+import java.nio.charset.StandardCharsets;
 
 /**
  * This is the MainActivity of the application.
@@ -55,16 +59,24 @@ import java.io.IOException;
  * the UI for the user to enable this keyboard, practice in a text field,
  * navigate to the Settings screen and to navigate to the user manual.
  */
-public class MainActivity extends Activity {
+public class MainActivity extends Activity
+        implements BrailleParser.BrailleParserListener {
     private static final int BLUETOOTH_CONNECT_REQUEST = 1;
+    private static final int REQUEST_EXPORT_APP_SETTINGS_FILE = 10;
+    private static final int REQUEST_IMPORT_APP_SETTINGS_FILE = 11;
+
     private volatile boolean updateCheckInProgress;
+    private BrailleParser brailleParser;
+    private boolean wizardAutoLaunched;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        brailleParser = new BrailleParser(this, this);
         maybeRequestBluetoothPermission();
         updateUIStates();
+        maybeLaunchSetupWizard();
     }
 
     // Called when we gain or lose focus.
@@ -77,6 +89,20 @@ public class MainActivity extends Activity {
             // settings might have changed.
             updateUIStates();
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (brailleParser != null) {
+            brailleParser.destroy();
+            brailleParser = null;
+        }
+    }
+
+    @Override
+    public void onTranslatorReady(int status) {
+        updateUIStates();
     }
 
     private void maybeRequestBluetoothPermission() {
@@ -137,6 +163,57 @@ public class MainActivity extends Activity {
 
     public void onAccessibilitySettings(View view) {
         Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
+        if (canStartActivity(intent)) {
+            startActivity(intent);
+        }
+    }
+
+    public void onSetupWizard(View view) {
+        Intent intent = new Intent(this, SetupWizardActivity.class);
+        if (canStartActivity(intent)) {
+            startActivity(intent);
+        }
+    }
+
+    public void onBrailleTranslationSettings(View view) {
+        Intent intent = new Intent(this, PreferenceIME.class);
+        if (canStartActivity(intent)) {
+            startActivity(intent);
+        }
+    }
+
+    public void onBrailleProfiles(View view) {
+        Intent intent = new Intent(this, BrailleProfilesActivity.class);
+        if (canStartActivity(intent)) {
+            startActivity(intent);
+        }
+    }
+
+    public void onNextBrailleProfile(View view) {
+        BrailleUserProfiles.Profile profile = BrailleUserProfiles
+                .cycleToNextProfile(this);
+        if (profile == null) {
+            Toast.makeText(this, R.string.braille_profiles_none,
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
+        if (brailleParser != null) {
+            brailleParser.setTranslator(this);
+        }
+        Toast.makeText(this, getString(R.string.braille_profiles_applied,
+                profile.name), Toast.LENGTH_LONG).show();
+        updateUIStates();
+    }
+
+    public void onAppSettings(View view) {
+        Intent intent = new Intent(this, PreferenceIME.class);
+        if (canStartActivity(intent)) {
+            startActivity(intent);
+        }
+    }
+
+    public void onTtsSettings(View view) {
+        Intent intent = new Intent(this, TtsSettingsActivity.class);
         if (canStartActivity(intent)) {
             startActivity(intent);
         }
@@ -215,68 +292,140 @@ public class MainActivity extends Activity {
         }
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
+    public void onExportAppSettings(View view) {
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("application/json");
+        intent.putExtra(Intent.EXTRA_TITLE,
+                getString(R.string.app_settings_backup_file_name));
+        if (canStartActivity(intent)) {
+            startActivityForResult(intent, REQUEST_EXPORT_APP_SETTINGS_FILE);
+        } else {
+            Toast.makeText(this, R.string.app_settings_backup_export_failed,
+                    Toast.LENGTH_LONG).show();
+        }
+    }
+
+    public void onImportAppSettings(View view) {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("*/*");
+        if (canStartActivity(intent)) {
+            startActivityForResult(intent, REQUEST_IMPORT_APP_SETTINGS_FILE);
+        } else {
+            Toast.makeText(this, R.string.app_settings_backup_import_failed,
+                    Toast.LENGTH_LONG).show();
+        }
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-        if (id == R.id.action_braille_displays) {
-            Intent intent = new Intent(this, BrailleDisplayActivity.class);
-            if (canStartActivity(intent)) {
-                startActivity(intent);
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode != RESULT_OK || data == null || data.getData() == null) {
+            return;
+        }
+        Uri uri = data.getData();
+        if (requestCode == REQUEST_EXPORT_APP_SETTINGS_FILE) {
+            exportAppSettingsToUri(uri);
+        } else if (requestCode == REQUEST_IMPORT_APP_SETTINGS_FILE) {
+            importAppSettingsFromUri(uri);
+        }
+    }
+
+    private void maybeLaunchSetupWizard() {
+        if (wizardAutoLaunched || Options.getBooleanPreference(this,
+                R.string.pref_setup_wizard_completed_key, false)) {
+            return;
+        }
+        wizardAutoLaunched = true;
+        Intent intent = new Intent(this, SetupWizardActivity.class);
+        if (canStartActivity(intent)) {
+            startActivity(intent);
+        }
+    }
+
+    private void exportAppSettingsToUri(Uri uri) {
+        if (uri == null) {
+            Toast.makeText(this, R.string.app_settings_backup_export_failed,
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
+        OutputStream stream = null;
+        try {
+            String payload = AppSettingsBackup.exportPreferences(this);
+            stream = getContentResolver().openOutputStream(uri);
+            if (stream == null) {
+                Toast.makeText(this, R.string.app_settings_backup_export_failed,
+                        Toast.LENGTH_LONG).show();
+                return;
             }
-            return true;
-        }
-        if (id == R.id.action_quick_start) {
-            Intent intent = new Intent(this, QuickStartActivity.class);
-            if (canStartActivity(intent)) {
-                startActivity(intent);
+            stream.write(payload.getBytes(StandardCharsets.UTF_8));
+            stream.flush();
+            Toast.makeText(this, getString(R.string.app_settings_backup_exported,
+                    uri.toString()), Toast.LENGTH_LONG).show();
+        } catch (IOException e) {
+            Toast.makeText(this, R.string.app_settings_backup_export_failed,
+                    Toast.LENGTH_LONG).show();
+        } catch (JSONException e) {
+            Toast.makeText(this, R.string.app_settings_backup_export_failed,
+                    Toast.LENGTH_LONG).show();
+        } finally {
+            if (stream != null) {
+                try {
+                    stream.close();
+                } catch (IOException ignored) {
+                    // Ignore close failure after export.
+                }
             }
-            return true;
         }
-        if (id == R.id.action_accessibility_settings) {
-            Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
-            if (canStartActivity(intent)) {
-                startActivity(intent);
+    }
+
+    private void importAppSettingsFromUri(Uri uri) {
+        if (uri == null) {
+            Toast.makeText(this, R.string.app_settings_backup_import_failed,
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
+        InputStream stream = null;
+        try {
+            stream = getContentResolver().openInputStream(uri);
+            if (stream == null) {
+                Toast.makeText(this, R.string.app_settings_backup_import_failed,
+                        Toast.LENGTH_LONG).show();
+                return;
             }
-            return true;
-        }
-        if (id == R.id.action_braille_learn) {
-            onBrailleLearn(null);
-            return true;
-        }
-        if (id == R.id.action_braille_table_test) {
-            onBrailleTableTest(null);
-            return true;
-        }
-        if (id == R.id.action_braille_notes) {
-            onBrailleNotes(null);
-            return true;
-        }
-        if (id == R.id.action_check_updates) {
-            onCheckForUpdates(null);
-            return true;
-        }
-        if (id == R.id.action_report_issue) {
-            onReportIssue(null);
-            return true;
-        }
-        if (id == R.id.action_settings) {
-            Intent intent = new Intent(this, PreferenceIME.class);
-            if (canStartActivity(intent)) {
-                startActivity(intent);
+            ByteArrayOutputStream output = new ByteArrayOutputStream();
+            byte[] buffer = new byte[4096];
+            int read;
+            while ((read = stream.read(buffer)) != -1) {
+                output.write(buffer, 0, read);
             }
-            return true;
+            String payload = new String(output.toByteArray(),
+                    StandardCharsets.UTF_8);
+            int restored = AppSettingsBackup.importPreferences(this, payload);
+            if (restored <= 0) {
+                Toast.makeText(this, R.string.app_settings_backup_import_empty,
+                        Toast.LENGTH_LONG).show();
+                return;
+            }
+            Toast.makeText(this, getString(R.string.app_settings_backup_imported,
+                    restored, uri.toString()), Toast.LENGTH_LONG).show();
+            updateUIStates();
+        } catch (IOException e) {
+            Toast.makeText(this, R.string.app_settings_backup_import_failed,
+                    Toast.LENGTH_LONG).show();
+        } catch (JSONException e) {
+            Toast.makeText(this, R.string.app_settings_backup_import_failed,
+                    Toast.LENGTH_LONG).show();
+        } finally {
+            if (stream != null) {
+                try {
+                    stream.close();
+                } catch (IOException ignored) {
+                    // Ignore close failure after import.
+                }
+            }
         }
-        return super.onOptionsItemSelected(item);
     }
 
     private boolean canStartActivity(Intent intent) {
@@ -487,25 +636,39 @@ public class MainActivity extends Activity {
         if (btnEnable == null || btnDefaultKeyboard == null || text == null) {
             return;
         }
+        TextView setupStatus = (TextView) findViewById(R.id.main_setup_status);
+        TextView keyboardStatus = (TextView) findViewById(R.id.main_keyboard_status);
+        TextView brailleStatus = (TextView) findViewById(R.id.main_braille_status);
+        TextView permissionsStatus = (TextView) findViewById(
+                R.id.main_permissions_status);
         btnEnable.setEnabled(true);
         btnDefaultKeyboard.setEnabled(false);
-        text.setVisibility(View.INVISIBLE);
+        text.setVisibility(View.GONE);
+        boolean enabled = false;
+        boolean isDefault = false;
         if (inputManager == null) {
+            bindStatusViews(setupStatus, keyboardStatus, brailleStatus,
+                    permissionsStatus, false, false, false);
             return;
         }
         List<InputMethodInfo> list;
         try {
             list = inputManager.getEnabledInputMethodList();
         } catch (RuntimeException e) {
+            bindStatusViews(setupStatus, keyboardStatus, brailleStatus,
+                    permissionsStatus, false, false, false);
             return;
         }
         if (list == null || list.isEmpty()) {
+            bindStatusViews(setupStatus, keyboardStatus, brailleStatus,
+                    permissionsStatus, false, false, false);
             return;
         }
 
         for (InputMethodInfo info : list) {
             if (info != null && getPackageName().equals(info.getPackageName())) {
                 // sbk is enabled as an input method, may or may not be default.
+                enabled = true;
                 btnEnable.setEnabled(false);
                 btnDefaultKeyboard.setEnabled(true);
                 String id = Settings.Secure.getString(getContentResolver(),
@@ -513,11 +676,82 @@ public class MainActivity extends Activity {
                 if (info.getId() != null && info.getId().equals(id)) {
                     // SBK is default so disable make sbk default button and
                     // show the sample text field.
+                    isDefault = true;
                     btnDefaultKeyboard.setEnabled(false);
                     text.setVisibility(View.VISIBLE);
                 }
-                return;
+                break;
             }
         }
+        bindStatusViews(setupStatus, keyboardStatus, brailleStatus,
+                permissionsStatus, enabled, isDefault,
+                isBrailleAccessibilityEnabled());
+    }
+
+    private void bindStatusViews(TextView setupStatus, TextView keyboardStatus,
+            TextView brailleStatus, TextView permissionsStatus, boolean enabled,
+            boolean isDefault, boolean accessibilityEnabled) {
+        if (setupStatus != null) {
+            setupStatus.setText(enabled && isDefault
+                    ? R.string.main_status_setup_ready
+                    : R.string.main_status_setup_required);
+        }
+        if (keyboardStatus != null) {
+            keyboardStatus.setText(getString(R.string.main_status_keyboard_template,
+                    yesNo(enabled), yesNo(isDefault),
+                    yesNo(accessibilityEnabled)));
+        }
+        if (brailleStatus != null) {
+            brailleStatus.setText(buildBrailleStatus());
+        }
+        if (permissionsStatus != null) {
+            permissionsStatus.setText(getString(
+                    R.string.main_status_permissions_template,
+                    yesNo(ContextCompat.checkSelfPermission(this,
+                            Manifest.permission.RECORD_AUDIO)
+                            == PackageManager.PERMISSION_GRANTED),
+                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+                            ? yesNo(ContextCompat.checkSelfPermission(this,
+                                    Manifest.permission.BLUETOOTH_CONNECT)
+                                    == PackageManager.PERMISSION_GRANTED)
+                            : getString(R.string.main_status_yes)));
+        }
+    }
+
+    private String buildBrailleStatus() {
+        if (brailleParser == null
+                || brailleParser.getStatus() == BrailleParser.STATUS_PREPARING) {
+            return getString(R.string.main_status_braille_template,
+                    getString(R.string.main_status_loading),
+                    getString(R.string.main_status_loading));
+        }
+        BrailleParser.BrailleType type = brailleParser.getBrailleType(this);
+        TableInfo table = brailleParser.getTable(this);
+        String typeLabel = type == BrailleParser.BrailleType.COMPUTER
+                ? getString(R.string.grade_computer)
+                : getString(R.string.grade_literary);
+        String tableLabel = table == null || TextUtils.isEmpty(table.getId())
+                ? getString(R.string.no_braille_table)
+                : table.getId();
+        StringBuilder sb = new StringBuilder(getString(
+                R.string.main_status_braille_template, typeLabel, tableLabel));
+        String activeProfile = BrailleUserProfiles.getActiveProfileName(this);
+        sb.append('\n').append(TextUtils.isEmpty(activeProfile)
+                ? getString(R.string.main_status_braille_profile_none)
+                : getString(R.string.main_status_braille_profile_value,
+                        activeProfile));
+        return sb.toString();
+    }
+
+    private boolean isBrailleAccessibilityEnabled() {
+        String enabledServices = Settings.Secure.getString(getContentResolver(),
+                Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
+        return enabledServices != null
+                && enabledServices.contains(getPackageName() + "/"
+                        + BrailleAccessibilityService.class.getName());
+    }
+
+    private String yesNo(boolean value) {
+        return getString(value ? R.string.main_status_yes : R.string.main_status_no);
     }
 }

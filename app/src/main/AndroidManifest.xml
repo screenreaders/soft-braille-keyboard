@@ -69,6 +69,11 @@
             android:label="@string/braille_learn_title" />
 
         <activity
+            android:name=".BrailleProfilesActivity"
+            android:exported="false"
+            android:label="@string/braille_profiles_title" />
+
+        <activity
             android:name=".BrailleTableTestActivity"
             android:exported="false"
             android:label="@string/braille_table_test_title" />
@@ -77,6 +82,16 @@
             android:name=".BrailleNotesActivity"
             android:exported="false"
             android:label="@string/braille_notes_title" />
+
+        <activity
+            android:name=".TtsSettingsActivity"
+            android:exported="false"
+            android:label="@string/pref_text_to_speech_title" />
+
+        <activity
+            android:name=".SetupWizardActivity"
+            android:exported="false"
+            android:label="@string/setup_wizard_title" />
 
         <activity
             android:name=".QuickStartActivity"

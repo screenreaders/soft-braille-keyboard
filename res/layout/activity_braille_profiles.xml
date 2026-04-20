@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/braille_profiles_intro" />
+
+        <TextView
+            android:id="@+id/braille_profile_active_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:textIsSelectable="true" />
+
+        <TextView
+            android:id="@+id/braille_profile_current_settings"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textIsSelectable="true" />
+
+        <EditText
+            android:id="@+id/braille_profile_name_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:hint="@string/braille_profiles_name_hint"
+            android:inputType="textCapWords" />
+
+        <Button
+            style="@android:style/TextAppearance.Large"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="onSaveCurrentProfile"
+            android:text="@string/braille_profiles_save_current" />
+
+        <Spinner
+            android:id="@+id/braille_profile_spinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp" />
+
+        <Button
+            style="@android:style/TextAppearance.Large"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="onApplySelectedProfile"
+            android:text="@string/braille_profiles_apply_selected" />
+
+        <Button
+            style="@android:style/TextAppearance.Large"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="onCycleToNextProfile"
+            android:text="@string/braille_profiles_next" />
+
+        <Button
+            style="@android:style/TextAppearance.Large"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="onDeleteSelectedProfile"
+            android:text="@string/braille_profiles_delete_selected" />
+
+        <Button
+            style="@android:style/TextAppearance.Large"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="onOpenBrailleSettings"
+            android:text="@string/button_braille_translation_settings" />
+
+    </LinearLayout>
+</ScrollView>
