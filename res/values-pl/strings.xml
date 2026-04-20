@@ -489,10 +489,10 @@ Bieżąca tablica: %2$s</string>
     <string name="main_status_permissions_template">Mikrofon: %1$s
 Bluetooth: %2$s</string>
     <string name="setup_wizard_title">Konfigurator pierwszego uruchomienia</string>
-    <string name="setup_wizard_intro">Wykonaj te kroki, aby włączyć Soft Braille Keyboard, ustawić ją jako klawiaturę domyślną, wybrać tablicę brajlowską i uruchomić wyjście brajlowskie z ekranu.</string>
+    <string name="setup_wizard_intro">Wykonaj te kroki, aby włączyć Soft Braille Keyboard, ustawić ją jako klawiaturę domyślną i wybrać tablicę brajlowską. Wyjście na monitor brajlowski jest opcjonalne i potrzebne tylko wtedy, gdy korzystasz z monitora brajlowskiego.</string>
     <string name="setup_section_keyboard">Aktywacja klawiatury</string>
     <string name="setup_section_translation">Translator brajla i tablice</string>
-    <string name="setup_section_accessibility">Wyjście na monitor brajlowski</string>
+    <string name="setup_section_accessibility">Wyjście na monitor brajlowski (opcjonalne)</string>
     <string name="setup_section_permissions">Uprawnienia</string>
     <string name="setup_finish_button">Zakończ konfigurację</string>
     <string name="setup_status_keyboard_enabled">Soft Braille Keyboard jest włączona w ustawieniach klawiatur Androida.</string>
@@ -500,11 +500,14 @@ Bluetooth: %2$s</string>
     <string name="setup_status_default_enabled">Soft Braille Keyboard jest obecnie klawiaturą domyślną.</string>
     <string name="setup_status_default_disabled">Soft Braille Keyboard nie jest jeszcze klawiaturą domyślną.</string>
     <string name="setup_status_accessibility_enabled">Wyjście na monitor brajlowski jest włączone w ustawieniach dostępności Androida.</string>
-    <string name="setup_status_accessibility_disabled">Wyjście na monitor brajlowski jest jeszcze wyłączone.</string>
+    <string name="setup_status_accessibility_disabled">Wyjście na monitor brajlowski jest wyłączone. Zostaw je wyłączone, jeśli nie używasz monitora brajlowskiego.</string>
     <string name="setup_status_microphone_granted">Uprawnienie mikrofonu zostało przyznane.</string>
     <string name="setup_status_microphone_missing">Brakuje uprawnienia mikrofonu.</string>
     <string name="setup_status_bluetooth_granted">Uprawnienie Bluetooth zostało przyznane.</string>
     <string name="setup_status_bluetooth_missing">Brakuje uprawnienia Bluetooth.</string>
+    <string name="setup_bluetooth_not_required">Ta wersja Androida nie wymaga osobnego uprawnienia Bluetooth w runtime.</string>
+    <string name="setup_permission_already_granted">To uprawnienie jest już przyznane.</string>
+    <string name="setup_status_usb_info">Uprawnienie USB jest nadawane po podłączeniu monitora brajlowskiego. Użyj diagnostyki monitorów brajlowskich, aby je wywołać.</string>
     <string name="setup_status_braille_loading">Ładowanie stanu translatora brajla…</string>
     <string name="setup_status_braille_missing">Nie ma jeszcze aktywnej tablicy tłumaczenia brajla.</string>
     <string name="setup_status_braille_ready">Bieżący translator brajla: %1$s, tablica %2$s.</string>

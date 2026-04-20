@@ -14,6 +14,7 @@ import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -114,23 +115,40 @@ public class SetupWizardActivity extends Activity
         }
     }
 
+    public void onOpenBrailleDisplayTools(View view) {
+        Intent intent = new Intent(this, BrailleDisplayActivity.class);
+        if (canStartActivity(intent)) {
+            startActivity(intent);
+        }
+    }
+
     public void onRequestRecordAudio(View view) {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
                     new String[] { Manifest.permission.RECORD_AUDIO },
                     RECORD_AUDIO_REQUEST);
+        } else {
+            Toast.makeText(this, R.string.setup_permission_already_granted,
+                    Toast.LENGTH_SHORT).show();
         }
     }
 
     public void onRequestBluetooth(View view) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
-                && ContextCompat.checkSelfPermission(this,
-                        Manifest.permission.BLUETOOTH_CONNECT)
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+            Toast.makeText(this, R.string.setup_bluetooth_not_required,
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.BLUETOOTH_CONNECT)
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
                     new String[] { Manifest.permission.BLUETOOTH_CONNECT },
                     BLUETOOTH_CONNECT_REQUEST);
+        } else {
+            Toast.makeText(this, R.string.setup_permission_already_granted,
+                    Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -156,7 +174,7 @@ public class SetupWizardActivity extends Activity
         permissionsStatusView.setText(buildPermissionsStatus());
         brailleStatusView.setText(buildBrailleTranslationStatus());
         if (finishButton != null) {
-            finishButton.setEnabled(enabled && isDefault);
+            finishButton.setEnabled(true);
         }
     }
 
@@ -211,7 +229,12 @@ public class SetupWizardActivity extends Activity
                             == PackageManager.PERMISSION_GRANTED
                                     ? R.string.setup_status_bluetooth_granted
                                     : R.string.setup_status_bluetooth_missing));
+        } else {
+            sb.append('\n');
+            sb.append(getString(R.string.setup_bluetooth_not_required));
         }
+        sb.append('\n');
+        sb.append(getString(R.string.setup_status_usb_info));
         return sb.toString();
     }
 

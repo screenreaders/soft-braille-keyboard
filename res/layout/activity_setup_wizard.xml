@@ -90,6 +90,13 @@
             android:onClick="onOpenAccessibilitySettings"
             android:text="@string/button_accessibility_settings" />
 
+        <Button
+            style="@android:style/TextAppearance.Large"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="onOpenBrailleDisplayTools"
+            android:text="@string/button_braille_displays" />
+
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
