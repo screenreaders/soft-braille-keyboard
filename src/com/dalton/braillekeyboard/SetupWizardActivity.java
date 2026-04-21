@@ -5,7 +5,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -34,8 +33,6 @@ import androidx.core.content.ContextCompat;
 import com.googlecode.eyesfree.braille.translate.TableInfo;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -107,8 +104,10 @@ public class SetupWizardActivity extends Activity
 
     private final List<TableEntry> literaryTables = new ArrayList<TableEntry>();
     private final List<TableEntry> computerTables = new ArrayList<TableEntry>();
-    private final List<EngineOption> engineOptions = new ArrayList<EngineOption>();
-    private final List<VoiceOption> voiceOptions = new ArrayList<VoiceOption>();
+    private final List<TtsOptionUtils.NamedOption> engineOptions =
+            new ArrayList<TtsOptionUtils.NamedOption>();
+    private final List<TtsOptionUtils.NamedOption> voiceOptions =
+            new ArrayList<TtsOptionUtils.NamedOption>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -1070,54 +1069,15 @@ public class SetupWizardActivity extends Activity
 
     private void populateEngineSpinner() {
         engineOptions.clear();
-        engineOptions.add(new EngineOption("",
+        engineOptions.addAll(TtsOptionUtils.collectInstalledEngines(this,
                 getString(R.string.pref_text_to_speech_engine_auto)));
-        PackageManager packageManager = getPackageManager();
-        Intent engineIntent = new Intent(
-                TextToSpeech.Engine.INTENT_ACTION_TTS_SERVICE);
-        int queryFlags = PackageManager.GET_META_DATA;
-        if (Build.VERSION.SDK_INT >= 23) {
-            queryFlags |= PackageManager.MATCH_ALL;
-        }
-        List<ResolveInfo> services = packageManager.queryIntentServices(
-                engineIntent, queryFlags);
-        if (services != null) {
-            for (ResolveInfo service : services) {
-                if (service == null || service.serviceInfo == null) {
-                    continue;
-                }
-                String packageName = service.serviceInfo.packageName;
-                CharSequence label = service.loadLabel(packageManager);
-                addEngineOption(packageName,
-                        label == null ? packageName : label.toString());
-            }
-        }
-        Collections.sort(engineOptions.subList(1, engineOptions.size()),
-                new Comparator<EngineOption>() {
-                    @Override
-                    public int compare(EngineOption left, EngineOption right) {
-                        return left.label.compareToIgnoreCase(right.label);
-                    }
-                });
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-                android.R.layout.simple_spinner_item, getEngineLabels());
+                android.R.layout.simple_spinner_item,
+                TtsOptionUtils.getLabels(engineOptions));
         adapter.setDropDownViewResource(
                 android.R.layout.simple_spinner_dropdown_item);
         ttsEngineSpinner.setAdapter(adapter);
         setEngineSelection(getSelectedEngineName());
-    }
-
-    private void addEngineOption(String packageName, String label) {
-        if (TextUtils.isEmpty(packageName)) {
-            return;
-        }
-        for (EngineOption option : engineOptions) {
-            if (TextUtils.equals(option.name, packageName)) {
-                return;
-            }
-        }
-        engineOptions.add(new EngineOption(packageName,
-                TextUtils.isEmpty(label) ? packageName : label));
     }
 
     private void setEngineSelection(String engineName) {
@@ -1179,50 +1139,19 @@ public class SetupWizardActivity extends Activity
 
     private void populateVoiceSpinner(TextToSpeech activeTts) {
         voiceOptions.clear();
-        voiceOptions.add(new VoiceOption("",
-                getString(R.string.pref_text_to_speech_voice_auto)));
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
-                && activeTts != null) {
-            try {
-                Set<Voice> voices = activeTts.getVoices();
-                if (voices != null) {
-                    for (Voice voice : voices) {
-                        if (voice == null || TextUtils.isEmpty(voice.getName())) {
-                            continue;
-                        }
-                        voiceOptions.add(new VoiceOption(voice.getName(),
-                                getVoiceLabel(voice)));
-                    }
-                }
-            } catch (RuntimeException e) {
-                voiceOptions.clear();
-                voiceOptions.add(new VoiceOption("",
-                        getString(R.string.pref_text_to_speech_voice_auto)));
-            }
-        }
-        Collections.sort(voiceOptions.subList(1, voiceOptions.size()),
-                new Comparator<VoiceOption>() {
-                    @Override
-                    public int compare(VoiceOption left, VoiceOption right) {
-                        return left.label.compareToIgnoreCase(right.label);
-                    }
-                });
+        voiceOptions.addAll(TtsOptionUtils.collectVoices(this, activeTts,
+                getString(R.string.pref_text_to_speech_voice_auto),
+                getString(R.string.pref_text_to_speech_voice_unknown_locale)));
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-                android.R.layout.simple_spinner_item, getVoiceLabels());
+                android.R.layout.simple_spinner_item,
+                TtsOptionUtils.getLabels(voiceOptions));
         adapter.setDropDownViewResource(
                 android.R.layout.simple_spinner_dropdown_item);
         ttsVoiceSpinner.setAdapter(adapter);
         String selectedVoiceName = Options.getStringPreference(this,
                 R.string.pref_text_to_speech_voice_key,
                 getString(R.string.pref_text_to_speech_voice_default));
-        boolean found = false;
-        for (VoiceOption option : voiceOptions) {
-            if (TextUtils.equals(option.name, selectedVoiceName)) {
-                found = true;
-                break;
-            }
-        }
-        if (!found) {
+        if (!TtsOptionUtils.containsName(voiceOptions, selectedVoiceName)) {
             selectedVoiceName = "";
             Options.writeStringPreference(this,
                     R.string.pref_text_to_speech_voice_key, "");
@@ -1308,22 +1237,6 @@ public class SetupWizardActivity extends Activity
         }
     }
 
-    private List<String> getEngineLabels() {
-        List<String> labels = new ArrayList<String>(engineOptions.size());
-        for (EngineOption option : engineOptions) {
-            labels.add(option.label);
-        }
-        return labels;
-    }
-
-    private List<String> getVoiceLabels() {
-        List<String> labels = new ArrayList<String>(voiceOptions.size());
-        for (VoiceOption option : voiceOptions) {
-            labels.add(option.label);
-        }
-        return labels;
-    }
-
     private String getSelectedEngineName() {
         String value = Options.getStringPreference(this,
                 R.string.pref_text_to_speech_engine_key, "");
@@ -1335,21 +1248,6 @@ public class SetupWizardActivity extends Activity
             return getString(R.string.pref_text_to_speech_engine_auto);
         }
         return ttsEngineSpinner.getSelectedItem().toString();
-    }
-
-    private String getVoiceLabel(Voice voice) {
-        if (voice == null) {
-            return "";
-        }
-        Locale locale = voice.getLocale();
-        String localeLabel = locale == null ? ""
-                : locale.getDisplayName(locale);
-        if (TextUtils.isEmpty(localeLabel)) {
-            localeLabel = getString(
-                    R.string.pref_text_to_speech_voice_unknown_locale);
-        }
-        return TextUtils.isEmpty(voice.getName()) ? localeLabel
-                : localeLabel + " - " + voice.getName();
     }
 
     private int getSeekPercent(SeekBar seekBar) {
@@ -1401,23 +1299,4 @@ public class SetupWizardActivity extends Activity
         }
     }
 
-    private static final class EngineOption {
-        final String name;
-        final String label;
-
-        EngineOption(String name, String label) {
-            this.name = name;
-            this.label = label;
-        }
-    }
-
-    private static final class VoiceOption {
-        final String name;
-        final String label;
-
-        VoiceOption(String name, String label) {
-            this.name = name;
-            this.label = label;
-        }
-    }
 }

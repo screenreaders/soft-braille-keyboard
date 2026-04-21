@@ -2,8 +2,6 @@ package com.dalton.braillekeyboard;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
@@ -18,10 +16,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 
 public class TtsSettingsActivity extends Activity {
@@ -39,8 +34,10 @@ public class TtsSettingsActivity extends Activity {
     private SeekBar pitchSeekBar;
     private SeekBar volumeSeekBar;
 
-    private final List<EngineOption> engineOptions = new ArrayList<EngineOption>();
-    private final List<VoiceOption> voiceOptions = new ArrayList<VoiceOption>();
+    private final List<TtsOptionUtils.NamedOption> engineOptions =
+            new ArrayList<TtsOptionUtils.NamedOption>();
+    private final List<TtsOptionUtils.NamedOption> voiceOptions =
+            new ArrayList<TtsOptionUtils.NamedOption>();
 
     private TextToSpeech tts;
     private boolean suppressEngineCallback;
@@ -234,54 +231,9 @@ public class TtsSettingsActivity extends Activity {
 
     private void populateEngineGroup() {
         engineOptions.clear();
-        engineOptions.add(new EngineOption("",
+        engineOptions.addAll(TtsOptionUtils.collectInstalledEngines(this,
                 getString(R.string.pref_text_to_speech_engine_auto)));
-        collectInstalledTtsEngines();
-        Collections.sort(engineOptions.subList(1, engineOptions.size()),
-                new Comparator<EngineOption>() {
-                    @Override
-                    public int compare(EngineOption left, EngineOption right) {
-                        return left.label.compareToIgnoreCase(right.label);
-                    }
-                });
-
         populateRadioGroup(engineGroup, engineOptions, getSelectedEngineName());
-    }
-
-    private void collectInstalledTtsEngines() {
-        PackageManager packageManager = getPackageManager();
-        Intent engineIntent = new Intent(TextToSpeech.Engine.INTENT_ACTION_TTS_SERVICE);
-        int queryFlags = PackageManager.GET_META_DATA;
-        if (Build.VERSION.SDK_INT >= 23) {
-            queryFlags |= PackageManager.MATCH_ALL;
-        }
-        List<ResolveInfo> services = packageManager.queryIntentServices(
-                engineIntent, queryFlags);
-        if (services == null) {
-            return;
-        }
-        for (ResolveInfo service : services) {
-            if (service == null || service.serviceInfo == null) {
-                continue;
-            }
-            String packageName = service.serviceInfo.packageName;
-            CharSequence label = service.loadLabel(packageManager);
-            addEngineOption(packageName,
-                    label == null ? packageName : label.toString());
-        }
-    }
-
-    private void addEngineOption(String packageName, String label) {
-        if (TextUtils.isEmpty(packageName)) {
-            return;
-        }
-        for (EngineOption option : engineOptions) {
-            if (TextUtils.equals(option.name, packageName)) {
-                return;
-            }
-        }
-        engineOptions.add(new EngineOption(packageName,
-                TextUtils.isEmpty(label) ? packageName : label));
     }
 
     private void rebuildTtsForEngine(String engineName) {
@@ -328,47 +280,14 @@ public class TtsSettingsActivity extends Activity {
 
     private void populateVoiceGroup(TextToSpeech activeTts) {
         voiceOptions.clear();
-        voiceOptions.add(new VoiceOption("",
-                getString(R.string.pref_text_to_speech_voice_auto)));
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
-                && activeTts != null) {
-            try {
-                Set<Voice> voices = activeTts.getVoices();
-                if (voices != null) {
-                    for (Voice voice : voices) {
-                        if (voice == null || TextUtils.isEmpty(voice.getName())) {
-                            continue;
-                        }
-                        voiceOptions.add(new VoiceOption(voice.getName(),
-                                getVoiceLabel(voice)));
-                    }
-                }
-            } catch (RuntimeException e) {
-                voiceOptions.clear();
-                voiceOptions.add(new VoiceOption("",
-                        getString(R.string.pref_text_to_speech_voice_auto)));
-            }
-        }
-
-        Collections.sort(voiceOptions.subList(1, voiceOptions.size()),
-                new Comparator<VoiceOption>() {
-                    @Override
-                    public int compare(VoiceOption left, VoiceOption right) {
-                        return left.label.compareToIgnoreCase(right.label);
-                    }
-                });
+        voiceOptions.addAll(TtsOptionUtils.collectVoices(this, activeTts,
+                getString(R.string.pref_text_to_speech_voice_auto),
+                getString(R.string.pref_text_to_speech_voice_unknown_locale)));
 
         String selectedVoiceName = Options.getStringPreference(this,
                 R.string.pref_text_to_speech_voice_key,
                 getString(R.string.pref_text_to_speech_voice_default));
-        boolean found = false;
-        for (VoiceOption option : voiceOptions) {
-            if (TextUtils.equals(option.name, selectedVoiceName)) {
-                found = true;
-                break;
-            }
-        }
-        if (!found) {
+        if (!TtsOptionUtils.containsName(voiceOptions, selectedVoiceName)) {
             selectedVoiceName = "";
             Options.writeStringPreference(this,
                     R.string.pref_text_to_speech_voice_key, "");
@@ -377,22 +296,22 @@ public class TtsSettingsActivity extends Activity {
         applySelectedVoice();
     }
 
-    private <T extends LabeledOption> void populateRadioGroup(RadioGroup group,
-            List<T> options, String selectedName) {
+    private void populateRadioGroup(RadioGroup group,
+            List<TtsOptionUtils.NamedOption> options, String selectedName) {
         if (group == null) {
             return;
         }
-        if (group == engineGroup) {
-            suppressEngineCallback = true;
-        } else if (group == voiceGroup) {
+            if (group == engineGroup) {
+                suppressEngineCallback = true;
+            } else if (group == voiceGroup) {
             suppressVoiceCallback = true;
         }
         try {
             group.removeAllViews();
-            for (T option : options) {
+            for (TtsOptionUtils.NamedOption option : options) {
                 RadioButton button = buildRadioButton(option);
                 group.addView(button);
-                if (TextUtils.equals(option.getName(), selectedName)) {
+                if (TextUtils.equals(option.name, selectedName)) {
                     button.setChecked(true);
                 }
             }
@@ -405,11 +324,11 @@ public class TtsSettingsActivity extends Activity {
         }
     }
 
-    private <T extends LabeledOption> RadioButton buildRadioButton(T option) {
+    private RadioButton buildRadioButton(TtsOptionUtils.NamedOption option) {
         RadioButton button = new RadioButton(this);
         button.setId(View.generateViewId());
-        button.setTag(option.getName());
-        button.setText(option.getLabel());
+        button.setTag(option.name);
+        button.setText(option.label);
         return button;
     }
 
@@ -482,21 +401,6 @@ public class TtsSettingsActivity extends Activity {
         return value == null ? "" : value;
     }
 
-    private String getVoiceLabel(Voice voice) {
-        if (voice == null) {
-            return "";
-        }
-        Locale locale = voice.getLocale();
-        String localeLabel = locale == null ? ""
-                : locale.getDisplayName(locale);
-        if (TextUtils.isEmpty(localeLabel)) {
-            localeLabel = getString(
-                    R.string.pref_text_to_speech_voice_unknown_locale);
-        }
-        return TextUtils.isEmpty(voice.getName()) ? localeLabel
-                : localeLabel + " - " + voice.getName();
-    }
-
     private int getSeekPercent(SeekBar seekBar) {
         return clampPercent((seekBar == null ? 0 : seekBar.getProgress())
                 + MIN_PERCENT);
@@ -532,49 +436,4 @@ public class TtsSettingsActivity extends Activity {
         return tag == null ? "" : tag.toString();
     }
 
-    private interface LabeledOption {
-        String getName();
-
-        String getLabel();
-    }
-
-    private static class EngineOption implements LabeledOption {
-        final String name;
-        final String label;
-
-        EngineOption(String name, String label) {
-            this.name = name;
-            this.label = label;
-        }
-
-        @Override
-        public String getName() {
-            return name;
-        }
-
-        @Override
-        public String getLabel() {
-            return label;
-        }
-    }
-
-    private static class VoiceOption implements LabeledOption {
-        final String name;
-        final String label;
-
-        VoiceOption(String name, String label) {
-            this.name = name;
-            this.label = label;
-        }
-
-        @Override
-        public String getName() {
-            return name;
-        }
-
-        @Override
-        public String getLabel() {
-            return label;
-        }
-    }
 }
