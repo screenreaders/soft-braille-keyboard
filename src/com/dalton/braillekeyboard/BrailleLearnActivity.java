@@ -175,12 +175,14 @@ public class BrailleLearnActivity extends Activity
             streak++;
             bestStreak = Math.max(bestStreak, streak);
             statusView.setText(getString(R.string.braille_learn_correct_choice,
-                    currentItem.symbol, formatDots(currentItem.dotsMask)));
+                    currentItem.symbol, BrailleLearnUiUtils.formatDots(this,
+                            currentItem.dotsMask)));
             nextChallenge();
         } else {
             streak = 0;
             statusView.setText(getString(R.string.braille_learn_incorrect_choice,
-                    currentItem.symbol, formatDots(currentItem.dotsMask)));
+                    currentItem.symbol, BrailleLearnUiUtils.formatDots(this,
+                            currentItem.dotsMask)));
         }
         refreshScore();
         refreshViews();
@@ -201,12 +203,14 @@ public class BrailleLearnActivity extends Activity
             streak++;
             bestStreak = Math.max(bestStreak, streak);
             statusView.setText(getString(R.string.braille_learn_correct,
-                    currentItem.symbol, formatDots(currentItem.dotsMask)));
+                    currentItem.symbol, BrailleLearnUiUtils.formatDots(this,
+                            currentItem.dotsMask)));
             nextChallenge();
         } else {
             streak = 0;
             statusView.setText(getString(R.string.braille_learn_incorrect,
-                    currentItem.symbol, formatDots(currentItem.dotsMask)));
+                    currentItem.symbol, BrailleLearnUiUtils.formatDots(this,
+                            currentItem.dotsMask)));
         }
         refreshScore();
         refreshViews();
@@ -219,10 +223,12 @@ public class BrailleLearnActivity extends Activity
         }
         if (currentMode == LessonMode.SYMBOL_TO_DOTS) {
             statusView.setText(getString(R.string.braille_learn_hint,
-                    currentItem.symbol, formatDots(currentItem.dotsMask)));
+                    currentItem.symbol, BrailleLearnUiUtils.formatDots(this,
+                            currentItem.dotsMask)));
         } else {
             statusView.setText(getString(R.string.braille_learn_hint_choice,
-                    currentItem.symbol, formatDots(currentItem.dotsMask)));
+                    currentItem.symbol, BrailleLearnUiUtils.formatDots(this,
+                            currentItem.dotsMask)));
         }
     }
 
@@ -528,7 +534,7 @@ public class BrailleLearnActivity extends Activity
     private void refreshModeViews() {
         boolean symbolToDots = currentMode == LessonMode.SYMBOL_TO_DOTS;
         dotsView.setText(getString(R.string.braille_learn_selected_dots_value,
-                formatDots(selectedDotsMask)));
+                BrailleLearnUiUtils.formatDots(this, selectedDotsMask)));
         dotsContainer.setVisibility(symbolToDots ? View.VISIBLE : View.GONE);
         dotsView.setVisibility(symbolToDots ? View.VISIBLE : View.GONE);
         choiceContainer.setVisibility(symbolToDots ? View.GONE : View.VISIBLE);
@@ -602,15 +608,10 @@ public class BrailleLearnActivity extends Activity
     }
 
     private String buildPromptLabel() {
-        if (currentItem == null) {
-            return getString(R.string.braille_learn_prompt_empty);
-        }
-        if (currentMode == LessonMode.DOTS_TO_SYMBOL) {
-            return getString(R.string.braille_learn_prompt_from_dots,
-                    formatDots(currentItem.dotsMask));
-        }
-        return getString(R.string.braille_learn_prompt,
-                currentItem.symbol.toUpperCase(Locale.getDefault()));
+        return BrailleLearnUiUtils.buildPromptLabel(this,
+                currentMode == LessonMode.DOTS_TO_SYMBOL,
+                currentItem == null ? null : currentItem.symbol,
+                currentItem == null ? 0 : currentItem.dotsMask);
     }
 
     private String getCategoryLabel() {
@@ -627,37 +628,7 @@ public class BrailleLearnActivity extends Activity
     }
 
     private String getCurrentTableLabel() {
-        if (brailleParser == null) {
-            return getString(R.string.braille_learn_table_waiting);
-        }
-        TableInfo table = brailleParser.getTable(this);
-        if (table == null || table.getLocale() == null) {
-            return getString(R.string.braille_learn_table_waiting);
-        }
-        String label = table.getLocale().getDisplayLanguage();
-        String country = table.getLocale().getDisplayCountry();
-        if (!TextUtils.isEmpty(country)) {
-            label += " (" + country + ")";
-        }
-        return getString(R.string.braille_learn_table_value, label,
-                table.isEightDot()
-                        ? getString(R.string.grade_computer)
-                        : getString(R.string.grade_table, table.getGrade()));
-    }
-
-    private String formatDots(int dotsMask) {
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < 8; i++) {
-            if ((dotsMask & (1 << i)) != 0) {
-                if (builder.length() > 0) {
-                    builder.append(", ");
-                }
-                builder.append(i + 1);
-            }
-        }
-        return builder.length() == 0
-                ? getString(R.string.braille_learn_no_dots)
-                : builder.toString();
+        return BrailleLearnUiUtils.getCurrentTableLabel(this, brailleParser);
     }
 
     private void updateKeyboardHelper() {
@@ -686,7 +657,7 @@ public class BrailleLearnActivity extends Activity
         }
         keyboardResultView.setText(getString(
                 R.string.braille_learn_keyboard_result, shown,
-                formatDotsSequence(symbol, cells)));
+                BrailleLearnUiUtils.formatDotsSequence(this, symbol, cells)));
     }
 
     private String lastInputSymbol(CharSequence value) {
@@ -699,64 +670,4 @@ public class BrailleLearnActivity extends Activity
         return text.substring(start, end);
     }
 
-    private String formatDotsSequence(String symbol, byte[] cells) {
-        if (cells == null || cells.length == 0) {
-            return getString(R.string.braille_learn_no_dots);
-        }
-        if (cells.length == 1) {
-            return formatDots(cells[0] & 0xFF);
-        }
-        String prefixDescription = describeSequencePrefix(symbol, cells);
-        StringBuilder builder = new StringBuilder();
-        if (!TextUtils.isEmpty(prefixDescription)) {
-            builder.append(prefixDescription);
-            builder.append(" -> ");
-        }
-        for (int i = 0; i < cells.length; i++) {
-            if (i > 0) {
-                builder.append(" | ");
-            }
-            builder.append(i + 1);
-            builder.append(": ");
-            builder.append(formatDots(cells[i] & 0xFF));
-        }
-        return builder.toString();
-    }
-
-    private String describeSequencePrefix(String symbol, byte[] cells) {
-        if (TextUtils.isEmpty(symbol) || cells == null || cells.length < 2
-                || brailleParser == null) {
-            return null;
-        }
-        String simple = lastInputSymbol(symbol);
-        if (TextUtils.isEmpty(simple)) {
-            return null;
-        }
-        char ch = simple.charAt(0);
-        if (Character.isUpperCase(ch)) {
-            byte[] lowercase = brailleParser.translateTextToBrailleCells(this,
-                    String.valueOf(Character.toLowerCase(ch)));
-            if (endsWithCells(cells, lowercase)) {
-                return getString(R.string.braille_learn_prefix_capital);
-            }
-        }
-        if (Character.isDigit(ch)) {
-            return getString(R.string.braille_learn_prefix_number);
-        }
-        return getString(R.string.braille_learn_prefix_multi_cell);
-    }
-
-    private static boolean endsWithCells(byte[] cells, byte[] suffix) {
-        if (cells == null || suffix == null || suffix.length == 0
-                || suffix.length >= cells.length) {
-            return false;
-        }
-        int start = cells.length - suffix.length;
-        for (int i = 0; i < suffix.length; i++) {
-            if (cells[start + i] != suffix[i]) {
-                return false;
-            }
-        }
-        return true;
-    }
 }

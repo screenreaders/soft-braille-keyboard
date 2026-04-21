@@ -542,52 +542,24 @@ public class MainActivity extends Activity {
     }
 
     private String getInstalledVersionLabel() {
-        return TextUtils.isEmpty(BuildConfig.VERSION_NAME)
-                ? getString(R.string.update_unknown_version)
-                : BuildConfig.VERSION_NAME;
+        return MainActivityUpdateUtils.getInstalledVersionLabel();
     }
 
     private String getReleaseVersionLabel(
             GitHubReleaseChecker.ReleaseInfo releaseInfo) {
-        return releaseInfo == null || TextUtils.isEmpty(releaseInfo.getDisplayVersion())
-                ? getString(R.string.update_unknown_version)
-                : releaseInfo.getDisplayVersion();
+        return MainActivityUpdateUtils.getReleaseVersionLabel(releaseInfo);
     }
 
     private String getReleasePageUrl(GitHubReleaseChecker.RepoInfo repoInfo,
             GitHubReleaseChecker.ReleaseInfo releaseInfo) {
-        if (releaseInfo != null && !TextUtils.isEmpty(releaseInfo.htmlUrl)) {
-            return releaseInfo.htmlUrl;
-        }
-        return repoInfo == null ? null : repoInfo.releasesUrl;
+        return MainActivityUpdateUtils.getReleasePageUrl(repoInfo, releaseInfo);
     }
 
     private String buildAvailableUpdateMessage(
             GitHubReleaseChecker.ReleaseInfo releaseInfo, String installedVersion,
             String latestVersion) {
-        int messageId = TextUtils.isEmpty(releaseInfo.apkUrl)
-                ? R.string.update_no_apk_message
-                : R.string.update_available_message;
-        StringBuilder message = new StringBuilder(getString(messageId,
-                installedVersion, latestVersion));
-        if (!TextUtils.isEmpty(releaseInfo.body)) {
-            message.append("\n\n")
-                    .append(getString(R.string.update_release_notes_label))
-                    .append("\n")
-                    .append(trimReleaseNotes(releaseInfo.body));
-        }
-        return message.toString();
-    }
-
-    private String trimReleaseNotes(String body) {
-        if (TextUtils.isEmpty(body)) {
-            return "";
-        }
-        String normalized = body.trim();
-        if (normalized.length() <= 600) {
-            return normalized;
-        }
-        return normalized.substring(0, 600).trim() + "\n…";
+        return MainActivityUpdateUtils.buildAvailableUpdateMessage(this,
+                releaseInfo);
     }
 
     private void showUpdateErrorDialog(String message) {
@@ -744,22 +716,8 @@ public class MainActivity extends Activity {
 
     private String buildDownloadStatusMessage(int status, long downloaded,
             long total) {
-        switch (status) {
-        case DownloadManager.STATUS_RUNNING:
-        case DownloadManager.STATUS_PAUSED:
-        case DownloadManager.STATUS_PENDING:
-            if (total > 0) {
-                int percent = (int) ((downloaded * 100L) / total);
-                return getString(R.string.update_download_status_running,
-                        Integer.valueOf(Math.max(0, Math.min(percent, 100))));
-            }
-            return getString(R.string.update_download_status_preparing);
-        case DownloadManager.STATUS_SUCCESSFUL:
-            return getString(R.string.update_download_status_complete);
-        case DownloadManager.STATUS_FAILED:
-        default:
-            return getString(R.string.update_download_status_failed);
-        }
+        return MainActivityUpdateUtils.buildDownloadStatusMessage(this, status,
+                downloaded, total);
     }
 
     private void updateInstallButtonState(int status) {
