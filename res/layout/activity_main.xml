@@ -39,28 +39,12 @@
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/main_setup_summary"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="@string/main_status_loading" />
-
-            <Button
-                android:id="@+id/btn_setup_wizard"
-                style="@android:style/TextAppearance.Large"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:onClick="onSetupWizard"
-                android:text="@string/button_open_setup_wizard" />
-
             <Button
                 android:id="@+id/btn_enable"
                 style="@android:style/TextAppearance.Large"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="12dp"
                 android:onClick="onKeyboardSettings"
                 android:text="@string/button_keyboard_settings" />
 
@@ -74,13 +58,21 @@
                 android:text="@string/button_choose_default_keyboard" />
 
             <Button
-                android:id="@+id/btn_check_updates"
                 style="@android:style/TextAppearance.Large"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:onClick="onKeyboardCalibrationTest"
                 android:text="@string/button_open_keyboard_calibration_test" />
+
+            <Button
+                android:id="@+id/btn_setup_wizard"
+                style="@android:style/TextAppearance.Large"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:onClick="onSetupWizard"
+                android:text="@string/button_open_setup_wizard" />
         </LinearLayout>
 
         <LinearLayout
@@ -98,13 +90,6 @@
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/main_braille_summary"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="@string/main_status_loading" />
-
             <Button
                 style="@android:style/TextAppearance.Large"
                 android:layout_width="match_parent"
@@ -120,14 +105,6 @@
                 android:layout_marginTop="8dp"
                 android:onClick="onBrailleProfiles"
                 android:text="@string/button_braille_profiles" />
-
-            <Button
-                style="@android:style/TextAppearance.Large"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:onClick="onNextBrailleProfile"
-                android:text="@string/button_braille_next_profile" />
 
             <Button
                 style="@android:style/TextAppearance.Large"
@@ -161,13 +138,6 @@
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/main_speech_summary"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="@string/main_status_loading" />
-
             <Button
                 style="@android:style/TextAppearance.Large"
                 android:layout_width="match_parent"
@@ -191,13 +161,6 @@
                 android:text="@string/main_tile_display_title"
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/main_display_summary"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="@string/main_status_loading" />
 
             <Button
                 style="@android:style/TextAppearance.Large"
@@ -231,14 +194,8 @@
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/main_app_summary"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="@string/main_status_loading" />
-
             <Button
+                android:id="@+id/btn_check_updates"
                 style="@android:style/TextAppearance.Large"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -286,20 +243,13 @@
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/main_help_summary"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="@string/main_help_summary" />
-
             <Button
                 style="@android:style/TextAppearance.Large"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:onClick="onGuidedScreenReport"
-                android:text="@string/button_guided_screen_report" />
+                android:onClick="onURL"
+                android:text="@string/button_more_info" />
 
             <Button
                 style="@android:style/TextAppearance.Large"
@@ -314,8 +264,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:onClick="onURL"
-                android:text="@string/button_more_info" />
+                android:onClick="onGuidedScreenReport"
+                android:text="@string/button_guided_screen_report" />
         </LinearLayout>
 
     </LinearLayout>

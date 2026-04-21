@@ -263,7 +263,7 @@ Device table: %3$s</string>
     <string name="braille_usb_permission_granted">usb permission granted</string>
     <string name="braille_usb_permission_missing">usb permission missing</string>
     <string name="braille_ime">Soft Braille Keyboard</string>
-    <string name="button_accessibility_settings">Open Android accessibility settings for braille display output</string>
+    <string name="button_accessibility_settings">Braille display accessibility settings</string>
     <string name="button_braille_profiles">Braille user profiles</string>
     <string name="button_braille_next_profile">Switch to next braille profile</string>
     <string name="button_braille_translation_settings">Open braille translator and table settings</string>
@@ -284,8 +284,8 @@ Device table: %3$s</string>
     <string name="button_report_issue">Send bug report</string>
     <string name="button_guided_screen_report">Generate real-device screen report</string>
     <string name="button_report_braille_issue">Report braille display problem</string>
-    <string name="button_choose_default_keyboard">Set Soft Braille Keyboard as the default keyboard</string>
-    <string name="button_keyboard_settings">Enable Soft Braille Keyboard</string>
+    <string name="button_choose_default_keyboard">Choose default keyboard</string>
+    <string name="button_keyboard_settings">Soft Braille Keyboard settings</string>
     <string name="button_more_info">Read the quick start guide</string>
     <string name="button_tts_settings">Speech engine and voice settings</string>
     <string name="braille_table_test_title">Braille table test</string>
@@ -483,7 +483,7 @@ Bluetooth: %2$s</string>
     <string name="main_status_none">none</string>
     <string name="main_status_calibration_ready">saved</string>
     <string name="main_status_calibration_missing_short">not saved</string>
-    <string name="main_tile_setup_title">Keyboard setup</string>
+    <string name="main_tile_setup_title">Keyboard</string>
     <string name="main_tile_braille_title">Braille and profiles</string>
     <string name="main_tile_speech_title">Speech and voice</string>
     <string name="main_tile_display_title">Braille display</string>

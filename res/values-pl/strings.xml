@@ -7,8 +7,8 @@
     <string name="auto_caps_enabled">Automatyczne wstawianie wielkich liter włączone</string>
     <string name="blank">Puste</string>
     <string name="braille_ime">Soft Braille Keyboard</string>
-    <string name="button_choose_default_keyboard">Ustaw Soft Braille Keyboard jako klawiaturę domyślną</string>
-    <string name="button_keyboard_settings">Włącz Soft Braille Keyboard</string>
+    <string name="button_choose_default_keyboard">Wybierz klawiaturę domyślną</string>
+    <string name="button_keyboard_settings">Ustawienia klawiatury Soft Braille Keyboard</string>
     <string name="button_more_info">Przeczytaj szybki przewodnik</string>
     <string name="capital">Wielka litera %s</string>
     <string name="closing_keyboard">Zamknięto klawiaturę</string>
@@ -413,7 +413,7 @@ Tabela urządzeń: %3$s</string>
     <string name="braille_usb_profile_exact">dokładny profil USB</string>
     <string name="braille_usb_permission_granted">Uprawnienie USB zostało przyznane</string>
     <string name="braille_usb_permission_missing">Brak uprawnienia USB</string>
-    <string name="button_accessibility_settings">Otwórz systemowe ustawienia dostępności dla wyjścia na monitor brajlowski</string>
+    <string name="button_accessibility_settings">Ustawienia dostępności dla monitora brajlowskiego</string>
     <string name="button_braille_profiles">Profile brajlowskie użytkownika</string>
     <string name="button_braille_next_profile">Przełącz na następny profil brajlowski</string>
     <string name="button_braille_translation_settings">Otwórz translator brajla i ustawienia tablic</string>
@@ -426,7 +426,7 @@ Tabela urządzeń: %3$s</string>
     <string name="button_check_updates">Sprawdź aktualizacje na GitHubie</string>
     <string name="button_export_app_settings">Eksportuj ustawienia programu do pliku</string>
     <string name="button_import_app_settings">Importuj ustawienia programu z pliku</string>
-    <string name="button_open_setup_wizard">Uruchom konfigurator pierwszego uruchomienia</string>
+    <string name="button_open_setup_wizard">Otwórz konfigurator pierwszego uruchomienia</string>
     <string name="button_open_keyboard_calibration_test">Otwórz kalibrację i test klawiatury</string>
     <string name="button_start_keyboard_calibration">Rozpocznij kalibrację teraz</string>
     <string name="button_request_bluetooth_permission">Poproś o uprawnienie Bluetooth</string>

@@ -366,6 +366,8 @@ public class BrailleView extends View {
         int tempX = x;
         x = displayParams.autoRotate || getWidth() >= getHeight() ? x : y;
         y = displayParams.autoRotate || getWidth() >= getHeight() ? y : tempX;
+        boolean calibrationRequested = KeyboardCalibrationUtils
+                .isCalibrationModeRequested() || !lastDotList.isEmpty();
         Swipe swipe;
         switch (action) {
         case MotionEvent.ACTION_DOWN:
@@ -392,7 +394,21 @@ public class BrailleView extends View {
             break;
         case MotionEvent.ACTION_HOVER_EXIT:
         case MotionEvent.ACTION_UP:
-            if (isCalibrationGestureActive()) {
+            if (calibrationRequested) {
+                boolean calibrationHandled = setPad(id, width, height,
+                        displayParams.autoRotate);
+                if (!calibrationHandled && speech != null) {
+                    speech.speak(getContext(),
+                            getContext().getString(R.string.keyboard_not_set),
+                            Speech.QUEUE_FLUSH);
+                }
+                if (!calibrationHandled && vibrator != null) {
+                    vibrator.vibrate(QUICK_VIBRATION);
+                }
+                resetDots();
+                lastDotList.clear();
+                handledSwipe = false;
+            } else if (isCalibrationGestureActive()) {
                 resetDots();
                 lastDotList.clear();
                 handledSwipe = false;
@@ -435,6 +451,9 @@ public class BrailleView extends View {
             break;
         case MotionEvent.ACTION_POINTER_UP:
             if (!setPad(id, width, height, displayParams.autoRotate)) {
+                if (calibrationRequested) {
+                    break;
+                }
                 updatePointer(dotsDown, id, x, y, false);
                 setDots();
                 if ((swipe = handledSwipeAction(dotsDown,
@@ -527,7 +546,9 @@ public class BrailleView extends View {
                 }
             }
             boolean result = selectPad(sixDots, width, height);
-            KeyboardCalibrationUtils.clearCalibrationMode();
+            if (result) {
+                KeyboardCalibrationUtils.clearCalibrationMode();
+            }
             if (speech != null) {
                 speech.speak(getContext(), getContext().getString(result
                         ? pad.padString : R.string.keyboard_error),
@@ -569,7 +590,6 @@ public class BrailleView extends View {
                     vibrator.vibrate(MEDIUM_VIBRATION);
                 }
             } else {
-                KeyboardCalibrationUtils.clearCalibrationMode();
                 if (speech != null) {
                     speech.speak(getContext(),
                             getContext().getString(R.string.keyboard_error),

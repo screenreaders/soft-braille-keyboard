@@ -72,7 +72,16 @@ public class BrailleKeyboardTestActivity extends Activity {
     }
 
     public void onDone(View view) {
+        KeyboardCalibrationUtils.clearCalibrationMode();
         finish();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (isFinishing()) {
+            KeyboardCalibrationUtils.clearCalibrationMode();
+        }
     }
 
     private void refreshStatus() {
