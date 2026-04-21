@@ -69,11 +69,7 @@ public class Speech {
 
         @Override
         public void onStart(String utteranceId) {
-            if (audioManager != null) {
-                audioManager.requestAudioFocus(audioFocusChangeListener,
-                        AudioManager.STREAM_MUSIC,
-                        AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK);
-            }
+            requestAudioFocusIfAvailable();
         }
 
         @Override
@@ -83,9 +79,7 @@ public class Speech {
 
         @Override
         public void onDone(String utteranceId) {
-            if (audioManager != null) {
-                audioManager.abandonAudioFocus(audioFocusChangeListener);
-            }
+            abandonAudioFocusIfAvailable();
             if (SHUTDOWN_ID.equals(utteranceId)) {
                 doShutdown();
             }
@@ -98,7 +92,7 @@ public class Speech {
         public void onAudioFocusChange(int focusChange) {
             if (focusChange == AudioManager.AUDIOFOCUS_LOSS
                     && audioManager != null) {
-                audioManager.abandonAudioFocus(audioFocusChangeListener);
+                abandonAudioFocusIfAvailable();
             }
         }
     };
@@ -126,11 +120,7 @@ public class Speech {
         // the map from strings.xml
         setSpeechMap(context, speechMap);
 
-        String engine = Options.getStringPreference(context,
-                R.string.pref_text_to_speech_engine_key, "");
-        if (TextUtils.isEmpty(engine)) {
-            engine = null;
-        }
+        String engine = resolvePreferredEngine(context);
 
         if (canSpeak || tts != null) {
             doShutdown();
@@ -148,9 +138,7 @@ public class Speech {
                         canSpeak = true;
                         applySpeechPreferences(context);
                         setProgressListener();
-                        if (listener != null) {
-                            listener.ttsReady();
-                        }
+                        notifyReady(listener);
                     } else {
                         canSpeak = false;
                     }
@@ -160,6 +148,32 @@ public class Speech {
         } catch (RuntimeException e) {
             canSpeak = false;
             tts = null;
+        }
+    }
+
+    private void requestAudioFocusIfAvailable() {
+        if (audioManager != null) {
+            audioManager.requestAudioFocus(audioFocusChangeListener,
+                    AudioManager.STREAM_MUSIC,
+                    AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK);
+        }
+    }
+
+    private void abandonAudioFocusIfAvailable() {
+        if (audioManager != null) {
+            audioManager.abandonAudioFocus(audioFocusChangeListener);
+        }
+    }
+
+    private static String resolvePreferredEngine(Context context) {
+        String engine = Options.getStringPreference(context,
+                R.string.pref_text_to_speech_engine_key, "");
+        return TextUtils.isEmpty(engine) ? null : engine;
+    }
+
+    private static void notifyReady(OnReadyListener listener) {
+        if (listener != null) {
+            listener.ttsReady();
         }
     }
 
@@ -232,27 +246,37 @@ public class Speech {
         if (context == null || format == null) {
             return;
         }
-        if (text != null) {
-            if (text.equals(" ")) {
-                // say "space
-                text = context.getString(R.string.space);
-            } else if (text.length() < 2 && text.length() > 0
-                    && Character.isUpperCase(text.charAt(0))) {
-                // announce capitalisation
-                text = String.format(context.getString(R.string.capital), text);
-            } else if (text.equals("\n")) {
-                // newline
-                text = context.getString(R.string.newline);
-            } else if (text.toString().trim().equals("")) {
-                // say "blank"
-                text = context.getString(R.string.blank);
-            }
-
-            String textToSpeak = String.format(format,
-                    extractPunctuation(text.toString()));
-            // Speak the text ensuring that we don't overflow the buffer.
+        String textToSpeak = buildSpokenText(context, format, text);
+        if (textToSpeak != null) {
             divideAndSpeak(textToSpeak, mode, null);
         }
+    }
+
+    private String buildSpokenText(Context context, String format,
+            CharSequence text) {
+        if (text == null) {
+            return null;
+        }
+        CharSequence normalisedText = normalizeSpokenText(context, text);
+        return String.format(format,
+                extractPunctuation(normalisedText.toString()));
+    }
+
+    private CharSequence normalizeSpokenText(Context context, CharSequence text) {
+        if (text.equals(" ")) {
+            return context.getString(R.string.space);
+        }
+        if (text.length() < 2 && text.length() > 0
+                && Character.isUpperCase(text.charAt(0))) {
+            return String.format(context.getString(R.string.capital), text);
+        }
+        if (text.equals("\n")) {
+            return context.getString(R.string.newline);
+        }
+        if (text.toString().trim().equals("")) {
+            return context.getString(R.string.blank);
+        }
+        return text;
     }
 
     /**
@@ -281,6 +305,10 @@ public class Speech {
      */
     public void speakPassword(Context context, String formatter, String text,
             int mode) {
+        speak(context, String.format(formatter, maskPassword(text)), mode);
+    }
+
+    private static String maskPassword(String text) {
         if (text == null) {
             text = "";
         }
@@ -288,7 +316,7 @@ public class Speech {
         for (int i = 0; i < text.length(); i++) {
             sb.append('*');
         }
-        speak(context, String.format(formatter, sb.toString()), mode);
+        return sb.toString();
     }
 
     /**
@@ -381,24 +409,31 @@ public class Speech {
             if (id == null) {
                 id = String.valueOf(System.currentTimeMillis());
             }
-
-            Bundle bundle = new Bundle();
-            if (params != null) {
-                for (String key : params.keySet()) {
-                    bundle.putString(key, params.get(key));
-                }
-            }
-            bundle.putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, speechVolume);
-
-            tts.speak(text, queueMode, bundle, id);
+            tts.speak(text, queueMode, buildSpeechBundle(params), id);
         } else {
-            if (params == null) {
-                params = new HashMap<String, String>();
-            }
-            params.put(TextToSpeech.Engine.KEY_PARAM_VOLUME,
-                    String.valueOf(speechVolume));
-            tts.speak(text, queueMode, params);
+            tts.speak(text, queueMode, buildLegacySpeechParams(params));
         }
+    }
+
+    private Bundle buildSpeechBundle(HashMap<String, String> params) {
+        Bundle bundle = new Bundle();
+        if (params != null) {
+            for (String key : params.keySet()) {
+                bundle.putString(key, params.get(key));
+            }
+        }
+        bundle.putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, speechVolume);
+        return bundle;
+    }
+
+    private HashMap<String, String> buildLegacySpeechParams(
+            HashMap<String, String> params) {
+        if (params == null) {
+            params = new HashMap<String, String>();
+        }
+        params.put(TextToSpeech.Engine.KEY_PARAM_VOLUME,
+                String.valueOf(speechVolume));
+        return params;
     }
 
     private boolean isReadyToSpeak() {

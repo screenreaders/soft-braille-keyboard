@@ -271,8 +271,7 @@ public class ActionHandler {
      * @return true if the Swipe was handled otherwise false.
      */
     public boolean handleSwipe(Context context, Swipe value) {
-        if (context == null || value == null || listener == null
-                || callback == null) {
+        if (!canHandleInput(context) || value == null) {
             return false;
         }
         // Disable all swipes while voice input is in progress.
@@ -297,14 +296,7 @@ public class ActionHandler {
             moveRight(context, Granularity.CHARACTER);
             break;
         case ONE_DOWN:
-            KeyboardFeedback feedback = KeyboardFeedback.valueOf(
-                    Options.getIntPreference(context,
-                            R.string.pref_keyboard_feedback_key,
-                            KeyboardFeedback.ALL.getValue()));
-            feedback = KeyboardFeedback.next(feedback);
-            Options.writeStringPreference(context,
-                    R.string.pref_keyboard_feedback_key, feedback.getValue());
-            message = context.getString(feedback.resource);
+            message = cycleKeyboardFeedback(context);
             break;
         case ONE_UP:
             message = getInput(Granularity.CHARACTER);
@@ -321,13 +313,7 @@ public class ActionHandler {
             considerPassword = true;
             break;
         case TWO_DOWN:
-            KeyboardEcho echo = KeyboardEcho.valueOf(Options.getIntPreference(
-                    context, R.string.pref_echo_feedback_key,
-                    KeyboardEcho.CHARACTER.getValue()));
-            echo = KeyboardEcho.next(echo);
-            Options.writeStringPreference(context,
-                    R.string.pref_echo_feedback_key, echo.getValue());
-            message = context.getString(echo.resource);
+            message = cycleKeyboardEcho(context);
             break;
         case THREE_LEFT:
             moveLeft(context, Granularity.LINE);
@@ -340,12 +326,8 @@ public class ActionHandler {
             considerPassword = true;
             break;
         case THREE_DOWN:
-            if (listener.getDots() == 8) {
-                setDots = true;
-                dots[0] = true;
-            } else {
-                message = context.getString(R.string.unknown_character);
-            }
+            message = handleDotSwipe(context, dots, 0);
+            setDots = message == null;
             break;
         case FOUR_LEFT:
             backspace(context, Granularity.CHARACTER, fastDoubleSwipe);
@@ -363,39 +345,16 @@ public class ActionHandler {
                     context.getString(R.string.newline));
             break;
         case FOUR_UP:
-            Options.switchBooleanPreference(context, R.string.pref_privacy_key,
-                    Boolean.parseBoolean(context
-                            .getString(R.string.pref_privacy_default)));
-            callback.onPrivacy();
-            message = Options.getBooleanPreference(context,
-                    R.string.pref_privacy_key, Boolean.parseBoolean(context
-                            .getString(R.string.pref_privacy_default))) ? context
-                    .getString(R.string.privacy_enabled) : context
-                    .getString(R.string.privacy_disabled);
+            message = togglePrivacy(context);
             break;
         case FIVE_LEFT:
             backspace(context, Granularity.WORD, fastDoubleSwipe);
             break;
         case FIVE_DOWN:
-            if (fastDoubleSwipe) {
-                message = context.getString(R.string.show_input_switcher);
-                ActivityLaunchUtils.showInputMethodPicker(context);
-            } else {
-                message = context.getString(R.string.swipe_confirm_input);
-            }
+            message = maybeShowInputSwitcher(context, fastDoubleSwipe);
             break;
         case FIVE_UP:
-            if (fastDoubleSwipe) {
-                callback.onSetLocale(Locale.getDefault());
-                message = context.getString(R.string.show_settings);
-                Intent intent = new Intent(context, PreferenceIME.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                if (canStartActivity(context, intent)) {
-                    context.startActivity(intent);
-                }
-            } else {
-                message = context.getString(R.string.swipe_confirm_settings);
-            }
+            message = maybeShowSettings(context, fastDoubleSwipe);
             break;
         case SIX_LEFT:
             backspace(context, Granularity.LINE, fastDoubleSwipe);
@@ -407,12 +366,8 @@ public class ActionHandler {
             selectAction(context);
             break;
         case SIX_DOWN:
-            if (listener.getDots() == 8) {
-                setDots = true;
-                dots[1] = true;
-            } else {
-                message = context.getString(R.string.unknown_character);
-            }
+            message = handleDotSwipe(context, dots, 1);
+            setDots = message == null;
             break;
         case HOLD_SIX_LEFT:
             moveLeft(context, Granularity.ALL);
@@ -421,11 +376,7 @@ public class ActionHandler {
             moveRight(context, Granularity.ALL);
             break;
         case HOLD_SIX_DOWN:
-            boolean echoPassword = Options.switchBooleanPreference(context,
-                    R.string.pref_echo_passwords_key, false);
-            message = echoPassword ? context
-                    .getString(R.string.speak_passwords) : context
-                    .getString(R.string.no_password_echo);
+            message = togglePasswordEcho(context);
             break;
         case HOLD_SIX_UP:
             message = getInput(Granularity.ALL);
@@ -460,26 +411,10 @@ public class ActionHandler {
             callback.onShrink();
             break;
         case HOLD_ONE_DOWN:
-            ExtractedText extractedText = listener.getAllText();
-            CharSequence text = extractedText == null ? null : extractedText.text;
-            if (text != null) {
-                message = String.format(context.getString(R.string.word_count),
-                        EditingUtilities.lineCount(text),
-                        EditingUtilities.wordCount(text),
-                        EditingUtilities.characterCount(text));
-            } else {
-                message = context.getString(R.string.blank);
-            }
+            message = buildTextStatsMessage(context);
             break;
         case HOLD_ONE_UP:
-            Options.switchBooleanPreference(context,
-                    R.string.pref_auto_caps_key, Boolean.parseBoolean(context
-                            .getString(R.string.pref_auto_caps_default)));
-            message = Options.getBooleanPreference(context,
-                    R.string.pref_auto_caps_key, Boolean.parseBoolean(context
-                            .getString(R.string.pref_auto_caps_default))) ? context
-                    .getString(R.string.auto_caps_enabled) : context
-                    .getString(R.string.auto_caps_disabled);
+            message = toggleAutoCaps(context);
             break;
         case HOLD_FOUR_LEFT:
             doSpellCheck(context, SpellChecker.Direction.LEFT, 0,
@@ -518,6 +453,103 @@ public class ActionHandler {
         return true;
     }
 
+    private boolean canHandleInput(Context context) {
+        return context != null && listener != null && callback != null;
+    }
+
+    private String cycleKeyboardFeedback(Context context) {
+        KeyboardFeedback feedback = KeyboardFeedback.valueOf(
+                Options.getIntPreference(context,
+                        R.string.pref_keyboard_feedback_key,
+                        KeyboardFeedback.ALL.getValue()));
+        feedback = KeyboardFeedback.next(feedback);
+        Options.writeStringPreference(context,
+                R.string.pref_keyboard_feedback_key, feedback.getValue());
+        return context.getString(feedback.resource);
+    }
+
+    private String cycleKeyboardEcho(Context context) {
+        KeyboardEcho echo = KeyboardEcho.valueOf(Options.getIntPreference(
+                context, R.string.pref_echo_feedback_key,
+                KeyboardEcho.CHARACTER.getValue()));
+        echo = KeyboardEcho.next(echo);
+        Options.writeStringPreference(context,
+                R.string.pref_echo_feedback_key, echo.getValue());
+        return context.getString(echo.resource);
+    }
+
+    private String handleDotSwipe(Context context, boolean[] dots, int index) {
+        if (listener.getDots() == 8) {
+            dots[index] = true;
+            return null;
+        }
+        return context.getString(R.string.unknown_character);
+    }
+
+    private String togglePrivacy(Context context) {
+        Options.switchBooleanPreference(context, R.string.pref_privacy_key,
+                Boolean.parseBoolean(context
+                        .getString(R.string.pref_privacy_default)));
+        callback.onPrivacy();
+        return Options.getBooleanPreference(context, R.string.pref_privacy_key,
+                Boolean.parseBoolean(context
+                        .getString(R.string.pref_privacy_default))) ? context
+                .getString(R.string.privacy_enabled) : context
+                .getString(R.string.privacy_disabled);
+    }
+
+    private String maybeShowInputSwitcher(Context context,
+            boolean fastDoubleSwipe) {
+        if (!fastDoubleSwipe) {
+            return context.getString(R.string.swipe_confirm_input);
+        }
+        ActivityLaunchUtils.showInputMethodPicker(context);
+        return context.getString(R.string.show_input_switcher);
+    }
+
+    private String maybeShowSettings(Context context, boolean fastDoubleSwipe) {
+        if (!fastDoubleSwipe) {
+            return context.getString(R.string.swipe_confirm_settings);
+        }
+        callback.onSetLocale(Locale.getDefault());
+        Intent intent = new Intent(context, PreferenceIME.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        if (canStartActivity(context, intent)) {
+            context.startActivity(intent);
+        }
+        return context.getString(R.string.show_settings);
+    }
+
+    private String togglePasswordEcho(Context context) {
+        boolean echoPassword = Options.switchBooleanPreference(context,
+                R.string.pref_echo_passwords_key, false);
+        return echoPassword ? context.getString(R.string.speak_passwords)
+                : context.getString(R.string.no_password_echo);
+    }
+
+    private String buildTextStatsMessage(Context context) {
+        ExtractedText extractedText = listener.getAllText();
+        CharSequence text = extractedText == null ? null : extractedText.text;
+        if (text == null) {
+            return context.getString(R.string.blank);
+        }
+        return String.format(context.getString(R.string.word_count),
+                EditingUtilities.lineCount(text),
+                EditingUtilities.wordCount(text),
+                EditingUtilities.characterCount(text));
+    }
+
+    private String toggleAutoCaps(Context context) {
+        Options.switchBooleanPreference(context, R.string.pref_auto_caps_key,
+                Boolean.parseBoolean(context
+                        .getString(R.string.pref_auto_caps_default)));
+        return Options.getBooleanPreference(context,
+                R.string.pref_auto_caps_key, Boolean.parseBoolean(context
+                        .getString(R.string.pref_auto_caps_default))) ? context
+                .getString(R.string.auto_caps_enabled) : context
+                .getString(R.string.auto_caps_disabled);
+    }
+
     /**
      * Handle typing a Braille character into the underlying IME. The character
      * is delivered as a byte value representing the dot pattern and will be
@@ -533,7 +565,7 @@ public class ActionHandler {
      *            8 dots are pressed.
      */
     public void handleCharacter(Context context, byte value) {
-        if (context == null || listener == null || callback == null) {
+        if (!canHandleInput(context)) {
             return;
         }
         // Can't type while voice input is in progress.
@@ -924,7 +956,7 @@ public class ActionHandler {
 
     // Handle voice input.
     public boolean doVoiceInput(final Context context, boolean fastDoubleSwipe) {
-        if (context == null || listener == null || callback == null) {
+        if (!canHandleInput(context)) {
             return false;
         }
         // Check for the "dangerous permission" for Android 6 and higher.
