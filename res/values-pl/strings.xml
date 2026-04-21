@@ -512,24 +512,9 @@ Bieżący głos: %2$s</string>
     <string name="main_section_tools">Narzędzia i diagnostyka</string>
     <string name="main_section_backup">Kopia i przywracanie</string>
     <string name="main_section_support">Pomoc i wsparcie</string>
-    <string name="main_status_setup_ready">Konfiguracja zakończona</string>
-    <string name="main_status_setup_required">Konfiguracja wymaga dokończenia</string>
     <string name="main_status_yes">Tak</string>
     <string name="main_status_no">Nie</string>
-    <string name="main_status_not_required">nie dotyczy</string>
     <string name="main_status_loading">Ładowanie…</string>
-    <string name="main_status_keyboard_template">Klawiatura włączona: %1$s
-Klawiatura domyślna: %2$s
-Wyjście na monitor brajlowski: %3$s</string>
-    <string name="main_status_braille_template">Typ brajla: %1$s
-Bieżąca tablica: %2$s</string>
-    <string name="main_status_braille_profile_value">Aktywny profil brajlowski: %1$s</string>
-    <string name="main_status_braille_profile_none">Aktywny profil brajlowski: brak</string>
-    <string name="main_status_permissions_template">Mikrofon: %1$s
-Bluetooth: %2$s</string>
-    <string name="main_status_none">brak</string>
-    <string name="main_status_calibration_ready">zapisana</string>
-    <string name="main_status_calibration_missing_short">brak</string>
     <string name="main_tile_setup_title">Klawiatura</string>
     <string name="main_tile_braille_title">Brajl i profile</string>
     <string name="main_tile_speech_title">Mowa i głosy</string>

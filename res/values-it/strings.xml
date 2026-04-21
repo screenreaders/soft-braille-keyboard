@@ -877,27 +877,9 @@ Preferred braille display: %4$s</string>
     
     <string name="main_section_tools">Tools and diagnostics</string>
     
-    <string name="main_status_braille_profile_none">Active braille profile: none</string>
-    
-    <string name="main_status_braille_profile_value">Active braille profile: %1$s</string>
-    
-    <string name="main_status_braille_template">Braille type: %1$s
-Current table: %2$s</string>
-    
-    <string name="main_status_keyboard_template">Keyboard enabled: %1$s
-Default keyboard: %2$s
-Braille display output: %3$s</string>
-    
     <string name="main_status_loading">Loading…</string>
     
     <string name="main_status_no">No</string>
-    
-    <string name="main_status_permissions_template">Microphone: %1$s
-Bluetooth: %2$s</string>
-    
-    <string name="main_status_setup_ready">Setup complete</string>
-    
-    <string name="main_status_setup_required">Setup still needs attention</string>
     
     <string name="main_status_yes">Yes</string>
     

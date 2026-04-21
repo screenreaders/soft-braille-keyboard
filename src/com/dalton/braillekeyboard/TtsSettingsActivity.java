@@ -77,64 +77,8 @@ public class TtsSettingsActivity extends Activity {
                 R.string.pref_text_to_speech_volume_key,
                 R.string.pref_text_to_speech_volume_default,
                 R.id.tts_volume_decrease, R.id.tts_volume_increase);
-
-        if (engineGroup != null) {
-            engineGroup.setOnCheckedChangeListener(
-                    new RadioGroup.OnCheckedChangeListener() {
-                        @Override
-                        public void onCheckedChanged(RadioGroup group,
-                                int checkedId) {
-                            if (suppressEngineCallback || checkedId == View.NO_ID) {
-                                return;
-                            }
-                            View checkedView = group.findViewById(checkedId);
-                            if (!(checkedView instanceof RadioButton)) {
-                                return;
-                            }
-                            Object tag = checkedView.getTag();
-                            String engineName = tag == null ? "" : tag.toString();
-                            Options.writeStringPreference(
-                                    TtsSettingsActivity.this,
-                                    R.string.pref_text_to_speech_engine_key,
-                                    engineName);
-                            rebuildTtsForEngine(engineName);
-                        }
-                    });
-        }
-
-        if (voiceGroup != null) {
-            voiceGroup.setOnCheckedChangeListener(
-                    new RadioGroup.OnCheckedChangeListener() {
-                        @Override
-                        public void onCheckedChanged(RadioGroup group,
-                                int checkedId) {
-                            if (suppressVoiceCallback || checkedId == View.NO_ID) {
-                                return;
-                            }
-                            View checkedView = group.findViewById(checkedId);
-                            if (!(checkedView instanceof RadioButton)) {
-                                return;
-                            }
-                            Object tag = checkedView.getTag();
-                            String voiceName = tag == null ? "" : tag.toString();
-                            Options.writeStringPreference(
-                                    TtsSettingsActivity.this,
-                                    R.string.pref_text_to_speech_voice_key,
-                                    voiceName);
-                            applySelectedVoice();
-                        }
-                    });
-        }
-
-        Button previewButton = (Button) findViewById(R.id.tts_preview_button);
-        if (previewButton != null) {
-            previewButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    speakPreview();
-                }
-            });
-        }
+        bindRadioGroups();
+        bindPreviewButton();
 
         populateEngineGroup();
         rebuildTtsForEngine(getSelectedEngineName());
@@ -218,6 +162,66 @@ public class TtsSettingsActivity extends Activity {
         }
     }
 
+    private void bindRadioGroups() {
+        bindEngineGroup();
+        bindVoiceGroup();
+    }
+
+    private void bindEngineGroup() {
+        if (engineGroup == null) {
+            return;
+        }
+        engineGroup.setOnCheckedChangeListener(
+                new RadioGroup.OnCheckedChangeListener() {
+                    @Override
+                    public void onCheckedChanged(RadioGroup group,
+                            int checkedId) {
+                        if (suppressEngineCallback || checkedId == View.NO_ID) {
+                            return;
+                        }
+                        String engineName = getCheckedTag(group, checkedId);
+                        Options.writeStringPreference(TtsSettingsActivity.this,
+                                R.string.pref_text_to_speech_engine_key,
+                                engineName);
+                        rebuildTtsForEngine(engineName);
+                    }
+                });
+    }
+
+    private void bindVoiceGroup() {
+        if (voiceGroup == null) {
+            return;
+        }
+        voiceGroup.setOnCheckedChangeListener(
+                new RadioGroup.OnCheckedChangeListener() {
+                    @Override
+                    public void onCheckedChanged(RadioGroup group,
+                            int checkedId) {
+                        if (suppressVoiceCallback || checkedId == View.NO_ID) {
+                            return;
+                        }
+                        String voiceName = getCheckedTag(group, checkedId);
+                        Options.writeStringPreference(TtsSettingsActivity.this,
+                                R.string.pref_text_to_speech_voice_key,
+                                voiceName);
+                        applySelectedVoice();
+                    }
+                });
+    }
+
+    private void bindPreviewButton() {
+        Button previewButton = (Button) findViewById(R.id.tts_preview_button);
+        if (previewButton == null) {
+            return;
+        }
+        previewButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                speakPreview();
+            }
+        });
+    }
+
     private void stepSeekBar(SeekBar seekBar, int keyRes, int delta) {
         if (seekBar == null) {
             return;
@@ -232,27 +236,7 @@ public class TtsSettingsActivity extends Activity {
         engineOptions.clear();
         engineOptions.add(new EngineOption("",
                 getString(R.string.pref_text_to_speech_engine_auto)));
-
-        PackageManager packageManager = getPackageManager();
-        Intent engineIntent = new Intent(TextToSpeech.Engine.INTENT_ACTION_TTS_SERVICE);
-        int queryFlags = PackageManager.GET_META_DATA;
-        if (Build.VERSION.SDK_INT >= 23) {
-            queryFlags |= PackageManager.MATCH_ALL;
-        }
-        List<ResolveInfo> services = packageManager.queryIntentServices(
-                engineIntent, queryFlags);
-        if (services != null) {
-            for (ResolveInfo service : services) {
-                if (service == null || service.serviceInfo == null) {
-                    continue;
-                }
-                String packageName = service.serviceInfo.packageName;
-                CharSequence label = service.loadLabel(packageManager);
-                addEngineOption(packageName,
-                        label == null ? packageName : label.toString());
-            }
-        }
-
+        collectInstalledTtsEngines();
         Collections.sort(engineOptions.subList(1, engineOptions.size()),
                 new Comparator<EngineOption>() {
                     @Override
@@ -262,6 +246,29 @@ public class TtsSettingsActivity extends Activity {
                 });
 
         populateRadioGroup(engineGroup, engineOptions, getSelectedEngineName());
+    }
+
+    private void collectInstalledTtsEngines() {
+        PackageManager packageManager = getPackageManager();
+        Intent engineIntent = new Intent(TextToSpeech.Engine.INTENT_ACTION_TTS_SERVICE);
+        int queryFlags = PackageManager.GET_META_DATA;
+        if (Build.VERSION.SDK_INT >= 23) {
+            queryFlags |= PackageManager.MATCH_ALL;
+        }
+        List<ResolveInfo> services = packageManager.queryIntentServices(
+                engineIntent, queryFlags);
+        if (services == null) {
+            return;
+        }
+        for (ResolveInfo service : services) {
+            if (service == null || service.serviceInfo == null) {
+                continue;
+            }
+            String packageName = service.serviceInfo.packageName;
+            CharSequence label = service.loadLabel(packageManager);
+            addEngineOption(packageName,
+                    label == null ? packageName : label.toString());
+        }
     }
 
     private void addEngineOption(String packageName, String label) {
@@ -383,10 +390,7 @@ public class TtsSettingsActivity extends Activity {
         try {
             group.removeAllViews();
             for (T option : options) {
-                RadioButton button = new RadioButton(this);
-                button.setId(View.generateViewId());
-                button.setTag(option.getName());
-                button.setText(option.getLabel());
+                RadioButton button = buildRadioButton(option);
                 group.addView(button);
                 if (TextUtils.equals(option.getName(), selectedName)) {
                     button.setChecked(true);
@@ -399,6 +403,14 @@ public class TtsSettingsActivity extends Activity {
                 suppressVoiceCallback = false;
             }
         }
+    }
+
+    private <T extends LabeledOption> RadioButton buildRadioButton(T option) {
+        RadioButton button = new RadioButton(this);
+        button.setId(View.generateViewId());
+        button.setTag(option.getName());
+        button.setText(option.getLabel());
+        return button;
     }
 
     private void applyCurrentSpeechParameters() {
@@ -509,6 +521,15 @@ public class TtsSettingsActivity extends Activity {
             return MAX_PERCENT;
         }
         return value;
+    }
+
+    private String getCheckedTag(RadioGroup group, int checkedId) {
+        View checkedView = group.findViewById(checkedId);
+        if (!(checkedView instanceof RadioButton)) {
+            return "";
+        }
+        Object tag = checkedView.getTag();
+        return tag == null ? "" : tag.toString();
     }
 
     private interface LabeledOption {

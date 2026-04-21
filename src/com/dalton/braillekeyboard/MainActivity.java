@@ -57,14 +57,12 @@ import java.nio.charset.StandardCharsets;
  * the UI for the user to enable this keyboard, practice in a text field,
  * navigate to the Settings screen and to navigate to the user manual.
  */
-public class MainActivity extends Activity
-        implements BrailleParser.BrailleParserListener {
+public class MainActivity extends Activity {
     private static final int BLUETOOTH_CONNECT_REQUEST = 1;
     private static final int REQUEST_EXPORT_APP_SETTINGS_FILE = 10;
     private static final int REQUEST_IMPORT_APP_SETTINGS_FILE = 11;
 
     private volatile boolean updateCheckInProgress;
-    private BrailleParser brailleParser;
     private boolean wizardAutoLaunched;
     private boolean startupAutoCheckTriggered;
     private boolean pendingCrashPromptShown;
@@ -83,7 +81,6 @@ public class MainActivity extends Activity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        brailleParser = new BrailleParser(this, this);
         maybeRequestBluetoothPermission();
         updateUIStates();
         maybeLaunchSetupWizard();
@@ -111,15 +108,6 @@ public class MainActivity extends Activity
             updateDownloadDialog.dismiss();
             updateDownloadDialog = null;
         }
-        if (brailleParser != null) {
-            brailleParser.destroy();
-            brailleParser = null;
-        }
-    }
-
-    @Override
-    public void onTranslatorReady(int status) {
-        updateUIStates();
     }
 
     private void maybeRequestBluetoothPermission() {
@@ -199,34 +187,11 @@ public class MainActivity extends Activity
         }
     }
 
-    public void onUserProfileSetup(View view) {
-        Intent intent = new Intent(this, UserProfileSetupActivity.class);
-        if (canStartActivity(intent)) {
-            startActivity(intent);
-        }
-    }
-
     public void onBrailleProfiles(View view) {
         Intent intent = new Intent(this, BrailleProfilesActivity.class);
         if (canStartActivity(intent)) {
             startActivity(intent);
         }
-    }
-
-    public void onNextBrailleProfile(View view) {
-        BrailleUserProfiles.Profile profile = BrailleUserProfiles
-                .cycleToNextProfile(this);
-        if (profile == null) {
-            Toast.makeText(this, R.string.braille_profiles_none,
-                    Toast.LENGTH_LONG).show();
-            return;
-        }
-        if (brailleParser != null) {
-            brailleParser.setTranslator(this);
-        }
-        Toast.makeText(this, getString(R.string.braille_profiles_applied,
-                profile.name), Toast.LENGTH_LONG).show();
-        updateUIStates();
     }
 
     public void onAppSettings(View view) {

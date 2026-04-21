@@ -340,84 +340,19 @@ public class BrailleDisplayActivity extends Activity {
     }
 
     public void onExportBrailleProfiles(View view) {
-        ClipboardManager clipboard = (ClipboardManager) getSystemService(
-                Context.CLIPBOARD_SERVICE);
-        if (clipboard == null) {
-            appendLog(getString(R.string.braille_log_profiles_import_failed));
-            return;
-        }
-        try {
-            String export = BrailleDisplayPreferences.exportProfileBundle(this);
-            clipboard.setPrimaryClip(ClipData.newPlainText(
-                    getString(R.string.braille_profiles_clip_label), export));
-            appendLog(getString(R.string.braille_log_profiles_exported));
-        } catch (JSONException e) {
-            appendLog(getString(R.string.braille_log_profiles_import_failed));
-        }
+        exportBrailleProfilesToClipboard();
     }
 
     public void onImportBrailleProfiles(View view) {
-        ClipboardManager clipboard = (ClipboardManager) getSystemService(
-                Context.CLIPBOARD_SERVICE);
-        if (clipboard == null || !clipboard.hasPrimaryClip()) {
-            appendLog(getString(R.string.braille_log_profiles_import_empty));
-            return;
-        }
-        CharSequence importedText = null;
-        ClipData clip = clipboard.getPrimaryClip();
-        if (clip != null && clip.getItemCount() > 0) {
-            ClipData.Item item = clip.getItemAt(0);
-            if (item != null) {
-                importedText = item.coerceToText(this);
-            }
-        }
-        if (TextUtils.isEmpty(importedText)) {
-            appendLog(getString(R.string.braille_log_profiles_import_empty));
-            return;
-        }
-        try {
-            BrailleDisplayPreferences.ImportResult result =
-                    BrailleDisplayPreferences.importProfileBundle(this,
-                            importedText.toString());
-            if (!result.hadContent) {
-                appendLog(getString(R.string.braille_log_profiles_import_empty));
-                return;
-            }
-            appendLog(getString(R.string.braille_log_profiles_imported,
-                    result.restoredEntries));
-            refreshAll();
-        } catch (JSONException e) {
-            appendLog(getString(R.string.braille_log_profiles_import_failed));
-        }
+        importBrailleProfilesFromClipboard();
     }
 
     public void onShareBrailleProfiles(View view) {
-        try {
-            String export = BrailleDisplayPreferences.exportProfileBundle(this);
-            Intent intent = new Intent(Intent.ACTION_SEND);
-            intent.setType("application/json");
-            intent.putExtra(Intent.EXTRA_SUBJECT,
-                    getString(R.string.braille_profiles_clip_label));
-            intent.putExtra(Intent.EXTRA_TEXT, export);
-            Intent chooser = Intent.createChooser(intent,
-                    getString(R.string.braille_share_profiles));
-            if (canStartActivity(chooser)) {
-                startActivity(chooser);
-            } else if (canStartActivity(intent)) {
-                startActivity(intent);
-            } else {
-                appendLog(getString(R.string.braille_log_profiles_share_failed));
-            }
-        } catch (JSONException e) {
-            appendLog(getString(R.string.braille_log_profiles_share_failed));
-        }
+        shareBrailleProfiles();
     }
 
     public void onExportBrailleProfilesToFile(View view) {
-        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("application/json");
-        intent.putExtra(Intent.EXTRA_TITLE, "braille-display-profiles.json");
+        Intent intent = createProfilesExportIntent();
         if (canStartActivity(intent)) {
             startActivityForResult(intent, REQUEST_EXPORT_PROFILES_FILE);
         } else {
@@ -426,9 +361,7 @@ public class BrailleDisplayActivity extends Activity {
     }
 
     public void onImportBrailleProfilesFromFile(View view) {
-        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("application/json");
+        Intent intent = createProfilesImportIntent();
         if (canStartActivity(intent)) {
             startActivityForResult(intent, REQUEST_IMPORT_PROFILES_FILE);
         } else {
@@ -570,34 +503,7 @@ public class BrailleDisplayActivity extends Activity {
             return;
         }
         displayClient = new DisplayClient(this);
-        displayClient.setOnConnectionStateChangeListener(
-                new Display.OnConnectionStateChangeListener() {
-                    @Override
-                    public void onConnectionStateChanged(int state) {
-                        statusView.setText(formatConnectionState(state));
-                        updateDisplayProperties();
-                        refreshServiceSection();
-                        appendLog(getString(R.string.braille_log_state_changed,
-                                formatConnectionState(state)));
-                    }
-                });
-        displayClient.setOnConnectionChangeProgressListener(
-                new Display.OnConnectionChangeProgressListener() {
-                    @Override
-                    public void onConnectionChangeProgress(String description) {
-                        progressView.setText(description == null
-                                ? getString(R.string.braille_progress_idle)
-                                : description);
-                    }
-                });
-        displayClient.setOnInputEventListener(
-                new Display.OnInputEventListener() {
-                    @Override
-                    public void onInputEvent(BrailleInputEvent inputEvent) {
-                        commandView.setText(buildCommandStatus(inputEvent));
-                        appendLog(formatInputEvent(inputEvent));
-                    }
-                });
+        bindDisplayClientListeners();
     }
 
     private void refreshAll() {
@@ -1271,22 +1177,180 @@ public class BrailleDisplayActivity extends Activity {
                 && intent.resolveActivity(getPackageManager()) != null;
     }
 
-    private void exportProfilesToUri(Uri uri) {
-        java.io.OutputStream stream = null;
+    private void bindDisplayClientListeners() {
+        displayClient.setOnConnectionStateChangeListener(
+                new Display.OnConnectionStateChangeListener() {
+                    @Override
+                    public void onConnectionStateChanged(int state) {
+                        handleConnectionStateChanged(state);
+                    }
+                });
+        displayClient.setOnConnectionChangeProgressListener(
+                new Display.OnConnectionChangeProgressListener() {
+                    @Override
+                    public void onConnectionChangeProgress(String description) {
+                        progressView.setText(description == null
+                                ? getString(R.string.braille_progress_idle)
+                                : description);
+                    }
+                });
+        displayClient.setOnInputEventListener(
+                new Display.OnInputEventListener() {
+                    @Override
+                    public void onInputEvent(BrailleInputEvent inputEvent) {
+                        commandView.setText(buildCommandStatus(inputEvent));
+                        appendLog(formatInputEvent(inputEvent));
+                    }
+                });
+    }
+
+    private void handleConnectionStateChanged(int state) {
+        statusView.setText(formatConnectionState(state));
+        updateDisplayProperties();
+        refreshServiceSection();
+        appendLog(getString(R.string.braille_log_state_changed,
+                formatConnectionState(state)));
+    }
+
+    private void exportBrailleProfilesToClipboard() {
+        ClipboardManager clipboard = getClipboardManager();
+        if (clipboard == null) {
+            appendLog(getString(R.string.braille_log_profiles_import_failed));
+            return;
+        }
         try {
             String export = BrailleDisplayPreferences.exportProfileBundle(this);
-            stream = getContentResolver().openOutputStream(uri);
-            if (stream == null) {
+            clipboard.setPrimaryClip(ClipData.newPlainText(
+                    getString(R.string.braille_profiles_clip_label), export));
+            appendLog(getString(R.string.braille_log_profiles_exported));
+        } catch (JSONException e) {
+            appendLog(getString(R.string.braille_log_profiles_import_failed));
+        }
+    }
+
+    private void importBrailleProfilesFromClipboard() {
+        ClipboardManager clipboard = getClipboardManager();
+        CharSequence importedText = getClipboardText(clipboard);
+        if (TextUtils.isEmpty(importedText)) {
+            appendLog(getString(R.string.braille_log_profiles_import_empty));
+            return;
+        }
+        try {
+            BrailleDisplayPreferences.ImportResult result =
+                    BrailleDisplayPreferences.importProfileBundle(this,
+                            importedText.toString());
+            if (!result.hadContent) {
+                appendLog(getString(R.string.braille_log_profiles_import_empty));
+                return;
+            }
+            appendLog(getString(R.string.braille_log_profiles_imported,
+                    result.restoredEntries));
+            refreshAll();
+        } catch (JSONException e) {
+            appendLog(getString(R.string.braille_log_profiles_import_failed));
+        }
+    }
+
+    private void shareBrailleProfiles() {
+        try {
+            String export = BrailleDisplayPreferences.exportProfileBundle(this);
+            Intent intent = new Intent(Intent.ACTION_SEND);
+            intent.setType("application/json");
+            intent.putExtra(Intent.EXTRA_SUBJECT,
+                    getString(R.string.braille_profiles_clip_label));
+            intent.putExtra(Intent.EXTRA_TEXT, export);
+            Intent chooser = Intent.createChooser(intent,
+                    getString(R.string.braille_share_profiles));
+            if (canStartActivity(chooser)) {
+                startActivity(chooser);
+            } else if (canStartActivity(intent)) {
+                startActivity(intent);
+            } else {
+                appendLog(getString(R.string.braille_log_profiles_share_failed));
+            }
+        } catch (JSONException e) {
+            appendLog(getString(R.string.braille_log_profiles_share_failed));
+        }
+    }
+
+    private Intent createProfilesExportIntent() {
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("application/json");
+        intent.putExtra(Intent.EXTRA_TITLE, "braille-display-profiles.json");
+        return intent;
+    }
+
+    private Intent createProfilesImportIntent() {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("application/json");
+        return intent;
+    }
+
+    private ClipboardManager getClipboardManager() {
+        return (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+    }
+
+    private CharSequence getClipboardText(ClipboardManager clipboard) {
+        if (clipboard == null || !clipboard.hasPrimaryClip()) {
+            return null;
+        }
+        ClipData clip = clipboard.getPrimaryClip();
+        if (clip == null || clip.getItemCount() <= 0) {
+            return null;
+        }
+        ClipData.Item item = clip.getItemAt(0);
+        return item == null ? null : item.coerceToText(this);
+    }
+
+    private void exportProfilesToUri(Uri uri) {
+        try {
+            String export = BrailleDisplayPreferences.exportProfileBundle(this);
+            if (!writeTextToUri(uri, export)) {
                 appendLog(getString(R.string.braille_log_profiles_file_export_failed));
                 return;
             }
-            stream.write(export.getBytes(StandardCharsets.UTF_8));
             appendLog(getString(R.string.braille_log_profiles_file_exported,
                     uri.toString()));
-        } catch (IOException e) {
-            appendLog(getString(R.string.braille_log_profiles_file_export_failed));
         } catch (JSONException e) {
             appendLog(getString(R.string.braille_log_profiles_file_export_failed));
+        }
+    }
+
+    private void importProfilesFromUri(Uri uri) {
+        try {
+            String importedText = readTextFromUri(uri);
+            if (importedText == null) {
+                appendLog(getString(R.string.braille_log_profiles_file_import_failed));
+                return;
+            }
+            BrailleDisplayPreferences.ImportResult result =
+                    BrailleDisplayPreferences.importProfileBundle(this,
+                            importedText);
+            if (!result.hadContent) {
+                appendLog(getString(R.string.braille_log_profiles_import_empty));
+                return;
+            }
+            appendLog(getString(R.string.braille_log_profiles_file_imported,
+                    result.restoredEntries, uri.toString()));
+            refreshAll();
+        } catch (JSONException e) {
+            appendLog(getString(R.string.braille_log_profiles_file_import_failed));
+        }
+    }
+
+    private boolean writeTextToUri(Uri uri, String text) {
+        java.io.OutputStream stream = null;
+        try {
+            stream = getContentResolver().openOutputStream(uri);
+            if (stream == null) {
+                return false;
+            }
+            stream.write(text.getBytes(StandardCharsets.UTF_8));
+            return true;
+        } catch (IOException e) {
+            return false;
         } finally {
             if (stream != null) {
                 try {
@@ -1298,13 +1362,12 @@ public class BrailleDisplayActivity extends Activity {
         }
     }
 
-    private void importProfilesFromUri(Uri uri) {
+    private String readTextFromUri(Uri uri) {
         java.io.InputStream stream = null;
         try {
             stream = getContentResolver().openInputStream(uri);
             if (stream == null) {
-                appendLog(getString(R.string.braille_log_profiles_file_import_failed));
-                return;
+                return null;
             }
             java.io.ByteArrayOutputStream output = new java.io.ByteArrayOutputStream();
             byte[] buffer = new byte[4096];
@@ -1312,20 +1375,9 @@ public class BrailleDisplayActivity extends Activity {
             while ((read = stream.read(buffer)) >= 0) {
                 output.write(buffer, 0, read);
             }
-            BrailleDisplayPreferences.ImportResult result =
-                    BrailleDisplayPreferences.importProfileBundle(this,
-                            output.toString(StandardCharsets.UTF_8.name()));
-            if (!result.hadContent) {
-                appendLog(getString(R.string.braille_log_profiles_import_empty));
-                return;
-            }
-            appendLog(getString(R.string.braille_log_profiles_file_imported,
-                    result.restoredEntries, uri.toString()));
-            refreshAll();
+            return output.toString(StandardCharsets.UTF_8.name());
         } catch (IOException e) {
-            appendLog(getString(R.string.braille_log_profiles_file_import_failed));
-        } catch (JSONException e) {
-            appendLog(getString(R.string.braille_log_profiles_file_import_failed));
+            return null;
         } finally {
             if (stream != null) {
                 try {

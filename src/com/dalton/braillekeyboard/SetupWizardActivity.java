@@ -362,6 +362,36 @@ public class SetupWizardActivity extends Activity
     }
 
     private void bindListeners() {
+        bindKeyboardListeners();
+        bindProfileListeners();
+        bindTtsListeners();
+    }
+
+    private void bindStoredValues() {
+        bindingValues = true;
+        try {
+            bindStoredKeyboardValues();
+            bindStoredProfileValues();
+            if (saveProfileCheckBox != null) {
+                saveProfileCheckBox.setChecked(true);
+            }
+            if (TextUtils.isEmpty(profileNameInputView == null ? null
+                    : profileNameInputView.getText())) {
+                if (profileNameInputView != null) {
+                    profileNameInputView.setText(getString(
+                            R.string.user_profile_setup_default_profile_name_custom));
+                }
+            }
+            populateTableSpinners();
+            populateEngineSpinner();
+            setupSeekBarValues();
+            rebuildTtsForEngine(getSelectedEngineName());
+        } finally {
+            bindingValues = false;
+        }
+    }
+
+    private void bindKeyboardListeners() {
         brailleTypeSpinner.setOnItemSelectedListener(
                 new AdapterView.OnItemSelectedListener() {
                     @Override
@@ -387,53 +417,10 @@ public class SetupWizardActivity extends Activity
                     public void onNothingSelected(AdapterView<?> parent) {
                     }
                 });
-
-        literaryTableSpinner.setOnItemSelectedListener(
-                new AdapterView.OnItemSelectedListener() {
-                    @Override
-                    public void onItemSelected(AdapterView<?> parent, View view,
-                            int position, long id) {
-                        if (bindingValues || position < 0
-                                || position >= literaryTables.size()) {
-                            return;
-                        }
-                        Options.writeStringPreference(SetupWizardActivity.this,
-                                R.string.pref_braille_literary_table_key,
-                                literaryTables.get(position).id);
-                        if (brailleParser != null) {
-                            brailleParser.setTranslator(SetupWizardActivity.this);
-                        }
-                        refreshStatuses();
-                    }
-
-                    @Override
-                    public void onNothingSelected(AdapterView<?> parent) {
-                    }
-                });
-
-        computerTableSpinner.setOnItemSelectedListener(
-                new AdapterView.OnItemSelectedListener() {
-                    @Override
-                    public void onItemSelected(AdapterView<?> parent, View view,
-                            int position, long id) {
-                        if (bindingValues || position < 0
-                                || position >= computerTables.size()) {
-                            return;
-                        }
-                        Options.writeStringPreference(SetupWizardActivity.this,
-                                R.string.pref_braille_computer_table_key,
-                                computerTables.get(position).id);
-                        if (brailleParser != null) {
-                            brailleParser.setTranslator(SetupWizardActivity.this);
-                        }
-                        refreshStatuses();
-                    }
-
-                    @Override
-                    public void onNothingSelected(AdapterView<?> parent) {
-                    }
-                });
-
+        bindTableSelectionListener(literaryTableSpinner, literaryTables,
+                R.string.pref_braille_literary_table_key);
+        bindTableSelectionListener(computerTableSpinner, computerTables,
+                R.string.pref_braille_computer_table_key);
         keyboardLayoutSpinner.setOnItemSelectedListener(
                 new SimpleItemSelectedListener() {
                     @Override
@@ -444,22 +431,16 @@ public class SetupWizardActivity extends Activity
                         refreshStatuses();
                     }
                 });
-
         keyboardStyleSpinner.setOnItemSelectedListener(
                 new SimpleItemSelectedListener() {
                     @Override
                     public void onItemSelected(int position) {
-                        String value = getString(position == 1
-                                ? R.string.pref_keyboard_style_slate_value
-                                : position == 2
-                                        ? R.string.pref_keyboard_style_top_bottom_value
-                                        : R.string.pref_keyboard_style_normal_value);
                         Options.writeStringPreference(SetupWizardActivity.this,
-                                R.string.pref_keyboard_style_key, value);
+                                R.string.pref_keyboard_style_key,
+                                getKeyboardStyleValue(position));
                         refreshStatuses();
                     }
                 });
-
         keyboardEchoSpinner.setOnItemSelectedListener(
                 new SimpleItemSelectedListener() {
                     @Override
@@ -470,7 +451,9 @@ public class SetupWizardActivity extends Activity
                         refreshStatuses();
                     }
                 });
+    }
 
+    private void bindProfileListeners() {
         CompoundButton.OnCheckedChangeListener profileListener
                 = new CompoundButton.OnCheckedChangeListener() {
                     @Override
@@ -483,31 +466,17 @@ public class SetupWizardActivity extends Activity
                         refreshStatuses();
                     }
                 };
-        if (misspellingsCheckBox != null) {
-            misspellingsCheckBox.setOnCheckedChangeListener(profileListener);
-        }
-        if (doubleSpaceCheckBox != null) {
-            doubleSpaceCheckBox.setOnCheckedChangeListener(profileListener);
-        }
-        if (autoCapsCheckBox != null) {
-            autoCapsCheckBox.setOnCheckedChangeListener(profileListener);
-        }
-        if (voiceShortcutCheckBox != null) {
-            voiceShortcutCheckBox.setOnCheckedChangeListener(profileListener);
-        }
-        if (talkBackModeCheckBox != null) {
-            talkBackModeCheckBox.setOnCheckedChangeListener(profileListener);
-        }
-        if (autoUpdatesCheckBox != null) {
-            autoUpdatesCheckBox.setOnCheckedChangeListener(profileListener);
-        }
-        if (crashPromptCheckBox != null) {
-            crashPromptCheckBox.setOnCheckedChangeListener(profileListener);
-        }
-        if (usesDisplayCheckBox != null) {
-            usesDisplayCheckBox.setOnCheckedChangeListener(profileListener);
-        }
+        bindCheckedChangeListener(misspellingsCheckBox, profileListener);
+        bindCheckedChangeListener(doubleSpaceCheckBox, profileListener);
+        bindCheckedChangeListener(autoCapsCheckBox, profileListener);
+        bindCheckedChangeListener(voiceShortcutCheckBox, profileListener);
+        bindCheckedChangeListener(talkBackModeCheckBox, profileListener);
+        bindCheckedChangeListener(autoUpdatesCheckBox, profileListener);
+        bindCheckedChangeListener(crashPromptCheckBox, profileListener);
+        bindCheckedChangeListener(usesDisplayCheckBox, profileListener);
+    }
 
+    private void bindTtsListeners() {
         ttsEngineSpinner.setOnItemSelectedListener(
                 new AdapterView.OnItemSelectedListener() {
                     @Override
@@ -529,7 +498,6 @@ public class SetupWizardActivity extends Activity
                     public void onNothingSelected(AdapterView<?> parent) {
                     }
                 });
-
         ttsVoiceSpinner.setOnItemSelectedListener(
                 new AdapterView.OnItemSelectedListener() {
                     @Override
@@ -553,110 +521,66 @@ public class SetupWizardActivity extends Activity
                 });
     }
 
-    private void bindStoredValues() {
-        bindingValues = true;
-        try {
-            BrailleParser.BrailleType brailleType = brailleParser == null
-                    ? BrailleParser.BrailleType.LITERARY
-                    : brailleParser.getBrailleType(this);
-            brailleTypeSpinner.setSelection(brailleType
-                    == BrailleParser.BrailleType.COMPUTER ? 1 : 0);
-            syncKeyboardDotsWithBrailleType(brailleType);
-            int keyboardType = Options.getIntPreference(this,
-                    R.string.pref_default_keyboard_key,
-                    getString(R.string.pref_default_keyboard_default));
-            keyboardLayoutSpinner.setSelection(Math.max(0,
-                    Math.min(keyboardType, 2)));
-            String keyboardStyle = Options.getStringPreference(this,
-                    R.string.pref_keyboard_style_key,
-                    getString(R.string.pref_keyboard_style_normal_value));
-            int keyboardStyleSelection = 0;
-            if (TextUtils.equals(keyboardStyle,
-                    getString(R.string.pref_keyboard_style_slate_value))) {
-                keyboardStyleSelection = 1;
-            } else if (TextUtils.equals(keyboardStyle,
-                    getString(R.string.pref_keyboard_style_top_bottom_value))) {
-                keyboardStyleSelection = 2;
-            }
-            keyboardStyleSpinner.setSelection(keyboardStyleSelection);
+    private void bindStoredKeyboardValues() {
+        BrailleParser.BrailleType brailleType = brailleParser == null
+                ? BrailleParser.BrailleType.LITERARY
+                : brailleParser.getBrailleType(this);
+        brailleTypeSpinner.setSelection(brailleType
+                == BrailleParser.BrailleType.COMPUTER ? 1 : 0);
+        syncKeyboardDotsWithBrailleType(brailleType);
+        int keyboardType = Options.getIntPreference(this,
+                R.string.pref_default_keyboard_key,
+                getString(R.string.pref_default_keyboard_default));
+        keyboardLayoutSpinner.setSelection(Math.max(0,
+                Math.min(keyboardType, 2)));
+        keyboardStyleSpinner.setSelection(getKeyboardStyleSelection());
+        int echoValue = Options.getIntPreference(this,
+                R.string.pref_echo_feedback_key,
+                Options.KeyboardEcho.CHARACTER.getValue());
+        keyboardEchoSpinner.setSelection(Math.max(0,
+                Math.min(echoValue, 3)));
+    }
 
-            int echoValue = Options.getIntPreference(this,
-                    R.string.pref_echo_feedback_key,
-                    Options.KeyboardEcho.CHARACTER.getValue());
-            keyboardEchoSpinner.setSelection(Math.max(0,
-                    Math.min(echoValue, 3)));
-
-            if (misspellingsCheckBox != null) {
-                misspellingsCheckBox.setChecked(Options.getBooleanPreference(this,
-                        R.string.pref_echo_misspellings_key,
-                        Boolean.parseBoolean(getString(
-                                R.string.pref_echo_misspellings_default))));
-            }
-            if (doubleSpaceCheckBox != null) {
-                doubleSpaceCheckBox.setChecked(Options.getBooleanPreference(this,
-                        R.string.pref_double_space_period_key,
-                        Boolean.parseBoolean(getString(
-                                R.string.pref_double_space_period_default))));
-            }
-            if (autoCapsCheckBox != null) {
-                autoCapsCheckBox.setChecked(Options.getBooleanPreference(this,
-                        R.string.pref_auto_caps_key,
-                        Boolean.parseBoolean(getString(
-                                R.string.pref_auto_caps_default))));
-            }
-            if (voiceShortcutCheckBox != null) {
-                voiceShortcutCheckBox.setChecked(Options.getBooleanPreference(this,
-                        R.string.pref_voice_shortcut_key,
-                        Boolean.parseBoolean(getString(
-                                R.string.pref_voice_shortcut_default))));
-            }
-            if (talkBackModeCheckBox != null) {
-                talkBackModeCheckBox.setChecked(Options.getBooleanPreference(this,
-                        R.string.pref_talkback_braille_mode_key,
-                        Boolean.parseBoolean(getString(
-                                R.string.pref_talkback_braille_mode_default))));
-            }
-            if (autoUpdatesCheckBox != null) {
-                autoUpdatesCheckBox.setChecked(Options.getBooleanPreference(this,
-                        R.string.pref_auto_check_updates_key,
-                        Boolean.parseBoolean(getString(
-                                R.string.pref_auto_check_updates_default))));
-            }
-            if (crashPromptCheckBox != null) {
-                crashPromptCheckBox.setChecked(Options.getBooleanPreference(this,
-                        R.string.pref_prompt_crash_report_key,
-                        Boolean.parseBoolean(getString(
-                                R.string.pref_prompt_crash_report_default))));
-            }
-            if (usesDisplayCheckBox != null) {
-                usesDisplayCheckBox.setChecked(Options.getBooleanPreference(this,
-                        R.string.pref_user_uses_braille_display_key,
-                        Boolean.parseBoolean(getString(
-                                R.string.pref_user_uses_braille_display_default))));
-            }
-            if (saveProfileCheckBox != null) {
-                saveProfileCheckBox.setChecked(true);
-            }
-            if (TextUtils.isEmpty(profileNameInputView == null ? null
-                    : profileNameInputView.getText())) {
-                if (profileNameInputView != null) {
-                    profileNameInputView.setText(getString(
-                            R.string.user_profile_setup_default_profile_name_custom));
-                }
-            }
-            populateTableSpinners();
-            populateEngineSpinner();
-            setupSeekBarValues();
-            rebuildTtsForEngine(getSelectedEngineName());
-        } finally {
-            bindingValues = false;
-        }
+    private void bindStoredProfileValues() {
+        setCheckedFromPreference(misspellingsCheckBox,
+                R.string.pref_echo_misspellings_key,
+                R.string.pref_echo_misspellings_default);
+        setCheckedFromPreference(doubleSpaceCheckBox,
+                R.string.pref_double_space_period_key,
+                R.string.pref_double_space_period_default);
+        setCheckedFromPreference(autoCapsCheckBox,
+                R.string.pref_auto_caps_key,
+                R.string.pref_auto_caps_default);
+        setCheckedFromPreference(voiceShortcutCheckBox,
+                R.string.pref_voice_shortcut_key,
+                R.string.pref_voice_shortcut_default);
+        setCheckedFromPreference(talkBackModeCheckBox,
+                R.string.pref_talkback_braille_mode_key,
+                R.string.pref_talkback_braille_mode_default);
+        setCheckedFromPreference(autoUpdatesCheckBox,
+                R.string.pref_auto_check_updates_key,
+                R.string.pref_auto_check_updates_default);
+        setCheckedFromPreference(crashPromptCheckBox,
+                R.string.pref_prompt_crash_report_key,
+                R.string.pref_prompt_crash_report_default);
+        setCheckedFromPreference(usesDisplayCheckBox,
+                R.string.pref_user_uses_braille_display_key,
+                R.string.pref_user_uses_braille_display_default);
     }
 
     private void refreshStatuses() {
         boolean enabled = isKeyboardEnabled();
         boolean isDefault = isKeyboardDefault();
         boolean accessibilityEnabled = isBrailleAccessibilityEnabled();
+        refreshKeyboardStatuses(enabled, isDefault);
+        refreshCalibrationStatus();
+        refreshAccessibilityStatuses(accessibilityEnabled);
+        refreshProfileStatus();
+        updatePermissionButtons();
+        updateNavigationButtons();
+    }
+
+    private void refreshKeyboardStatuses(boolean enabled, boolean isDefault) {
         if (keyboardStatusView != null) {
             keyboardStatusView.setText(enabled
                     ? R.string.setup_status_keyboard_enabled
@@ -670,13 +594,19 @@ public class SetupWizardActivity extends Activity
         if (brailleStatusView != null) {
             brailleStatusView.setText(buildBrailleTranslationStatus());
         }
-        if (calibrationStatusView != null) {
-            int savedCount = KeyboardCalibrationUtils.countSavedCalibrations(this);
-            calibrationStatusView.setText(savedCount > 0
-                    ? getString(R.string.setup_status_calibration_saved,
-                            savedCount)
-                    : getString(R.string.setup_status_calibration_missing));
+    }
+
+    private void refreshCalibrationStatus() {
+        if (calibrationStatusView == null) {
+            return;
         }
+        int savedCount = KeyboardCalibrationUtils.countSavedCalibrations(this);
+        calibrationStatusView.setText(savedCount > 0
+                ? getString(R.string.setup_status_calibration_saved, savedCount)
+                : getString(R.string.setup_status_calibration_missing));
+    }
+
+    private void refreshAccessibilityStatuses(boolean accessibilityEnabled) {
         if (accessibilityStatusView != null) {
             accessibilityStatusView.setText(buildAccessibilityStatus(
                     accessibilityEnabled));
@@ -684,11 +614,12 @@ public class SetupWizardActivity extends Activity
         if (permissionsStatusView != null) {
             permissionsStatusView.setText(buildPermissionsStatus());
         }
+    }
+
+    private void refreshProfileStatus() {
         if (profileStatusView != null) {
             profileStatusView.setText(buildProfileStatus());
         }
-        updatePermissionButtons();
-        updateNavigationButtons();
     }
 
     private void updatePermissionButtons() {
@@ -889,16 +820,11 @@ public class SetupWizardActivity extends Activity
         String engine = getSelectedEngineLabel();
         return getString(R.string.setup_status_profile_summary,
                 echoText,
-                yesNo(misspellingsCheckBox != null
-                        && misspellingsCheckBox.isChecked()),
-                yesNo(doubleSpaceCheckBox != null
-                        && doubleSpaceCheckBox.isChecked()),
-                yesNo(talkBackModeCheckBox != null
-                        && talkBackModeCheckBox.isChecked()),
-                yesNo(autoUpdatesCheckBox != null
-                        && autoUpdatesCheckBox.isChecked()),
-                yesNo(crashPromptCheckBox != null
-                        && crashPromptCheckBox.isChecked()),
+                yesNo(isChecked(misspellingsCheckBox)),
+                yesNo(isChecked(doubleSpaceCheckBox)),
+                yesNo(isChecked(talkBackModeCheckBox)),
+                yesNo(isChecked(autoUpdatesCheckBox)),
+                yesNo(isChecked(crashPromptCheckBox)),
                 engine);
     }
 
@@ -914,29 +840,27 @@ public class SetupWizardActivity extends Activity
 
     private void persistProfilePreferences() {
         Options.writeBooleanPreference(this,
-                R.string.pref_echo_misspellings_key,
-                misspellingsCheckBox != null && misspellingsCheckBox.isChecked());
+                R.string.pref_echo_misspellings_key, isChecked(
+                        misspellingsCheckBox));
         Options.writeBooleanPreference(this,
-                R.string.pref_double_space_period_key,
-                doubleSpaceCheckBox != null && doubleSpaceCheckBox.isChecked());
+                R.string.pref_double_space_period_key, isChecked(
+                        doubleSpaceCheckBox));
         Options.writeBooleanPreference(this, R.string.pref_auto_caps_key,
-                autoCapsCheckBox != null && autoCapsCheckBox.isChecked());
+                isChecked(autoCapsCheckBox));
         Options.writeBooleanPreference(this, R.string.pref_voice_shortcut_key,
-                voiceShortcutCheckBox != null
-                        && voiceShortcutCheckBox.isChecked());
+                isChecked(voiceShortcutCheckBox));
         Options.writeBooleanPreference(this,
-                R.string.pref_talkback_braille_mode_key,
-                talkBackModeCheckBox != null
-                        && talkBackModeCheckBox.isChecked());
+                R.string.pref_talkback_braille_mode_key, isChecked(
+                        talkBackModeCheckBox));
         Options.writeBooleanPreference(this,
-                R.string.pref_auto_check_updates_key,
-                autoUpdatesCheckBox != null && autoUpdatesCheckBox.isChecked());
+                R.string.pref_auto_check_updates_key, isChecked(
+                        autoUpdatesCheckBox));
         Options.writeBooleanPreference(this,
-                R.string.pref_prompt_crash_report_key,
-                crashPromptCheckBox != null && crashPromptCheckBox.isChecked());
+                R.string.pref_prompt_crash_report_key, isChecked(
+                        crashPromptCheckBox));
         Options.writeBooleanPreference(this,
-                R.string.pref_user_uses_braille_display_key,
-                usesDisplayCheckBox != null && usesDisplayCheckBox.isChecked());
+                R.string.pref_user_uses_braille_display_key, isChecked(
+                        usesDisplayCheckBox));
     }
 
     private void populateTableSpinners() {
@@ -1053,6 +977,74 @@ public class SetupWizardActivity extends Activity
         adapter.setDropDownViewResource(
                 android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
+    }
+
+    private void bindTableSelectionListener(Spinner spinner,
+            final List<TableEntry> entries, final int preferenceKey) {
+        spinner.setOnItemSelectedListener(
+                new AdapterView.OnItemSelectedListener() {
+                    @Override
+                    public void onItemSelected(AdapterView<?> parent, View view,
+                            int position, long id) {
+                        if (bindingValues || position < 0
+                                || position >= entries.size()) {
+                            return;
+                        }
+                        Options.writeStringPreference(SetupWizardActivity.this,
+                                preferenceKey, entries.get(position).id);
+                        if (brailleParser != null) {
+                            brailleParser.setTranslator(SetupWizardActivity.this);
+                        }
+                        refreshStatuses();
+                    }
+
+                    @Override
+                    public void onNothingSelected(AdapterView<?> parent) {
+                    }
+                });
+    }
+
+    private void bindCheckedChangeListener(CheckBox checkBox,
+            CompoundButton.OnCheckedChangeListener listener) {
+        if (checkBox != null) {
+            checkBox.setOnCheckedChangeListener(listener);
+        }
+    }
+
+    private void setCheckedFromPreference(CheckBox checkBox, int keyRes,
+            int defaultRes) {
+        if (checkBox == null) {
+            return;
+        }
+        checkBox.setChecked(Options.getBooleanPreference(this, keyRes,
+                Boolean.parseBoolean(getString(defaultRes))));
+    }
+
+    private int getKeyboardStyleSelection() {
+        String keyboardStyle = Options.getStringPreference(this,
+                R.string.pref_keyboard_style_key,
+                getString(R.string.pref_keyboard_style_normal_value));
+        if (TextUtils.equals(keyboardStyle,
+                getString(R.string.pref_keyboard_style_slate_value))) {
+            return 1;
+        }
+        if (TextUtils.equals(keyboardStyle,
+                getString(R.string.pref_keyboard_style_top_bottom_value))) {
+            return 2;
+        }
+        return 0;
+    }
+
+    private String getKeyboardStyleValue(int selection) {
+        return getString(selection == 1
+                ? R.string.pref_keyboard_style_slate_value
+                : selection == 2
+                        ? R.string.pref_keyboard_style_top_bottom_value
+                        : R.string.pref_keyboard_style_normal_value);
+    }
+
+    private boolean isChecked(CheckBox checkBox) {
+        return checkBox != null && checkBox.isChecked();
     }
 
     private void setupSeekBar(SeekBar seekBar, final TextView valueView,
