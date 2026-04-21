@@ -55,6 +55,16 @@ import com.googlecode.eyesfree.braille.service.translate.TableList;
  * instance to release system resources.
  */
 public class BrailleParser {
+    private static final Comparator<TableInfo> TABLE_LOCALE_COMPARATOR = new Comparator<TableInfo>() {
+        @Override
+        public int compare(TableInfo o1, TableInfo o2) {
+            String table1 = o1.getLocale().getDisplayLanguage() + " "
+                    + o1.getLocale().getDisplayCountry().trim();
+            String table2 = o2.getLocale().getDisplayLanguage() + " "
+                    + o2.getLocale().getDisplayCountry().trim();
+            return table1.compareTo(table2);
+        }
+    };
 
     // The BrailleTranslator can currently accept back translation requests.
     public static final int STATUS_OK = 1;
@@ -222,25 +232,7 @@ public class BrailleParser {
      */
     public TableInfo getTable(Context context) {
         BrailleType brailleType = getBrailleType(context);
-        String defaultId = getDefaultId(context, brailleType);
-        String id;
-
-        if (brailleType == BrailleType.COMPUTER) {
-            id = sharedPref
-                    .getString(
-                            context.getString(R.string.pref_braille_computer_table_key),
-                            defaultId);
-        } else {
-            id = sharedPref
-                    .getString(
-                            context.getString(R.string.pref_braille_literary_table_key),
-                            defaultId);
-        }
-        if (TextUtils.isEmpty(id)
-                || TextUtils.equals(id,
-                        context.getString(R.string.pref_braille_table_auto))) {
-            id = defaultId;
-        }
+        String id = getSelectedTableId(context, brailleType);
 
         List<TableInfo> tables = getTables(brailleType);
         if (tables == null || tables.isEmpty()) {
@@ -266,21 +258,9 @@ public class BrailleParser {
      * @return The list of tables.
      */
     public List<TableInfo> getTables(BrailleType brailleType) {
-        // Compare tables by locale in alphabetical order.
-        Comparator<TableInfo> comparator = new Comparator<TableInfo>() {
-            @Override
-            public int compare(TableInfo o1, TableInfo o2) {
-                String table1 = o1.getLocale().getDisplayLanguage() + " "
-                        + o1.getLocale().getDisplayCountry().trim();
-                String table2 = o2.getLocale().getDisplayLanguage() + " "
-                        + o2.getLocale().getDisplayCountry().trim();
-                return table1.compareTo(table2);
-            }
-        };
-
         if (tables != null) {
             List<TableInfo> filteredTables = filterTables(tables, brailleType);
-            Collections.sort(filteredTables, comparator);
+            Collections.sort(filteredTables, TABLE_LOCALE_COMPARATOR);
             return filteredTables;
         }
         return null;
@@ -323,9 +303,7 @@ public class BrailleParser {
         // Retrieve the list of tables that can be switched on the fly.
         Set<String> onFly = Options.getStringSetPreference(context,
                 R.string.pref_switch_tables_key, new HashSet<String>());
-        if (onFly == null) {
-            onFly = new HashSet<String>();
-        }
+        onFly = onFly == null ? new HashSet<String>() : onFly;
         // Get the active Braille table.
         TableInfo defaultTable = getTable(context);
 
@@ -355,17 +333,7 @@ public class BrailleParser {
             TableInfo table = tables.get(tablePosition);
             if (onFly.contains(table.getId())) {
                 setTable(context, table);
-
-                // Found a table return a formatted String describing it.
-                String result = String.format(
-                        table.getLocale(),
-                        "%s %s %s",
-                        table.getLocale().getDisplayLanguage(),
-                        table.getLocale().getDisplayCountry(),
-                        table.isEightDot() ? "" : String.format(
-                                context.getString(R.string.grade_table),
-                                table.getGrade()));
-                return result.trim();
+                return describeTable(context, table);
             }
         }
         return null;
@@ -392,19 +360,7 @@ public class BrailleParser {
 
     public String backTranslate(Context context, Byte[] cellBytes,
             String tableIdOverride) {
-        // Convert from a Byte[] to a byte[]O
-        byte[] cells = new byte[cellBytes.length + 2];
-        // Pad the cells so that we have spaces on each size. This makes the
-        // back translation work properly.
-        cells[0] = 0;
-        cells[cells.length - 1] = 0;
-
-        for (int i = 0; i < cellBytes.length; i++) {
-            cells[i + 1] = 0;
-            if (cellBytes[i] != null) { // should never be null
-                cells[i + 1] = cellBytes[i].byteValue();
-            }
-        }
+        byte[] cells = buildPaddedCells(cellBytes);
 
         String text = null;
         BrailleTranslator activeTranslator = resolveTranslator(context,
@@ -473,20 +429,32 @@ public class BrailleParser {
 
     // Called when the BrailleTranslator becomes ready.
     private void ready(Context context, int translatorClientStatus) {
-        if (client != null
-                && translatorClientStatus == TranslatorClient.SUCCESS) {
-            tables = client.getTables();
-            if (tables == null || tables.isEmpty()) {
-                tables = loadFallbackTables(context);
-            }
-            status = STATUS_OK;
+        tables = loadAvailableTables(context, translatorClientStatus);
+        status = resolveReadyStatus(translatorClientStatus);
+        if (status == STATUS_OK) {
             setTranslator(context);
-        } else {
-            tables = loadFallbackTables(context);
-            status = tables == null || tables.isEmpty()
-                    ? STATUS_ERROR : STATUS_TABLE_ERROR;
         }
         listener.onTranslatorReady(status);
+    }
+
+    private List<TableInfo> loadAvailableTables(Context context,
+            int translatorClientStatus) {
+        if (client != null
+                && translatorClientStatus == TranslatorClient.SUCCESS) {
+            List<TableInfo> availableTables = client.getTables();
+            if (availableTables != null && !availableTables.isEmpty()) {
+                return availableTables;
+            }
+        }
+        return loadFallbackTables(context);
+    }
+
+    private int resolveReadyStatus(int translatorClientStatus) {
+        if (translatorClientStatus == TranslatorClient.SUCCESS) {
+            return STATUS_OK;
+        }
+        return tables == null || tables.isEmpty() ? STATUS_ERROR
+                : STATUS_TABLE_ERROR;
     }
 
     private List<TableInfo> loadFallbackTables(Context context) {
@@ -501,8 +469,7 @@ public class BrailleParser {
     // Sets the translator to the active table.
     public boolean setTranslator(Context context) {
         TableInfo table = getTable(context);
-        if (table != null
-                && (status == STATUS_OK || status == STATUS_TABLE_ERROR)) {
+        if (table != null && hasUsableTranslatorStatus()) {
             translator = client.getTranslator(table.getId());
             status = translator == null ? STATUS_TABLE_ERROR : STATUS_OK;
             return true;
@@ -512,7 +479,7 @@ public class BrailleParser {
 
     private BrailleTranslator resolveTranslator(Context context,
             String tableIdOverride) {
-        if (status != STATUS_OK && status != STATUS_TABLE_ERROR) {
+        if (!hasUsableTranslatorStatus()) {
             return null;
         }
         if (tableIdOverride != null && tableIdOverride.length() > 0) {
@@ -567,19 +534,53 @@ public class BrailleParser {
             String id = table.getId().equals(defaultId) ? context
                     .getString(R.string.pref_braille_table_auto) : table
                     .getId();
-            // Update the appropriate preference literary vs computer.
-            if (table.isEightDot()) {
-                editor.putString(context
-                        .getString(R.string.pref_braille_computer_table_key),
-                        id);
-            } else {
-                editor.putString(context
-                        .getString(R.string.pref_braille_literary_table_key),
-                        id);
-            }
+            editor.putString(getTablePreferenceKey(context,
+                    table.isEightDot() ? BrailleType.COMPUTER
+                            : BrailleType.LITERARY), id);
             editor.apply();
             setTranslator(context);
         }
+    }
+
+    private boolean hasUsableTranslatorStatus() {
+        return status == STATUS_OK || status == STATUS_TABLE_ERROR;
+    }
+
+    private String getSelectedTableId(Context context, BrailleType brailleType) {
+        String defaultId = getDefaultId(context, brailleType);
+        String id = sharedPref.getString(getTablePreferenceKey(context,
+                brailleType), defaultId);
+        if (TextUtils.isEmpty(id)
+                || TextUtils.equals(id,
+                        context.getString(R.string.pref_braille_table_auto))) {
+            return defaultId;
+        }
+        return id;
+    }
+
+    private String getTablePreferenceKey(Context context,
+            BrailleType brailleType) {
+        return context.getString(brailleType == BrailleType.COMPUTER
+                ? R.string.pref_braille_computer_table_key
+                : R.string.pref_braille_literary_table_key);
+    }
+
+    private String describeTable(Context context, TableInfo table) {
+        String result = String.format(table.getLocale(), "%s %s %s", table
+                .getLocale().getDisplayLanguage(), table.getLocale()
+                .getDisplayCountry(), table.isEightDot() ? "" : String.format(
+                context.getString(R.string.grade_table), table.getGrade()));
+        return result.trim();
+    }
+
+    private byte[] buildPaddedCells(Byte[] cellBytes) {
+        byte[] cells = new byte[cellBytes.length + 2];
+        cells[0] = 0;
+        cells[cells.length - 1] = 0;
+        for (int i = 0; i < cellBytes.length; i++) {
+            cells[i + 1] = cellBytes[i] != null ? cellBytes[i].byteValue() : 0;
+        }
+        return cells;
     }
 
     // Returns an English readable pattern of the given byte value that

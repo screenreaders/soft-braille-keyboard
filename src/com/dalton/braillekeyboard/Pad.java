@@ -380,46 +380,51 @@ public abstract class Pad {
 
     public void updateKeys(boolean portrait) {
         if (!adaptiveUpdatesEnabled) {
-            for (int i = 0; i < differences.length; i++) {
-                differences[i] = null;
-            }
+            clearDifferences();
             return;
         }
-        XY[] newDiff = new XY[2];
-        newDiff[0] = new XY(0, 0);
-        newDiff[1] = new XY(0, 0);
-        int count[] = { 0, 0 };
-        for (int i = 0; i < differences.length; i++) {
-            int j = getColumn(i) == Column.LEFT ? 0 : 1;
-            if (differences[i] != null) {
-                count[j] += 1;
-                newDiff[j].x += differences[i].x;
-                newDiff[j].y += differences[i].y;
-                differences[i] = null;
-            }
-        }
-        if (count[0] > 0) {
-            newDiff[0].x /= count[0];
-            newDiff[0].y /= count[0];
-        }
-        if (count[1] > 0) {
-            newDiff[1].x /= count[1];
-            newDiff[1].y /= count[1];
-        }
-
-        for (int i = 0; i < keys.size(); i++) {
-            int j = getColumn(i) == Column.LEFT ? 0 : 1;
-            if (keys.get(i) != null) {
-                keys.get(i).update(newDiff[j]);
-            }
-        }
+        applyColumnDiffs(buildAverageColumnDiffs());
     }
 
     public void setAdaptiveUpdatesEnabled(boolean adaptiveUpdatesEnabled) {
         this.adaptiveUpdatesEnabled = adaptiveUpdatesEnabled;
         if (!adaptiveUpdatesEnabled) {
-            for (int i = 0; i < differences.length; i++) {
+            clearDifferences();
+        }
+    }
+
+    private void clearDifferences() {
+        for (int i = 0; i < differences.length; i++) {
+            differences[i] = null;
+        }
+    }
+
+    private XY[] buildAverageColumnDiffs() {
+        XY[] newDiff = { new XY(0, 0), new XY(0, 0) };
+        int[] count = { 0, 0 };
+        for (int i = 0; i < differences.length; i++) {
+            int column = getColumn(i) == Column.LEFT ? 0 : 1;
+            if (differences[i] != null) {
+                count[column] += 1;
+                newDiff[column].x += differences[i].x;
+                newDiff[column].y += differences[i].y;
                 differences[i] = null;
+            }
+        }
+        for (int i = 0; i < newDiff.length; i++) {
+            if (count[i] > 0) {
+                newDiff[i].x /= count[i];
+                newDiff[i].y /= count[i];
+            }
+        }
+        return newDiff;
+    }
+
+    private void applyColumnDiffs(XY[] diffs) {
+        for (int i = 0; i < keys.size(); i++) {
+            int column = getColumn(i) == Column.LEFT ? 0 : 1;
+            if (keys.get(i) != null) {
+                keys.get(i).update(diffs[column]);
             }
         }
     }
@@ -533,11 +538,11 @@ public abstract class Pad {
         }
         int right = 3;
         for (int i = 0; i < right; i++) {
-            Collections.swap(keys, i, right + i);
+            swapIfPossible(i, right + i);
         }
 
         if (keys.size() == 8) {
-            Collections.swap(keys, 6, 7);
+            swapIfPossible(6, 7);
         }
     }
 
@@ -545,8 +550,15 @@ public abstract class Pad {
         if (keys.size() < 6) {
             return;
         }
-        Collections.swap(keys, 0, 2);
-        Collections.swap(keys, 3, 5);
+        swapIfPossible(0, 2);
+        swapIfPossible(3, 5);
+    }
+
+    private void swapIfPossible(int first, int second) {
+        if (first >= 0 && second >= 0 && first < keys.size()
+                && second < keys.size()) {
+            Collections.swap(keys, first, second);
+        }
     }
 
     public static class Coords {
