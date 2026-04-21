@@ -1208,7 +1208,7 @@ public class BrailleDisplayActivity extends Activity {
     }
 
     private void exportBrailleProfilesToClipboard() {
-        ClipboardManager clipboard = getClipboardManager();
+        ClipboardManager clipboard = TextTransferUtils.getClipboardManager(this);
         if (clipboard == null) {
             appendLog(getString(R.string.braille_log_profiles_import_failed));
             return;
@@ -1224,8 +1224,8 @@ public class BrailleDisplayActivity extends Activity {
     }
 
     private void importBrailleProfilesFromClipboard() {
-        ClipboardManager clipboard = getClipboardManager();
-        CharSequence importedText = getClipboardText(clipboard);
+        ClipboardManager clipboard = TextTransferUtils.getClipboardManager(this);
+        CharSequence importedText = TextTransferUtils.getClipboardText(this, clipboard);
         if (TextUtils.isEmpty(importedText)) {
             appendLog(getString(R.string.braille_log_profiles_import_empty));
             return;
@@ -1283,26 +1283,10 @@ public class BrailleDisplayActivity extends Activity {
         return intent;
     }
 
-    private ClipboardManager getClipboardManager() {
-        return (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-    }
-
-    private CharSequence getClipboardText(ClipboardManager clipboard) {
-        if (clipboard == null || !clipboard.hasPrimaryClip()) {
-            return null;
-        }
-        ClipData clip = clipboard.getPrimaryClip();
-        if (clip == null || clip.getItemCount() <= 0) {
-            return null;
-        }
-        ClipData.Item item = clip.getItemAt(0);
-        return item == null ? null : item.coerceToText(this);
-    }
-
     private void exportProfilesToUri(Uri uri) {
         try {
             String export = BrailleDisplayPreferences.exportProfileBundle(this);
-            if (!writeTextToUri(uri, export)) {
+            if (!TextTransferUtils.writeTextToUri(this, uri, export)) {
                 appendLog(getString(R.string.braille_log_profiles_file_export_failed));
                 return;
             }
@@ -1315,7 +1299,7 @@ public class BrailleDisplayActivity extends Activity {
 
     private void importProfilesFromUri(Uri uri) {
         try {
-            String importedText = readTextFromUri(uri);
+            String importedText = TextTransferUtils.readTextFromUri(this, uri);
             if (importedText == null) {
                 appendLog(getString(R.string.braille_log_profiles_file_import_failed));
                 return;
@@ -1335,52 +1319,4 @@ public class BrailleDisplayActivity extends Activity {
         }
     }
 
-    private boolean writeTextToUri(Uri uri, String text) {
-        java.io.OutputStream stream = null;
-        try {
-            stream = getContentResolver().openOutputStream(uri);
-            if (stream == null) {
-                return false;
-            }
-            stream.write(text.getBytes(StandardCharsets.UTF_8));
-            return true;
-        } catch (IOException e) {
-            return false;
-        } finally {
-            if (stream != null) {
-                try {
-                    stream.close();
-                } catch (IOException e) {
-                    // Ignore close failure after export.
-                }
-            }
-        }
-    }
-
-    private String readTextFromUri(Uri uri) {
-        java.io.InputStream stream = null;
-        try {
-            stream = getContentResolver().openInputStream(uri);
-            if (stream == null) {
-                return null;
-            }
-            java.io.ByteArrayOutputStream output = new java.io.ByteArrayOutputStream();
-            byte[] buffer = new byte[4096];
-            int read;
-            while ((read = stream.read(buffer)) >= 0) {
-                output.write(buffer, 0, read);
-            }
-            return output.toString(StandardCharsets.UTF_8.name());
-        } catch (IOException e) {
-            return null;
-        } finally {
-            if (stream != null) {
-                try {
-                    stream.close();
-                } catch (IOException e) {
-                    // Ignore close failure after import.
-                }
-            }
-        }
-    }
 }

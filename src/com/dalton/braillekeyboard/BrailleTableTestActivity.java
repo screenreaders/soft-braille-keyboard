@@ -15,8 +15,6 @@ import com.googlecode.eyesfree.braille.translate.TranslationResult;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
-
 public class BrailleTableTestActivity extends Activity
         implements BrailleParser.BrailleParserListener {
     private static final int MAX_RETRY_ATTEMPTS = 5;
@@ -191,7 +189,7 @@ public class BrailleTableTestActivity extends Activity
                         : R.string.braille_table_test_no_tables)
                 : getString(R.string.braille_table_test_current_value,
                         currentTableIndex + 1, tables.size(),
-                        formatTableLabel(table)));
+                        BrailleTableUiUtils.formatDetailedLabel(this, table)));
     }
 
     private TableInfo getCurrentTable() {
@@ -216,31 +214,6 @@ public class BrailleTableTestActivity extends Activity
             }
         }
         return 0;
-    }
-
-    private String formatTableLabel(TableInfo table) {
-        if (table == null) {
-            return "";
-        }
-        Locale locale = table.getLocale() == null ? Locale.ROOT : table.getLocale();
-        StringBuilder builder = new StringBuilder();
-        String displayName = locale.getDisplayName();
-        if (!TextUtils.isEmpty(displayName)) {
-            builder.append(displayName);
-        } else {
-            builder.append(table.getId());
-        }
-        if (!TextUtils.isEmpty(table.getVariant())) {
-            builder.append(" / ");
-            builder.append(table.getVariant());
-        }
-        builder.append(" / ");
-        builder.append(table.isEightDot()
-                ? getString(R.string.grade_computer)
-                : getString(R.string.grade_table, table.getGrade()));
-        builder.append(" / ");
-        builder.append(table.getId());
-        return builder.toString();
     }
 
     private String formatCells(byte[] cells) {
@@ -315,8 +288,10 @@ public class BrailleTableTestActivity extends Activity
         Collections.sort(tables, new java.util.Comparator<TableInfo>() {
             @Override
             public int compare(TableInfo left, TableInfo right) {
-                return formatTableLabel(left).compareToIgnoreCase(
-                        formatTableLabel(right));
+                return BrailleTableUiUtils.formatDetailedLabel(
+                        BrailleTableTestActivity.this, left).compareToIgnoreCase(
+                        BrailleTableUiUtils.formatDetailedLabel(
+                                BrailleTableTestActivity.this, right));
             }
         });
     }

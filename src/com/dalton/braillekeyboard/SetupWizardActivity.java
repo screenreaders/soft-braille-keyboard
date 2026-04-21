@@ -883,7 +883,8 @@ public class SetupWizardActivity extends Activity
         }
         for (TableInfo info : infos) {
             if (info != null) {
-                target.add(new TableEntry(info.getId(), formatTableLabel(info)));
+                target.add(new TableEntry(info.getId(),
+                        BrailleTableUiUtils.formatWizardLabel(this, info)));
             }
         }
     }
@@ -929,38 +930,6 @@ public class SetupWizardActivity extends Activity
             }
         }
         spinner.setSelection(selection);
-    }
-
-    private String formatTableLabel(TableInfo table) {
-        Locale locale = table == null || table.getLocale() == null
-                ? Locale.getDefault() : table.getLocale();
-        String language = locale.getDisplayLanguage(locale);
-        String country = locale.getDisplayCountry(locale);
-        StringBuilder builder = new StringBuilder();
-        if (!TextUtils.isEmpty(language)) {
-            builder.append(language);
-        }
-        if (!TextUtils.isEmpty(country)) {
-            if (builder.length() > 0) {
-                builder.append(" / ");
-            }
-            builder.append(country);
-        }
-        if (table != null && !table.isEightDot()) {
-            if (builder.length() > 0) {
-                builder.append(" / ");
-            }
-            builder.append(getString(R.string.grade_table, table.getGrade()));
-        } else if (table != null && table.isEightDot()) {
-            if (builder.length() > 0) {
-                builder.append(" / ");
-            }
-            builder.append(getString(R.string.grade_computer));
-        }
-        if (table != null) {
-            builder.append(" / ").append(table.getId());
-        }
-        return builder.toString();
     }
 
     private void bindSimpleSpinner(Spinner spinner, String[] items) {

@@ -1355,39 +1355,39 @@ public class BrailleAccessibilityService extends AccessibilityService
         List<String> roles = new ArrayList<String>();
         CharSequence className = node.getClassName();
         String cls = className == null ? "" : className.toString();
-        if (isHeading(node)) {
+        if (BrailleNodeUtils.isHeading(node)) {
             roles.add(getString(R.string.braille_role_heading));
         }
-        if (isLandmark(node)) {
+        if (BrailleNodeUtils.isLandmark(node)) {
             roles.add(getString(R.string.braille_role_landmark));
         }
-        if (isTable(node)) {
+        if (BrailleNodeUtils.isTable(node)) {
             roles.add(getString(R.string.braille_role_table));
-        } else if (isListLike(node)) {
+        } else if (BrailleNodeUtils.isListLike(node)) {
             roles.add(getString(R.string.braille_role_list));
         } else if (node.getCollectionInfo() != null) {
             roles.add(getString(R.string.braille_role_collection));
         }
-        if (isPager(node)) {
+        if (BrailleNodeUtils.isPager(node)) {
             roles.add(getString(R.string.braille_role_pager));
         }
         if (node.isEditable()) {
             roles.add(getString(R.string.braille_role_edit_text));
-        } else if (isFormField(node)) {
+        } else if (BrailleNodeUtils.isFormField(node)) {
             roles.add(getString(R.string.braille_role_form_field));
         }
-        if (isLink(node)) {
+        if (BrailleNodeUtils.isLink(node)) {
             roles.add(getString(R.string.braille_role_link));
         }
-        if (isImage(node)) {
+        if (BrailleNodeUtils.isImage(node)) {
             roles.add(getString(R.string.braille_role_image));
         }
-        if (isTab(node)) {
+        if (BrailleNodeUtils.isTab(node)) {
             roles.add(getString(R.string.braille_role_tab));
         }
-        if (isSlider(node)) {
+        if (BrailleNodeUtils.isSlider(node)) {
             roles.add(getString(R.string.braille_role_slider));
-        } else if (isProgressIndicator(node)) {
+        } else if (BrailleNodeUtils.isProgressIndicator(node)) {
             roles.add(getString(R.string.braille_role_progress));
         }
         if (node.isCheckable()) {
@@ -1426,7 +1426,7 @@ public class BrailleAccessibilityService extends AccessibilityService
         if (!TextUtils.isEmpty(label)) {
             return label;
         }
-        CharSequence hint = getHintText(node);
+        CharSequence hint = BrailleNodeUtils.getHintText(node);
         if (!TextUtils.isEmpty(hint)) {
             return getString(R.string.braille_service_hint_template, hint);
         }
@@ -1447,9 +1447,9 @@ public class BrailleAccessibilityService extends AccessibilityService
         if (node.isSelected()) {
             metadata.add(getString(R.string.braille_state_selected));
         }
-        if (hasAction(node, AccessibilityNodeInfo.ACTION_COLLAPSE)) {
+        if (BrailleNodeUtils.hasAction(node, AccessibilityNodeInfo.ACTION_COLLAPSE)) {
             metadata.add(getString(R.string.braille_state_expanded));
-        } else if (hasAction(node, AccessibilityNodeInfo.ACTION_EXPAND)) {
+        } else if (BrailleNodeUtils.hasAction(node, AccessibilityNodeInfo.ACTION_EXPAND)) {
             metadata.add(getString(R.string.braille_state_collapsed));
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && node.isScreenReaderFocusable()) {
@@ -1465,46 +1465,21 @@ public class BrailleAccessibilityService extends AccessibilityService
         if (!TextUtils.isEmpty(error)) {
             metadata.add(getString(R.string.braille_service_error_template, error));
         }
-        CharSequence collection = buildCollectionDescription(node);
+        CharSequence collection = BrailleNodeUtils.buildCollectionDescription(this, node);
         if (!TextUtils.isEmpty(collection)) {
             metadata.add(collection);
         }
-        CharSequence progress = buildRangeDescription(node);
+        CharSequence progress = BrailleNodeUtils.buildRangeDescription(this, node);
         if (!TextUtils.isEmpty(progress)) {
             metadata.add(progress);
         }
         return metadata.isEmpty() ? null : TextUtils.join(", ", metadata);
     }
 
-    private CharSequence buildCollectionDescription(AccessibilityNodeInfo node) {
-        if (node == null) {
-            return null;
-        }
-        AccessibilityNodeInfo.CollectionInfo collectionInfo = node.getCollectionInfo();
-        AccessibilityNodeInfo.CollectionItemInfo itemInfo = node.getCollectionItemInfo();
-        List<CharSequence> parts = new ArrayList<CharSequence>();
-        if (collectionInfo != null) {
-            int rows = collectionInfo.getRowCount();
-            int columns = collectionInfo.getColumnCount();
-            if (rows > 0 || columns > 0) {
-                parts.add(getString(R.string.braille_service_collection_template,
-                        Math.max(rows, 0), Math.max(columns, 0)));
-            }
-        }
-        if (itemInfo != null) {
-            parts.add(getString(R.string.braille_service_position_template,
-                    Math.max(0, itemInfo.getRowIndex()) + 1,
-                    Math.max(0, itemInfo.getColumnIndex()) + 1));
-            if (itemInfo.isHeading()) {
-                parts.add(getString(R.string.braille_role_heading));
-            }
-        }
-        return parts.isEmpty() ? null : TextUtils.join(", ", parts);
-    }
-
     private CharSequence buildLiveRegionAnnouncement(AccessibilityNodeInfo node,
             AccessibilityEvent event) {
-        if (!isLiveRegionEvent(node, event) || event == null || event.getText() == null
+        if (!BrailleNodeUtils.isLiveRegionEvent(node, event) || event == null
+                || event.getText() == null
                 || event.getText().isEmpty()) {
             return null;
         }
@@ -1520,224 +1495,24 @@ public class BrailleAccessibilityService extends AccessibilityService
         }
         switch (target) {
         case SECTION:
-            return isHeading(node) || isLandmark(node) || isTable(node)
-                    || isListLike(node) || isDialogOrPane(node);
+            return BrailleNodeUtils.isHeading(node)
+                    || BrailleNodeUtils.isLandmark(node)
+                    || BrailleNodeUtils.isTable(node)
+                    || BrailleNodeUtils.isListLike(node)
+                    || BrailleNodeUtils.isDialogOrPane(node);
         case CONTROL:
-            return isFormField(node) || isLink(node) || isTab(node)
-                    || isSlider(node) || node.isClickable()
+            return BrailleNodeUtils.isFormField(node)
+                    || BrailleNodeUtils.isLink(node)
+                    || BrailleNodeUtils.isTab(node)
+                    || BrailleNodeUtils.isSlider(node) || node.isClickable()
                     || node.isCheckable();
         case LIST:
-            return isListLike(node) || isTable(node) || isPager(node);
+            return BrailleNodeUtils.isListLike(node)
+                    || BrailleNodeUtils.isTable(node)
+                    || BrailleNodeUtils.isPager(node);
         default:
             return false;
         }
-    }
-
-    private boolean isHeading(AccessibilityNodeInfo node) {
-        if (node == null) {
-            return false;
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && node.isHeading()) {
-            return true;
-        }
-        AccessibilityNodeInfo.CollectionItemInfo itemInfo = node.getCollectionItemInfo();
-        return itemInfo != null && itemInfo.isHeading();
-    }
-
-    private boolean isLandmark(AccessibilityNodeInfo node) {
-        if (node == null) {
-            return false;
-        }
-        String viewId = node.getViewIdResourceName();
-        if (TextUtils.isEmpty(viewId)) {
-            return false;
-        }
-        String normalized = viewId.toLowerCase(java.util.Locale.ROOT);
-        return normalized.contains("toolbar")
-                || normalized.contains("appbar")
-                || normalized.contains("navigation")
-                || normalized.contains("header")
-                || normalized.contains("footer")
-                || normalized.contains("main")
-                || normalized.contains("search");
-    }
-
-    private boolean isDialogOrPane(AccessibilityNodeInfo node) {
-        if (node == null) {
-            return false;
-        }
-        CharSequence className = node.getClassName();
-        String cls = className == null ? "" : className.toString();
-        if (cls.contains("Dialog")) {
-            return true;
-        }
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
-                && !TextUtils.isEmpty(node.getPaneTitle());
-    }
-
-    private boolean isTable(AccessibilityNodeInfo node) {
-        if (node == null) {
-            return false;
-        }
-        AccessibilityNodeInfo.CollectionInfo collectionInfo = node.getCollectionInfo();
-        return collectionInfo != null
-                && collectionInfo.getRowCount() > 1
-                && collectionInfo.getColumnCount() > 1;
-    }
-
-    private boolean isListLike(AccessibilityNodeInfo node) {
-        if (node == null) {
-            return false;
-        }
-        CharSequence className = node.getClassName();
-        String cls = className == null ? "" : className.toString();
-        if (cls.contains("ListView") || cls.contains("RecyclerView")
-                || cls.contains("GridView")) {
-            return true;
-        }
-        AccessibilityNodeInfo.CollectionInfo collectionInfo = node.getCollectionInfo();
-        return collectionInfo != null
-                && (collectionInfo.getRowCount() > 1
-                        || collectionInfo.getColumnCount() > 1);
-    }
-
-    private boolean isPager(AccessibilityNodeInfo node) {
-        if (node == null) {
-            return false;
-        }
-        CharSequence className = node.getClassName();
-        String cls = className == null ? "" : className.toString();
-        return cls.contains("ViewPager") || cls.contains("Pager");
-    }
-
-    private boolean isFormField(AccessibilityNodeInfo node) {
-        if (node == null) {
-            return false;
-        }
-        CharSequence className = node.getClassName();
-        String cls = className == null ? "" : className.toString();
-        return node.isEditable()
-                || cls.contains("EditText")
-                || cls.contains("Spinner")
-                || cls.contains("CheckBox")
-                || cls.contains("RadioButton")
-                || cls.contains("Switch")
-                || cls.contains("ToggleButton");
-    }
-
-    private boolean isLink(AccessibilityNodeInfo node) {
-        if (node == null) {
-            return false;
-        }
-        String viewId = node.getViewIdResourceName();
-        if (!TextUtils.isEmpty(viewId)
-                && viewId.toLowerCase(java.util.Locale.ROOT).contains("link")) {
-            return true;
-        }
-        CharSequence className = node.getClassName();
-        String cls = className == null ? "" : className.toString();
-        return cls.contains("Link")
-                || (cls.contains("TextView") && node.isClickable()
-                        && !TextUtils.isEmpty(node.getText()));
-    }
-
-    private boolean isImage(AccessibilityNodeInfo node) {
-        if (node == null) {
-            return false;
-        }
-        CharSequence className = node.getClassName();
-        String cls = className == null ? "" : className.toString();
-        return cls.contains("ImageView");
-    }
-
-    private boolean isTab(AccessibilityNodeInfo node) {
-        if (node == null) {
-            return false;
-        }
-        CharSequence className = node.getClassName();
-        String cls = className == null ? "" : className.toString();
-        if (cls.contains("Tab")) {
-            return true;
-        }
-        String viewId = node.getViewIdResourceName();
-        return !TextUtils.isEmpty(viewId)
-                && viewId.toLowerCase(java.util.Locale.ROOT).contains("tab");
-    }
-
-    private boolean isSlider(AccessibilityNodeInfo node) {
-        if (node == null) {
-            return false;
-        }
-        CharSequence className = node.getClassName();
-        String cls = className == null ? "" : className.toString();
-        if (cls.contains("SeekBar") || cls.contains("Slider")) {
-            return true;
-        }
-        return node.getRangeInfo() != null && node.isFocusable();
-    }
-
-    private boolean isProgressIndicator(AccessibilityNodeInfo node) {
-        if (node == null) {
-            return false;
-        }
-        CharSequence className = node.getClassName();
-        String cls = className == null ? "" : className.toString();
-        return cls.contains("ProgressBar") || node.getRangeInfo() != null;
-    }
-
-    private boolean isLiveRegionEvent(AccessibilityNodeInfo node,
-            AccessibilityEvent event) {
-        if (node == null || event == null) {
-            return false;
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT
-                && node.getLiveRegion() != View.ACCESSIBILITY_LIVE_REGION_NONE) {
-            return true;
-        }
-        return event.getEventType() == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED
-                && (event.getContentChangeTypes()
-                        & AccessibilityEvent.CONTENT_CHANGE_TYPE_TEXT) != 0;
-    }
-
-    private CharSequence getHintText(AccessibilityNodeInfo node) {
-        if (node != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            return node.getHintText();
-        }
-        return null;
-    }
-
-    private boolean hasAction(AccessibilityNodeInfo node, int action) {
-        if (node == null) {
-            return false;
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            List<AccessibilityNodeInfo.AccessibilityAction> actions =
-                    node.getActionList();
-            if (actions == null) {
-                return false;
-            }
-            for (AccessibilityNodeInfo.AccessibilityAction candidate : actions) {
-                if (candidate != null && candidate.getId() == action) {
-                    return true;
-                }
-            }
-            return false;
-        }
-        return (node.getActions() & action) != 0;
-    }
-
-    private CharSequence buildRangeDescription(AccessibilityNodeInfo node) {
-        if (node == null || node.getRangeInfo() == null) {
-            return null;
-        }
-        AccessibilityNodeInfo.RangeInfo rangeInfo = node.getRangeInfo();
-        int current = Math.round(rangeInfo.getCurrent());
-        int max = Math.round(rangeInfo.getMax());
-        if (max <= 0) {
-            return null;
-        }
-        return getString(R.string.braille_service_progress_template,
-                current, max);
     }
 
     private void addPart(List<CharSequence> parts, CharSequence value) {
