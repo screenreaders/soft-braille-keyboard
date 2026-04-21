@@ -295,9 +295,7 @@ public class BrailleIME extends InputMethodService implements KeyboardListener {
 
     @Override
     public ExtractedText getAllText() {
-        InputConnection ic = getCurrentInputConnection();
-        return ic == null ? null : ic.getExtractedText(
-                new ExtractedTextRequest(), 0);
+        return InputConnectionTextUtils.getExtractedText(getCurrentInputConnection());
     }
 
     @Override
@@ -704,10 +702,10 @@ public class BrailleIME extends InputMethodService implements KeyboardListener {
             return null;
         }
 
-        int start = getSelectionStart(text);
+        int start = InputConnectionTextUtils.getSelectionStart(text);
         int end = text.startOffset + text.text.length();
-        mark = clampToRange(mark, start, end);
-        cursor = clampToRange(cursor, start, end);
+        mark = InputConnectionTextUtils.clampToRange(mark, start, end);
+        cursor = InputConnectionTextUtils.clampToRange(cursor, start, end);
         return new int[] { Math.min(cursor, mark), Math.max(cursor, mark) };
     }
 
@@ -883,22 +881,15 @@ public class BrailleIME extends InputMethodService implements KeyboardListener {
             return false;
         }
 
-        CharSequence selected = ic.getSelectedText(0);
-        if (selected != null && composingText.toString().contentEquals(selected)) {
-            return true;
-        }
-
-        CharSequence beforeCursor = ic.getTextBeforeCursor(composingText.length(),
-                0);
-        return beforeCursor != null
-                && composingText.toString().contentEquals(beforeCursor);
+        return InputConnectionTextUtils.matchesSelectedOrPreviousText(ic,
+                composingText.toString());
     }
 
     private boolean shouldSkipFallbackCommit(InputConnection ic, String text) {
         if (text == null || text.length() == 0) {
             return true;
         }
-        if (editorEndsWithText(ic, text)) {
+        if (InputConnectionTextUtils.matchesSelectedOrPreviousText(ic, text)) {
             return true;
         }
         int cursor = getCursor();
@@ -907,18 +898,6 @@ public class BrailleIME extends InputMethodService implements KeyboardListener {
                 && text.equals(lastFallbackCommitText)
                 && SystemClock.uptimeMillis() - lastFallbackCommitAt
                 < FALLBACK_COMMIT_DEDUP_WINDOW_MS;
-    }
-
-    private static boolean editorEndsWithText(InputConnection ic, String text) {
-        if (ic == null || text == null || text.length() == 0) {
-            return false;
-        }
-        CharSequence selected = ic.getSelectedText(0);
-        if (selected != null && text.contentEquals(selected)) {
-            return true;
-        }
-        CharSequence beforeCursor = ic.getTextBeforeCursor(text.length(), 0);
-        return beforeCursor != null && text.contentEquals(beforeCursor);
     }
 
     private static void traceIme(String message) {
@@ -945,20 +924,6 @@ public class BrailleIME extends InputMethodService implements KeyboardListener {
     }
 
     private int getSelectionStart() {
-        return getSelectionStart(getAllText());
-    }
-
-    private int getSelectionStart(ExtractedText text) {
-        return text == null ? -1 : text.startOffset;
-    }
-
-    private static int clampToRange(int value, int min, int max) {
-        if (value < min) {
-            return min;
-        }
-        if (value > max) {
-            return max;
-        }
-        return value;
+        return InputConnectionTextUtils.getSelectionStart(getAllText());
     }
 }
