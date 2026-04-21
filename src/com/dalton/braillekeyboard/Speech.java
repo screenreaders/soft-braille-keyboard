@@ -254,29 +254,7 @@ public class Speech {
 
     private String buildSpokenText(Context context, String format,
             CharSequence text) {
-        if (text == null) {
-            return null;
-        }
-        CharSequence normalisedText = normalizeSpokenText(context, text);
-        return String.format(format,
-                extractPunctuation(normalisedText.toString()));
-    }
-
-    private CharSequence normalizeSpokenText(Context context, CharSequence text) {
-        if (text.equals(" ")) {
-            return context.getString(R.string.space);
-        }
-        if (text.length() < 2 && text.length() > 0
-                && Character.isUpperCase(text.charAt(0))) {
-            return String.format(context.getString(R.string.capital), text);
-        }
-        if (text.equals("\n")) {
-            return context.getString(R.string.newline);
-        }
-        if (text.toString().trim().equals("")) {
-            return context.getString(R.string.blank);
-        }
-        return text;
+        return SpeechTextUtils.buildSpokenText(context, format, text, speechMap);
     }
 
     /**
@@ -309,14 +287,7 @@ public class Speech {
     }
 
     private static String maskPassword(String text) {
-        if (text == null) {
-            text = "";
-        }
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < text.length(); i++) {
-            sb.append('*');
-        }
-        return sb.toString();
+        return SpeechTextUtils.maskPassword(text);
     }
 
     /**
@@ -384,7 +355,7 @@ public class Speech {
         int currentQueueMode = queueMode;
         while (start < text.length()) {
             int requestedEnd = Math.min(start + MAX_SPEECH_LENGTH, text.length());
-            int end = getBestEnd(text, start, requestedEnd);
+            int end = SpeechTextUtils.getBestEnd(text, start, requestedEnd);
             if (end <= start) {
                 end = requestedEnd;
             }
@@ -493,44 +464,6 @@ public class Speech {
             return false;
         }
         return false;
-    }
-
-    // Find the best endpoint to speak until.
-    // This is either the current endpoint if it is the actual end of the text.
-    // Otherwise we back track until a white space separator so that the
-    // segments of speech sound clean.
-    private static int getBestEnd(String text, int start, int end) {
-        // separators to divide segments at eg. whitespace so it sounds clean.
-        String[] items = { " ", "\n" };
-        int bestEnd = end;
-        if (text.length() != end) {
-            bestEnd = -1;
-
-            // the endpoint isn't actually the end of the text String.
-            // back track and pick the closest separator index.
-            for (int i = 0; i < items.length; i++) {
-                // store the temporary segment separator index.
-                int temp = text.lastIndexOf(items[i], end - 1);
-                // pick the longest segment.
-                if (temp >= start && temp > bestEnd) {
-                    bestEnd = temp;
-                }
-            }
-        }
-        return bestEnd < end && bestEnd > 0 ? bestEnd : end;
-    }
-
-    // If the string is just one character make sure we speak the actual
-    // punctuation symbol for it. Otherwise it can be spoken natively.
-    private String extractPunctuation(String text) {
-        if (text == null) {
-            return null;
-        }
-        String symbol = null;
-        if (text.length() == 1) {
-            symbol = speechMap.get(text.substring(0, 1));
-        }
-        return symbol == null ? text : symbol;
     }
 
     // Many symbols are not spoken by tts properly.

@@ -458,12 +458,7 @@ public class BrailleParser {
     }
 
     private List<TableInfo> loadFallbackTables(Context context) {
-        try {
-            TableList tableList = new TableList(context.getResources());
-            return new ArrayList<TableInfo>(tableList.getTables());
-        } catch (RuntimeException e) {
-            return null;
-        }
+        return BrailleParserTableUtils.loadFallbackTables(context);
     }
 
     // Sets the translator to the active table.
@@ -566,43 +561,11 @@ public class BrailleParser {
     }
 
     private String describeTable(Context context, TableInfo table) {
-        String result = String.format(table.getLocale(), "%s %s %s", table
-                .getLocale().getDisplayLanguage(), table.getLocale()
-                .getDisplayCountry(), table.isEightDot() ? "" : String.format(
-                context.getString(R.string.grade_table), table.getGrade()));
-        return result.trim();
+        return BrailleParserTableUtils.describeTable(context, table);
     }
 
     private byte[] buildPaddedCells(Byte[] cellBytes) {
-        byte[] cells = new byte[cellBytes.length + 2];
-        cells[0] = 0;
-        cells[cells.length - 1] = 0;
-        for (int i = 0; i < cellBytes.length; i++) {
-            cells[i + 1] = cellBytes[i] != null ? cellBytes[i].byteValue() : 0;
-        }
-        return cells;
-    }
-
-    // Returns an English readable pattern of the given byte value that
-    // represents the pressed dots. For example 0b101 would return 13. See
-    // BrailleTranslator details for how dots are encoded as bytes.
-    private static String computeCellValue(byte value) {
-        StringBuilder sb = new StringBuilder();
-        int mask = 1;
-
-        // We start from the right of the bit string at dot 1 and work our way
-        // towards the left of the bit string adding dots to the output string
-        // that are set to 1.
-        for (int i = 1; i <= 8; i++) {
-            if ((mask & value) != 0) {
-                // dot is active here write it to the output.
-                sb.append(String.valueOf(i));
-            }
-            mask <<= 1;
-        }
-
-        // Return the output string or nothing if no dots are set.
-        return sb.length() > 0 ? sb.toString() : "";
+        return BrailleParserTableUtils.buildPaddedCells(cellBytes);
     }
 
     // The BrailleTranslator can populate the output string with garbage for
@@ -610,16 +573,7 @@ public class BrailleParser {
     // These are of the form \dotpattern/ eg. \12/ if dots 12 is unknown.
     private String handleUnknownPatterns(Context context, String text,
             byte[] cells) {
-        if (TextUtils.isEmpty(text) || cells == null || cells.length == 0) {
-            return text;
-        }
-        for (byte cell : cells) {
-            String value = "\\" + computeCellValue(cell) + "/";
-            if (text.contains(value)) {
-                text = text.replace(value, "");
-            }
-        }
-        return text;
+        return BrailleParserTableUtils.handleUnknownPatterns(text, cells);
     }
 
     private TableInfo findDefaultTableInfo(BrailleType brailleType) {
@@ -638,26 +592,11 @@ public class BrailleParser {
     }
 
     private static boolean betterTable(TableInfo first, TableInfo second) {
-        if (first == null) {
-            return false;
-        }
-        Locale firstLocale = first.getLocale();
-        Locale secondLocale = second != null ? second.getLocale() : Locale.ROOT;
-        return matchRank(firstLocale, Locale.getDefault()) > matchRank(
-                secondLocale, Locale.getDefault());
+        return BrailleParserTableUtils.betterTable(first, second);
     }
 
     private static int matchRank(Locale first, Locale second) {
-        Locale safeFirst = first != null ? first : Locale.ROOT;
-        Locale safeSecond = second != null ? second : Locale.ROOT;
-        int ret = safeFirst.getLanguage().equals(safeSecond.getLanguage()) ? 1 : 0;
-        if (ret > 0) {
-            ret += (safeFirst.getCountry().equals(safeSecond.getCountry()) ? 1 : 0);
-            if (ret > 1) {
-                ret += (safeFirst.getVariant().equals(safeSecond.getVariant()) ? 1 : 0);
-            }
-        }
-        return ret;
+        return BrailleParserTableUtils.matchRank(first, second);
     }
 
     public String getDefaultId(Context context, BrailleType brailleType) {
