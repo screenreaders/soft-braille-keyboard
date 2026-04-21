@@ -66,12 +66,7 @@ public final class RemoteReportUploader {
                     kind, file.getName());
             output = new BufferedOutputStream(connection.getOutputStream());
             input = new BufferedInputStream(new FileInputStream(file));
-            byte[] buffer = new byte[8192];
-            int read;
-            while ((read = input.read(buffer)) != -1) {
-                output.write(buffer, 0, read);
-            }
-            output.flush();
+            pipe(input, output);
             return parseResponse(connection);
         } catch (IOException e) {
             return new UploadResult(false, null, "upload failed");
@@ -92,8 +87,7 @@ public final class RemoteReportUploader {
             connection = openConnection(context, contentType, title, kind,
                     fileName);
             output = new BufferedOutputStream(connection.getOutputStream());
-            output.write(payload);
-            output.flush();
+            writeAndFlush(output, payload);
             return parseResponse(connection);
         } catch (IOException e) {
             return new UploadResult(false, null, "upload failed");
@@ -133,8 +127,7 @@ public final class RemoteReportUploader {
     private static UploadResult parseResponse(HttpURLConnection connection)
             throws IOException {
         int code = connection.getResponseCode();
-        byte[] response = readAllBytes(code >= 200 && code < 300
-                ? connection.getInputStream() : connection.getErrorStream());
+        byte[] response = readAllBytes(selectResponseStream(connection, code));
         String text = response == null ? "" : new String(response, "UTF-8");
         if (code < 200 || code >= 300) {
             return new UploadResult(false, null,
@@ -149,6 +142,12 @@ public final class RemoteReportUploader {
         } catch (Exception e) {
             return new UploadResult(true, null, "ok");
         }
+    }
+
+    private static java.io.InputStream selectResponseStream(
+            HttpURLConnection connection, int code) throws IOException {
+        return code >= 200 && code < 300 ? connection.getInputStream()
+                : connection.getErrorStream();
     }
 
     private static String ensureClientId(Context context) {
@@ -183,6 +182,22 @@ public final class RemoteReportUploader {
             closeQuietly(stream);
             closeQuietly(output);
         }
+    }
+
+    private static void writeAndFlush(BufferedOutputStream output, byte[] payload)
+            throws IOException {
+        output.write(payload);
+        output.flush();
+    }
+
+    private static void pipe(BufferedInputStream input,
+            BufferedOutputStream output) throws IOException {
+        byte[] buffer = new byte[8192];
+        int read;
+        while ((read = input.read(buffer)) != -1) {
+            output.write(buffer, 0, read);
+        }
+        output.flush();
     }
 
     private static void closeQuietly(java.io.Closeable closeable) {

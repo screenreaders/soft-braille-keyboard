@@ -26,60 +26,11 @@ public final class SupportDiagnostics {
         StringBuilder sb = new StringBuilder();
         Context appContext = context.getApplicationContext();
         appendSection(sb, "Soft Braille Keyboard support report");
-        appendLine(sb, "Generated at", new java.util.Date().toString());
-        appendLine(sb, "Version", BuildConfig.VERSION_NAME + " (" +
-                BuildConfig.VERSION_CODE + ")");
-        appendLine(sb, "Build type", BuildConfig.DEBUG ? "debug" : "release");
-        appendLine(sb, "Package", BuildConfig.APPLICATION_ID);
-        appendLine(sb, "Locale", Locale.getDefault().toLanguageTag());
-        appendLine(sb, "Android", Build.VERSION.RELEASE + " (SDK " +
-                Build.VERSION.SDK_INT + ")");
-        appendLine(sb, "Device", Build.MANUFACTURER + " " + Build.MODEL);
-        appendLine(sb, "Hardware", Build.DEVICE + " / " + Build.PRODUCT);
-        appendLine(sb, "Bluetooth permission",
-                hasBluetoothPermission(appContext) ? "granted" : "missing");
-        appendLine(sb, "Bluetooth adapter",
-                BluetoothAdapter.getDefaultAdapter() == null ? "unavailable"
-                        : "present");
-        appendLine(sb, "Braille accessibility service",
-                isBrailleAccessibilityServiceEnabled(appContext) ? "enabled"
-                        : "disabled");
-        appendLine(sb, "Preferred display",
-                BrailleDisplayPreferences.getPreferredDeviceAddress(appContext));
-        appendLine(sb, "Last connected display",
-                BrailleDisplayPreferences.getLastConnectedDeviceAddress(
-                        appContext));
+        appendRuntimeSummary(sb, appContext);
 
         appendBlankLine(sb);
         appendSection(sb, "Recognized braille displays");
-        List<DeviceFinder.DeviceInfo> devices = new DeviceFinder(appContext)
-                .findDevices();
-        if (devices.isEmpty()) {
-            sb.append("None\n");
-        } else {
-            for (DeviceFinder.DeviceInfo device : devices) {
-                if (device == null) {
-                    continue;
-                }
-                sb.append("- ");
-                sb.append(TextUtils.isEmpty(device.getDeviceName())
-                        ? "(unnamed)" : device.getDeviceName());
-                sb.append(" | ");
-                sb.append(device.getTransport());
-                sb.append(" | ");
-                sb.append(TextUtils.isEmpty(device.getDeviceAddress())
-                        ? "(no address)" : device.getDeviceAddress());
-                sb.append(" | ");
-                sb.append(device.getDriverCode());
-                if (device.getUsbDevice() != null) {
-                    sb.append(" | USB ");
-                    sb.append(String.format(Locale.ROOT, "%04X:%04X",
-                            device.getUsbDevice().getVendorId(),
-                            device.getUsbDevice().getProductId()));
-                }
-                sb.append('\n');
-            }
-        }
+        appendBrailleDisplays(sb, appContext);
 
         appendBlankLine(sb);
         appendSection(sb, "User message");
@@ -98,6 +49,62 @@ public final class SupportDiagnostics {
             if (!additionalDiagnostics.endsWith("\n")) {
                 sb.append('\n');
             }
+        }
+        return sb.toString();
+    }
+
+    private static void appendRuntimeSummary(StringBuilder sb, Context context) {
+        appendLine(sb, "Generated at", new java.util.Date().toString());
+        appendLine(sb, "Version", BuildConfig.VERSION_NAME + " ("
+                + BuildConfig.VERSION_CODE + ")");
+        appendLine(sb, "Build type", BuildConfig.DEBUG ? "debug" : "release");
+        appendLine(sb, "Package", BuildConfig.APPLICATION_ID);
+        appendLine(sb, "Locale", Locale.getDefault().toLanguageTag());
+        appendLine(sb, "Android", Build.VERSION.RELEASE + " (SDK "
+                + Build.VERSION.SDK_INT + ")");
+        appendLine(sb, "Device", Build.MANUFACTURER + " " + Build.MODEL);
+        appendLine(sb, "Hardware", Build.DEVICE + " / " + Build.PRODUCT);
+        appendLine(sb, "Bluetooth permission",
+                hasBluetoothPermission(context) ? "granted" : "missing");
+        appendLine(sb, "Bluetooth adapter",
+                BluetoothAdapter.getDefaultAdapter() == null ? "unavailable"
+                        : "present");
+        appendLine(sb, "Braille accessibility service",
+                isBrailleAccessibilityServiceEnabled(context) ? "enabled"
+                        : "disabled");
+        appendLine(sb, "Preferred display",
+                BrailleDisplayPreferences.getPreferredDeviceAddress(context));
+        appendLine(sb, "Last connected display",
+                BrailleDisplayPreferences.getLastConnectedDeviceAddress(context));
+    }
+
+    private static void appendBrailleDisplays(StringBuilder sb, Context context) {
+        List<DeviceFinder.DeviceInfo> devices = new DeviceFinder(context)
+                .findDevices();
+        if (devices.isEmpty()) {
+            sb.append("None\n");
+            return;
+        }
+        for (DeviceFinder.DeviceInfo device : devices) {
+            if (device != null) {
+                sb.append("- ").append(formatDeviceLine(device)).append('\n');
+            }
+        }
+    }
+
+    private static String formatDeviceLine(DeviceFinder.DeviceInfo device) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(TextUtils.isEmpty(device.getDeviceName()) ? "(unnamed)"
+                : device.getDeviceName());
+        sb.append(" | ").append(device.getTransport());
+        sb.append(" | ").append(TextUtils.isEmpty(device.getDeviceAddress())
+                ? "(no address)" : device.getDeviceAddress());
+        sb.append(" | ").append(device.getDriverCode());
+        if (device.getUsbDevice() != null) {
+            sb.append(" | USB ");
+            sb.append(String.format(Locale.ROOT, "%04X:%04X",
+                    device.getUsbDevice().getVendorId(),
+                    device.getUsbDevice().getProductId()));
         }
         return sb.toString();
     }

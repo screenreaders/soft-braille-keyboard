@@ -43,18 +43,7 @@ public final class BrailleUserProfiles {
             return profiles;
         }
         try {
-            JSONArray array = new JSONArray(payload);
-            for (int i = 0; i < array.length(); i++) {
-                JSONObject item = array.optJSONObject(i);
-                if (item == null) {
-                    continue;
-                }
-                String name = item.optString("name", "").trim();
-                String snapshot = item.optString("payload", "");
-                if (!TextUtils.isEmpty(name) && !TextUtils.isEmpty(snapshot)) {
-                    profiles.add(new Profile(name, snapshot));
-                }
-            }
+            profiles.addAll(parseProfiles(payload));
         } catch (JSONException e) {
             return new ArrayList<Profile>();
         }
@@ -68,11 +57,8 @@ public final class BrailleUserProfiles {
     }
 
     public static boolean saveCurrentProfile(Context context, String name) {
-        if (context == null || TextUtils.isEmpty(name)) {
-            return false;
-        }
-        String trimmedName = name.trim();
-        if (trimmedName.length() == 0) {
+        String trimmedName = normalizeProfileName(name);
+        if (context == null || TextUtils.isEmpty(trimmedName)) {
             return false;
         }
         try {
@@ -169,11 +155,12 @@ public final class BrailleUserProfiles {
     }
 
     public static Profile findProfile(Context context, String name) {
-        if (context == null || TextUtils.isEmpty(name)) {
+        String targetName = normalizeProfileName(name);
+        if (context == null || TextUtils.isEmpty(targetName)) {
             return null;
         }
         for (Profile profile : getProfiles(context)) {
-            if (name.equalsIgnoreCase(profile.name)) {
+            if (targetName.equalsIgnoreCase(profile.name)) {
                 return profile;
             }
         }
@@ -212,11 +199,8 @@ public final class BrailleUserProfiles {
     private static void persistProfiles(Context context, List<Profile> profiles) {
         JSONArray array = new JSONArray();
         for (Profile profile : profiles) {
-            JSONObject item = new JSONObject();
             try {
-                item.put("name", profile.name);
-                item.put("payload", profile.payload);
-                array.put(item);
+                array.put(serializeProfile(profile));
             } catch (JSONException e) {
                 // Skip malformed profile serialization and keep the rest.
             }
@@ -237,5 +221,42 @@ public final class BrailleUserProfiles {
         excluded.add("brailleDisplayNamedProfilesJson");
         excluded.add("brailleDisplayNamedActiveProfile");
         return excluded;
+    }
+
+    private static List<Profile> parseProfiles(String payload)
+            throws JSONException {
+        List<Profile> profiles = new ArrayList<Profile>();
+        JSONArray array = new JSONArray(payload);
+        for (int i = 0; i < array.length(); i++) {
+            Profile profile = parseProfile(array.optJSONObject(i));
+            if (profile != null) {
+                profiles.add(profile);
+            }
+        }
+        return profiles;
+    }
+
+    private static Profile parseProfile(JSONObject item) {
+        if (item == null) {
+            return null;
+        }
+        String name = normalizeProfileName(item.optString("name", ""));
+        String snapshot = item.optString("payload", "");
+        if (TextUtils.isEmpty(name) || TextUtils.isEmpty(snapshot)) {
+            return null;
+        }
+        return new Profile(name, snapshot);
+    }
+
+    private static JSONObject serializeProfile(Profile profile)
+            throws JSONException {
+        JSONObject item = new JSONObject();
+        item.put("name", profile.name);
+        item.put("payload", profile.payload);
+        return item;
+    }
+
+    private static String normalizeProfileName(String name) {
+        return name == null ? null : name.trim();
     }
 }
