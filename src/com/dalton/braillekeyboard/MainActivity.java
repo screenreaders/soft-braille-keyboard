@@ -258,11 +258,7 @@ public class MainActivity extends Activity {
     }
 
     public void onExportAppSettings(View view) {
-        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("application/json");
-        intent.putExtra(Intent.EXTRA_TITLE,
-                getString(R.string.app_settings_backup_file_name));
+        Intent intent = MainActivityBackupUtils.buildExportIntent(this);
         if (ActivityLaunchUtils.canStartActivity(this, intent)) {
             startActivityForResult(intent, REQUEST_EXPORT_APP_SETTINGS_FILE);
         } else {
@@ -272,9 +268,7 @@ public class MainActivity extends Activity {
     }
 
     public void onImportAppSettings(View view) {
-        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("*/*");
+        Intent intent = MainActivityBackupUtils.buildImportIntent();
         if (ActivityLaunchUtils.canStartActivity(this, intent)) {
             startActivityForResult(intent, REQUEST_IMPORT_APP_SETTINGS_FILE);
         } else {
@@ -373,13 +367,7 @@ public class MainActivity extends Activity {
 
     private void exportAppSettingsToUri(Uri uri) {
         try {
-            if (uri == null) {
-                throw new IOException("Missing export uri");
-            }
-            String payload = AppSettingsBackup.exportPreferences(this);
-            if (!TextTransferUtils.writeTextToUri(this, uri, payload)) {
-                throw new IOException("Failed to write export payload");
-            }
+            MainActivityBackupUtils.exportPreferencesToUri(this, uri);
             Toast.makeText(this, getString(R.string.app_settings_backup_exported,
                     uri.toString()), Toast.LENGTH_LONG).show();
         } catch (IOException e) {
@@ -393,14 +381,8 @@ public class MainActivity extends Activity {
 
     private void importAppSettingsFromUri(Uri uri) {
         try {
-            if (uri == null) {
-                throw new IOException("Missing import uri");
-            }
-            String payload = TextTransferUtils.readTextFromUri(this, uri);
-            if (payload == null) {
-                throw new IOException("Failed to read import payload");
-            }
-            int restored = AppSettingsBackup.importPreferences(this, payload);
+            int restored = MainActivityBackupUtils.importPreferencesFromUri(this,
+                    uri);
             if (restored <= 0) {
                 Toast.makeText(this, R.string.app_settings_backup_import_empty,
                         Toast.LENGTH_LONG).show();

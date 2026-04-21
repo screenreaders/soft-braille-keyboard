@@ -427,7 +427,8 @@ public class SetupWizardActivity extends Activity
                     public void onItemSelected(int position) {
                         Options.writeStringPreference(SetupWizardActivity.this,
                                 R.string.pref_keyboard_style_key,
-                                getKeyboardStyleValue(position));
+                                SetupWizardPreferenceUtils.getKeyboardStyleValue(
+                                        SetupWizardActivity.this, position));
                         refreshStatuses();
                     }
                 });
@@ -515,15 +516,16 @@ public class SetupWizardActivity extends Activity
         BrailleParser.BrailleType brailleType = brailleParser == null
                 ? BrailleParser.BrailleType.LITERARY
                 : brailleParser.getBrailleType(this);
-        brailleTypeSpinner.setSelection(brailleType
-                == BrailleParser.BrailleType.COMPUTER ? 1 : 0);
+        brailleTypeSpinner.setSelection(
+                SetupWizardPreferenceUtils.getBrailleTypeSelection(brailleType));
         syncKeyboardDotsWithBrailleType(brailleType);
         int keyboardType = Options.getIntPreference(this,
                 R.string.pref_default_keyboard_key,
                 getString(R.string.pref_default_keyboard_default));
         keyboardLayoutSpinner.setSelection(Math.max(0,
                 Math.min(keyboardType, 2)));
-        keyboardStyleSpinner.setSelection(getKeyboardStyleSelection());
+        keyboardStyleSpinner.setSelection(
+                SetupWizardPreferenceUtils.getKeyboardStyleSelection(this));
         int echoValue = Options.getIntPreference(this,
                 R.string.pref_echo_feedback_key,
                 Options.KeyboardEcho.CHARACTER.getValue());
@@ -532,28 +534,36 @@ public class SetupWizardActivity extends Activity
     }
 
     private void bindStoredProfileValues() {
-        setCheckedFromPreference(misspellingsCheckBox,
+        SetupWizardPreferenceUtils.setCheckedFromPreference(this,
+                misspellingsCheckBox,
                 R.string.pref_echo_misspellings_key,
                 R.string.pref_echo_misspellings_default);
-        setCheckedFromPreference(doubleSpaceCheckBox,
+        SetupWizardPreferenceUtils.setCheckedFromPreference(this,
+                doubleSpaceCheckBox,
                 R.string.pref_double_space_period_key,
                 R.string.pref_double_space_period_default);
-        setCheckedFromPreference(autoCapsCheckBox,
+        SetupWizardPreferenceUtils.setCheckedFromPreference(this,
+                autoCapsCheckBox,
                 R.string.pref_auto_caps_key,
                 R.string.pref_auto_caps_default);
-        setCheckedFromPreference(voiceShortcutCheckBox,
+        SetupWizardPreferenceUtils.setCheckedFromPreference(this,
+                voiceShortcutCheckBox,
                 R.string.pref_voice_shortcut_key,
                 R.string.pref_voice_shortcut_default);
-        setCheckedFromPreference(talkBackModeCheckBox,
+        SetupWizardPreferenceUtils.setCheckedFromPreference(this,
+                talkBackModeCheckBox,
                 R.string.pref_talkback_braille_mode_key,
                 R.string.pref_talkback_braille_mode_default);
-        setCheckedFromPreference(autoUpdatesCheckBox,
+        SetupWizardPreferenceUtils.setCheckedFromPreference(this,
+                autoUpdatesCheckBox,
                 R.string.pref_auto_check_updates_key,
                 R.string.pref_auto_check_updates_default);
-        setCheckedFromPreference(crashPromptCheckBox,
+        SetupWizardPreferenceUtils.setCheckedFromPreference(this,
+                crashPromptCheckBox,
                 R.string.pref_prompt_crash_report_key,
                 R.string.pref_prompt_crash_report_default);
-        setCheckedFromPreference(usesDisplayCheckBox,
+        SetupWizardPreferenceUtils.setCheckedFromPreference(this,
+                usesDisplayCheckBox,
                 R.string.pref_user_uses_braille_display_key,
                 R.string.pref_user_uses_braille_display_default);
     }
@@ -747,11 +757,11 @@ public class SetupWizardActivity extends Activity
                         : keyboardEchoSpinner.getSelectedItem().toString();
         return SetupWizardUiUtils.buildProfileStatus(this,
                 echoText,
-                isChecked(misspellingsCheckBox),
-                isChecked(doubleSpaceCheckBox),
-                isChecked(talkBackModeCheckBox),
-                isChecked(autoUpdatesCheckBox),
-                isChecked(crashPromptCheckBox),
+                SetupWizardPreferenceUtils.isChecked(misspellingsCheckBox),
+                SetupWizardPreferenceUtils.isChecked(doubleSpaceCheckBox),
+                SetupWizardPreferenceUtils.isChecked(talkBackModeCheckBox),
+                SetupWizardPreferenceUtils.isChecked(autoUpdatesCheckBox),
+                SetupWizardPreferenceUtils.isChecked(crashPromptCheckBox),
                 getSelectedEngineLabel());
     }
 
@@ -762,28 +772,15 @@ public class SetupWizardActivity extends Activity
     }
 
     private void persistProfilePreferences() {
-        Options.writeBooleanPreference(this,
-                R.string.pref_echo_misspellings_key, isChecked(
-                        misspellingsCheckBox));
-        Options.writeBooleanPreference(this,
-                R.string.pref_double_space_period_key, isChecked(
-                        doubleSpaceCheckBox));
-        Options.writeBooleanPreference(this, R.string.pref_auto_caps_key,
-                isChecked(autoCapsCheckBox));
-        Options.writeBooleanPreference(this, R.string.pref_voice_shortcut_key,
-                isChecked(voiceShortcutCheckBox));
-        Options.writeBooleanPreference(this,
-                R.string.pref_talkback_braille_mode_key, isChecked(
-                        talkBackModeCheckBox));
-        Options.writeBooleanPreference(this,
-                R.string.pref_auto_check_updates_key, isChecked(
-                        autoUpdatesCheckBox));
-        Options.writeBooleanPreference(this,
-                R.string.pref_prompt_crash_report_key, isChecked(
-                        crashPromptCheckBox));
-        Options.writeBooleanPreference(this,
-                R.string.pref_user_uses_braille_display_key, isChecked(
-                        usesDisplayCheckBox));
+        SetupWizardPreferenceUtils.persistProfilePreferences(this,
+                SetupWizardPreferenceUtils.isChecked(misspellingsCheckBox),
+                SetupWizardPreferenceUtils.isChecked(doubleSpaceCheckBox),
+                SetupWizardPreferenceUtils.isChecked(autoCapsCheckBox),
+                SetupWizardPreferenceUtils.isChecked(voiceShortcutCheckBox),
+                SetupWizardPreferenceUtils.isChecked(talkBackModeCheckBox),
+                SetupWizardPreferenceUtils.isChecked(autoUpdatesCheckBox),
+                SetupWizardPreferenceUtils.isChecked(crashPromptCheckBox),
+                SetupWizardPreferenceUtils.isChecked(usesDisplayCheckBox));
     }
 
     private void populateTableSpinners() {
@@ -903,58 +900,26 @@ public class SetupWizardActivity extends Activity
         }
     }
 
-    private void setCheckedFromPreference(CheckBox checkBox, int keyRes,
-            int defaultRes) {
-        if (checkBox == null) {
-            return;
-        }
-        checkBox.setChecked(Options.getBooleanPreference(this, keyRes,
-                Boolean.parseBoolean(getString(defaultRes))));
-    }
-
-    private int getKeyboardStyleSelection() {
-        String keyboardStyle = Options.getStringPreference(this,
-                R.string.pref_keyboard_style_key,
-                getString(R.string.pref_keyboard_style_normal_value));
-        if (TextUtils.equals(keyboardStyle,
-                getString(R.string.pref_keyboard_style_slate_value))) {
-            return 1;
-        }
-        if (TextUtils.equals(keyboardStyle,
-                getString(R.string.pref_keyboard_style_top_bottom_value))) {
-            return 2;
-        }
-        return 0;
-    }
-
-    private String getKeyboardStyleValue(int selection) {
-        return getString(selection == 1
-                ? R.string.pref_keyboard_style_slate_value
-                : selection == 2
-                        ? R.string.pref_keyboard_style_top_bottom_value
-                        : R.string.pref_keyboard_style_normal_value);
-    }
-
-    private boolean isChecked(CheckBox checkBox) {
-        return checkBox != null && checkBox.isChecked();
-    }
-
     private void setupSeekBar(SeekBar seekBar, final TextView valueView,
             final int keyRes, int defaultRes) {
         if (seekBar == null || valueView == null) {
             return;
         }
-        int currentValue = clampPercent(Options.getIntPreference(this, keyRes,
-                getString(defaultRes)));
+        int currentValue = SetupWizardPreferenceUtils.clampPercent(
+                Options.getIntPreference(this, keyRes, getString(defaultRes)),
+                MIN_PERCENT, MAX_PERCENT);
         seekBar.setMax(MAX_PERCENT - MIN_PERCENT);
         seekBar.setProgress(currentValue - MIN_PERCENT);
-        updatePercentLabel(valueView, currentValue);
+        SetupWizardPreferenceUtils.updatePercentLabel(this, valueView,
+                currentValue, MIN_PERCENT, MAX_PERCENT);
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress,
                     boolean fromUser) {
                 int value = progress + MIN_PERCENT;
-                updatePercentLabel(valueView, value);
+                SetupWizardPreferenceUtils.updatePercentLabel(
+                        SetupWizardActivity.this, valueView, value,
+                        MIN_PERCENT, MAX_PERCENT);
                 if (fromUser) {
                     Options.writeStringPreference(SetupWizardActivity.this,
                             keyRes, String.valueOf(value));
@@ -974,29 +939,32 @@ public class SetupWizardActivity extends Activity
 
     private void setupSeekBarValues() {
         if (ttsRateSeekBar != null) {
-            ttsRateSeekBar.setProgress(clampPercent(Options.getIntPreference(this,
-                    R.string.pref_text_to_speech_rate_key,
-                    getString(R.string.pref_text_to_speech_rate_default)))
-                    - MIN_PERCENT);
+            ttsRateSeekBar.setProgress(SetupWizardPreferenceUtils.clampPercent(
+                    Options.getIntPreference(this,
+                            R.string.pref_text_to_speech_rate_key,
+                            getString(R.string.pref_text_to_speech_rate_default)),
+                    MIN_PERCENT, MAX_PERCENT) - MIN_PERCENT);
         }
         if (ttsPitchSeekBar != null) {
-            ttsPitchSeekBar.setProgress(clampPercent(Options.getIntPreference(this,
-                    R.string.pref_text_to_speech_pitch_key,
-                    getString(R.string.pref_text_to_speech_pitch_default)))
-                    - MIN_PERCENT);
+            ttsPitchSeekBar.setProgress(SetupWizardPreferenceUtils.clampPercent(
+                    Options.getIntPreference(this,
+                            R.string.pref_text_to_speech_pitch_key,
+                            getString(R.string.pref_text_to_speech_pitch_default)),
+                    MIN_PERCENT, MAX_PERCENT) - MIN_PERCENT);
         }
         if (ttsVolumeSeekBar != null) {
-            ttsVolumeSeekBar.setProgress(clampPercent(Options.getIntPreference(this,
-                    R.string.pref_text_to_speech_volume_key,
-                    getString(R.string.pref_text_to_speech_volume_default)))
-                    - MIN_PERCENT);
+            ttsVolumeSeekBar.setProgress(SetupWizardPreferenceUtils.clampPercent(
+                    Options.getIntPreference(this,
+                            R.string.pref_text_to_speech_volume_key,
+                            getString(R.string.pref_text_to_speech_volume_default)),
+                    MIN_PERCENT, MAX_PERCENT) - MIN_PERCENT);
         }
-        updatePercentLabel(ttsRateValueView,
-                getSeekPercent(ttsRateSeekBar));
-        updatePercentLabel(ttsPitchValueView,
-                getSeekPercent(ttsPitchSeekBar));
-        updatePercentLabel(ttsVolumeValueView,
-                getSeekPercent(ttsVolumeSeekBar));
+        SetupWizardPreferenceUtils.updatePercentLabel(this, ttsRateValueView,
+                getSeekPercent(ttsRateSeekBar), MIN_PERCENT, MAX_PERCENT);
+        SetupWizardPreferenceUtils.updatePercentLabel(this, ttsPitchValueView,
+                getSeekPercent(ttsPitchSeekBar), MIN_PERCENT, MAX_PERCENT);
+        SetupWizardPreferenceUtils.updatePercentLabel(this, ttsVolumeValueView,
+                getSeekPercent(ttsVolumeSeekBar), MIN_PERCENT, MAX_PERCENT);
     }
 
     private void populateEngineSpinner() {
@@ -1183,25 +1151,8 @@ public class SetupWizardActivity extends Activity
     }
 
     private int getSeekPercent(SeekBar seekBar) {
-        return clampPercent((seekBar == null ? 0 : seekBar.getProgress())
-                + MIN_PERCENT);
-    }
-
-    private void updatePercentLabel(TextView view, int value) {
-        if (view != null) {
-            view.setText(getString(R.string.pref_text_to_speech_percent_value,
-                    clampPercent(value)));
-        }
-    }
-
-    private int clampPercent(int value) {
-        if (value < MIN_PERCENT) {
-            return MIN_PERCENT;
-        }
-        if (value > MAX_PERCENT) {
-            return MAX_PERCENT;
-        }
-        return value;
+        return SetupWizardPreferenceUtils.getSeekPercent(seekBar,
+                MIN_PERCENT, MAX_PERCENT);
     }
 
     private abstract class SimpleItemSelectedListener
