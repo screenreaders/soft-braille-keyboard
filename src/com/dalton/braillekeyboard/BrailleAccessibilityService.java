@@ -697,7 +697,8 @@ public class BrailleAccessibilityService extends AccessibilityService
                 CharSequence text = editableNode.getText();
                 int boundary = end
                         ? (text == null ? 0 : text.length()) : 0;
-                boolean handled = setSelection(editableNode, boundary, boundary);
+                boolean handled = BrailleAccessibilityNodeActionUtils
+                        .setSelection(editableNode, boundary, boundary);
                 if (handled) {
                     panOffset = 0;
                     updateDisplayedContent(AccessibilityNodeInfo.obtain(editableNode),
@@ -818,7 +819,8 @@ public class BrailleAccessibilityService extends AccessibilityService
             return performCurrentAction(AccessibilityNodeInfo.ACTION_CLICK);
         }
         try {
-            boolean handled = setSelection(editableNode, textPosition, textPosition);
+            boolean handled = BrailleAccessibilityNodeActionUtils
+                    .setSelection(editableNode, textPosition, textPosition);
             if (handled) {
                 panOffset = Math.max(0, panOffset + index - (getDisplayWidth() / 2));
                 updateDisplayedContent(AccessibilityNodeInfo.obtain(editableNode), null);
@@ -851,7 +853,8 @@ public class BrailleAccessibilityService extends AccessibilityService
         try {
             CharSequence currentText = editableNode.getText();
             String current = currentText == null ? "" : currentText.toString();
-            int[] range = getEditableSelectionRange(editableNode, current);
+            int[] range = BrailleAccessibilityNodeActionUtils
+                    .getEditableSelectionRange(editableNode, current);
             int start = range[0];
             int end = range[1];
             String next = current.substring(0, start) + replacement
@@ -864,7 +867,8 @@ public class BrailleAccessibilityService extends AccessibilityService
                     AccessibilityNodeInfo.ACTION_SET_TEXT, arguments);
             if (handled) {
                 int nextCursor = start + replacement.length();
-                setSelection(editableNode, nextCursor, nextCursor);
+                BrailleAccessibilityNodeActionUtils.setSelection(editableNode,
+                        nextCursor, nextCursor);
                 renderFocusedNode(editableNode);
             }
             return handled;
@@ -881,7 +885,8 @@ public class BrailleAccessibilityService extends AccessibilityService
         try {
             CharSequence currentText = editableNode.getText();
             String current = currentText == null ? "" : currentText.toString();
-            int[] range = getEditableSelectionRange(editableNode, current);
+            int[] range = BrailleAccessibilityNodeActionUtils
+                    .getEditableSelectionRange(editableNode, current);
             int start = range[0];
             int end = range[1];
             if (start == end) {
@@ -906,62 +911,14 @@ public class BrailleAccessibilityService extends AccessibilityService
             boolean handled = editableNode.performAction(
                     AccessibilityNodeInfo.ACTION_SET_TEXT, arguments);
             if (handled) {
-                setSelection(editableNode, start, start);
+                BrailleAccessibilityNodeActionUtils.setSelection(editableNode,
+                        start, start);
                 renderFocusedNode(editableNode);
             }
             return handled;
         } finally {
             editableNode.recycle();
         }
-    }
-
-    private boolean setSelection(AccessibilityNodeInfo node, int start, int end) {
-        int max = getNodeTextLength(node);
-        Bundle arguments = new Bundle();
-        arguments.putInt(
-                AccessibilityNodeInfo.ACTION_ARGUMENT_SELECTION_START_INT,
-                clampSelectionIndex(start, max));
-        arguments.putInt(
-                AccessibilityNodeInfo.ACTION_ARGUMENT_SELECTION_END_INT,
-                clampSelectionIndex(end, max));
-        return node.performAction(AccessibilityNodeInfo.ACTION_SET_SELECTION,
-                arguments);
-    }
-
-    private int[] getEditableSelectionRange(AccessibilityNodeInfo node,
-            String current) {
-        int max = current == null ? 0 : current.length();
-        int start = node.getTextSelectionStart();
-        int end = node.getTextSelectionEnd();
-        if (start < 0 || end < 0) {
-            start = max;
-            end = max;
-        }
-        start = clampSelectionIndex(start, max);
-        end = clampSelectionIndex(end, max);
-        if (start > end) {
-            int tmp = start;
-            start = end;
-            end = tmp;
-        }
-        return new int[] { start, end };
-    }
-
-    private int getNodeTextLength(AccessibilityNodeInfo node) {
-        if (node == null || node.getText() == null) {
-            return 0;
-        }
-        return node.getText().length();
-    }
-
-    private static int clampSelectionIndex(int value, int max) {
-        if (value < 0) {
-            return 0;
-        }
-        if (value > max) {
-            return max;
-        }
-        return value;
     }
 
     private AccessibilityNodeInfo obtainEditableNode() {

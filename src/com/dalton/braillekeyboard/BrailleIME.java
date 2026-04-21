@@ -253,40 +253,17 @@ public class BrailleIME extends InputMethodService implements KeyboardListener {
     }
 
     private void publishAccessibilityPassthroughRegion() {
-        if (brailleView == null || !isTalkBackBrailleModeActive()) {
-            clearAccessibilityPassthroughRegion();
-            return;
-        }
-        brailleView.post(new Runnable() {
-            @Override
-            public void run() {
-                if (brailleView == null || !brailleView.isShown()
-                        || brailleView.getWidth() <= 0
-                        || brailleView.getHeight() <= 0) {
-                    clearAccessibilityPassthroughRegion();
-                    return;
-                }
-                int[] location = new int[2];
-                brailleView.getLocationOnScreen(location);
-                Rect region = new Rect(location[0], location[1],
-                        location[0] + brailleView.getWidth(),
-                        location[1] + brailleView.getHeight());
-                BrailleImePassthroughBridge.updateKeyboardRegion(region, true);
-            }
-        });
+        BrailleImePassthroughUtils.publishAccessibilityPassthroughRegion(
+                brailleView, isTalkBackBrailleModeActive());
     }
 
     private void clearAccessibilityPassthroughRegion() {
-        BrailleImePassthroughBridge.updateKeyboardRegion(new Rect(), false);
+        BrailleImePassthroughUtils.clearAccessibilityPassthroughRegion();
     }
 
     private boolean isTalkBackBrailleModeActive() {
-        return Options.getBooleanPreference(this,
-                R.string.pref_talkback_braille_mode_key,
-                Boolean.parseBoolean(getString(
-                        R.string.pref_talkback_braille_mode_default)))
-                && brailleView != null
-                && brailleView.isTalkBackTouchModeActive();
+        return BrailleImePassthroughUtils.isTalkBackBrailleModeActive(this,
+                brailleView);
     }
 
     private boolean canStartActivity(Intent intent) {
