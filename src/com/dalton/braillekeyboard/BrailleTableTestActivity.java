@@ -50,13 +50,7 @@ public class BrailleTableTestActivity extends Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_braille_table_test);
         setTitle(R.string.braille_table_test_title);
-
-        currentTableView = (TextView) findViewById(R.id.braille_table_test_current);
-        statusView = (TextView) findViewById(R.id.braille_table_test_status);
-        sourceTextView = (EditText) findViewById(R.id.braille_table_test_source);
-        forwardResultView = (TextView) findViewById(R.id.braille_table_test_forward_result);
-        cellsInputView = (EditText) findViewById(R.id.braille_table_test_cells_input);
-        backwardResultView = (TextView) findViewById(R.id.braille_table_test_backward_result);
+        bindViews();
 
         statusView.setText(R.string.braille_table_test_waiting);
         startTranslatorLoad(false);
@@ -301,6 +295,17 @@ public class BrailleTableTestActivity extends Activity
         updateTableUi();
     }
 
+    private void bindViews() {
+        currentTableView = (TextView) findViewById(R.id.braille_table_test_current);
+        statusView = (TextView) findViewById(R.id.braille_table_test_status);
+        sourceTextView = (EditText) findViewById(R.id.braille_table_test_source);
+        forwardResultView = (TextView) findViewById(
+                R.id.braille_table_test_forward_result);
+        cellsInputView = (EditText) findViewById(R.id.braille_table_test_cells_input);
+        backwardResultView = (TextView) findViewById(
+                R.id.braille_table_test_backward_result);
+    }
+
     private void loadAvailableTables() {
         addTables(brailleParser.getTables(BrailleParser.BrailleType.ALL));
         if (tables.isEmpty()) {
@@ -321,20 +326,18 @@ public class BrailleTableTestActivity extends Activity
             return;
         }
         for (TableInfo table : source) {
-            if (table == null) {
-                continue;
-            }
-            boolean exists = false;
-            for (TableInfo existing : tables) {
-                if (existing != null && TextUtils.equals(existing.getId(),
-                        table.getId())) {
-                    exists = true;
-                    break;
-                }
-            }
-            if (!exists) {
+            if (table != null && !containsTableId(table.getId())) {
                 tables.add(table);
             }
         }
+    }
+
+    private boolean containsTableId(String tableId) {
+        for (TableInfo existing : tables) {
+            if (existing != null && TextUtils.equals(existing.getId(), tableId)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

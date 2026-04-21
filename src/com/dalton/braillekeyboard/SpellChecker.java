@@ -123,18 +123,22 @@ public class SpellChecker {
 
     public boolean checkSpelling(SpellingSuggestionsReadyListener listener,
             String text, int cursor, Direction direction) {
-        if (isSpellCheckAvailable() && !TextUtils.isEmpty(text)
-                && listener != null && direction != null) {
-            this.cursor = Math.max(0, Math.min(cursor, text.length()));
-            this.direction = direction;
-            this.text = text;
-            this.listener = listener;
-            initOffsets();
-            doSpellCheck();
-            return true;
-        } else {
+        if (!canCheckSpelling(listener, text, direction)) {
             return false;
         }
+        this.cursor = Math.max(0, Math.min(cursor, text.length()));
+        this.direction = direction;
+        this.text = text;
+        this.listener = listener;
+        initOffsets();
+        doSpellCheck();
+        return true;
+    }
+
+    private boolean canCheckSpelling(SpellingSuggestionsReadyListener listener,
+            String text, Direction direction) {
+        return isSpellCheckAvailable() && !TextUtils.isEmpty(text)
+                && listener != null && direction != null;
     }
 
     @SuppressLint("NewApi")
@@ -143,15 +147,20 @@ public class SpellChecker {
             return;
         }
         spellChecker.cancel();
-        int safeStart = Math.max(0, Math.min(startOffset, text.length()));
-        int safeEnd = Math.max(safeStart, Math.min(endOffset, text.length()));
+        int[] range = getSafeSpellCheckRange();
 
         // Append a space (" ") to the input string to the spelling checker.
         // This resolves some edge cases like a word followed by a period
         // without a following space.
         spellChecker.getSentenceSuggestions(
-                new TextInfo[] { new TextInfo(text.substring(safeStart, safeEnd)
+                new TextInfo[] { new TextInfo(text.substring(range[0], range[1])
                         + " ") }, MAX_SUGGESTIONS);
+    }
+
+    private int[] getSafeSpellCheckRange() {
+        int safeStart = Math.max(0, Math.min(startOffset, text.length()));
+        int safeEnd = Math.max(safeStart, Math.min(endOffset, text.length()));
+        return new int[] { safeStart, safeEnd };
     }
 
     public void destroy() {
@@ -254,20 +263,27 @@ public class SpellChecker {
     }
 
     private void normaliseOffsets() {
+        startOffset = normalizeStartOffset();
+        endOffset = normalizeEndOffset();
+    }
+
+    private int normalizeStartOffset() {
         int safeStart = Math.min(startOffset, text.length() - 1);
         for (int i = safeStart; i >= 0; i--) {
-            startOffset = i;
             if (Character.isWhitespace(text.charAt(i))) {
-                break;
+                return i;
             }
         }
+        return 0;
+    }
 
+    private int normalizeEndOffset() {
         for (int i = Math.max(0, endOffset); i < text.length(); i++) {
-            endOffset = i;
             if (Character.isWhitespace(text.charAt(i))) {
-                break;
+                return i;
             }
         }
+        return text.length();
     }
 
     public static class Suggestion {

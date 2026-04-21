@@ -29,18 +29,11 @@ public class EditingUtilities {
     public static final String LINE_SEPARATOR = "\n";
 
     public static Word getBlock(String before, String after, String sep) {
-        before = before == null ? "" : before;
-        after = after == null ? "" : after;
-        int start = before.length();
-        int end = -1;
+        before = safeText(before);
+        after = safeText(after);
+        int start = findBlockStart(before, sep);
+        int end = findBlockEnd(after, sep);
         // now work outwards until we find a separator
-        while (start > 0 && !matchesSeparator(before.charAt(start - 1), sep)) {
-            --start;
-        }
-        while (++end < after.length()
-                && !matchesSeparator(after.charAt(end), sep)) {
-        }
-
         return new Word(safeSubstring(before, start, before.length())
                 + safeSubstring(after, 0, end),
                 before.length() - start, end);
@@ -48,8 +41,8 @@ public class EditingUtilities {
 
     private static Word skipSeparator(String before, String after, String sep,
             int maxSkip) {
-        before = before == null ? "" : before;
-        after = after == null ? "" : after;
+        before = safeText(before);
+        after = safeText(after);
         int start = before.length();
         int end = -1;
         // Make before[start] and after[end] point to characters that
@@ -105,6 +98,25 @@ public class EditingUtilities {
             }
         }
         return false;
+    }
+
+    private static String safeText(String value) {
+        return value == null ? "" : value;
+    }
+
+    private static int findBlockStart(String before, String sep) {
+        int start = before.length();
+        while (start > 0 && !matchesSeparator(before.charAt(start - 1), sep)) {
+            --start;
+        }
+        return start;
+    }
+
+    private static int findBlockEnd(String after, String sep) {
+        int end = -1;
+        while (++end < after.length() && !matchesSeparator(after.charAt(end), sep)) {
+        }
+        return end;
     }
 
     public static Word moveToPreviousCharacter(KeyboardListener listener) {

@@ -31,12 +31,7 @@ public class BrailleProfilesActivity extends Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_braille_profiles);
         setTitle(R.string.braille_profiles_title);
-
-        profileSpinner = (Spinner) findViewById(R.id.braille_profile_spinner);
-        profileNameInput = (EditText) findViewById(R.id.braille_profile_name_input);
-        currentProfileView = (TextView) findViewById(R.id.braille_profile_active_status);
-        currentSettingsView = (TextView) findViewById(
-                R.id.braille_profile_current_settings);
+        bindViews();
 
         profileAdapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_spinner_item, profileNames);
@@ -154,6 +149,15 @@ public class BrailleProfilesActivity extends Activity
         bindCurrentSettings();
     }
 
+    private void bindViews() {
+        profileSpinner = (Spinner) findViewById(R.id.braille_profile_spinner);
+        profileNameInput = (EditText) findViewById(R.id.braille_profile_name_input);
+        currentProfileView = (TextView) findViewById(
+                R.id.braille_profile_active_status);
+        currentSettingsView = (TextView) findViewById(
+                R.id.braille_profile_current_settings);
+    }
+
     private void refreshProfileList() {
         String activeProfile = BrailleUserProfiles.getActiveProfileName(this);
         profileNames.clear();
@@ -181,30 +185,42 @@ public class BrailleProfilesActivity extends Activity
     }
 
     private void bindCurrentSettings() {
+        currentSettingsView.setText(getString(
+                R.string.braille_profiles_current_settings_template,
+                getBrailleTypeLabel(), getActiveTableId(), getTtsEngineLabel(),
+                getPreferredDisplayLabel()));
+    }
+
+    private String getBrailleTypeLabel() {
         BrailleParser.BrailleType brailleType = brailleParser == null
                 ? BrailleParser.BrailleType.LITERARY
                 : brailleParser.getBrailleType(this);
-        String typeLabel = brailleType == BrailleParser.BrailleType.COMPUTER
+        return brailleType == BrailleParser.BrailleType.COMPUTER
                 ? getString(R.string.grade_computer)
                 : getString(R.string.grade_literary);
+    }
+
+    private String getActiveTableId() {
         TableInfo activeTable = brailleParser == null ? null
                 : brailleParser.getTable(this);
-        String activeTableId = activeTable == null
-                ? getString(R.string.no_braille_table)
+        return activeTable == null ? getString(R.string.no_braille_table)
                 : activeTable.getId();
+    }
+
+    private String getTtsEngineLabel() {
         String ttsEngine = Options.getStringPreference(this,
                 R.string.pref_text_to_speech_engine_key, "");
-        if (TextUtils.isEmpty(ttsEngine)) {
-            ttsEngine = getString(R.string.pref_text_to_speech_engine_auto);
-        }
+        return TextUtils.isEmpty(ttsEngine)
+                ? getString(R.string.pref_text_to_speech_engine_auto)
+                : ttsEngine;
+    }
+
+    private String getPreferredDisplayLabel() {
         String preferredDisplay = BrailleDisplayPreferences
                 .getPreferredDeviceAddress(this);
-        if (TextUtils.isEmpty(preferredDisplay)) {
-            preferredDisplay = getString(R.string.braille_profile_no_device);
-        }
-        currentSettingsView.setText(getString(
-                R.string.braille_profiles_current_settings_template,
-                typeLabel, activeTableId, ttsEngine, preferredDisplay));
+        return TextUtils.isEmpty(preferredDisplay)
+                ? getString(R.string.braille_profile_no_device)
+                : preferredDisplay;
     }
 
     private void setSelectedProfile(String name) {
