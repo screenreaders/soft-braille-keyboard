@@ -34,21 +34,13 @@ public class BrailleKeyboardTestActivity extends Activity {
 
     public void onOpenKeyboardSettings(View view) {
         Intent intent = new Intent(Settings.ACTION_INPUT_METHOD_SETTINGS);
-        if (canStartActivity(intent)) {
+        if (ActivityLaunchUtils.canStartActivity(this, intent)) {
             startActivity(intent);
         }
     }
 
     public void onChooseDefaultKeyboard(View view) {
-        InputMethodManager inputManager = (InputMethodManager) getSystemService(
-                Context.INPUT_METHOD_SERVICE);
-        if (inputManager != null) {
-            try {
-                inputManager.showInputMethodPicker();
-            } catch (RuntimeException e) {
-                // Keep the test screen responsive if the system picker fails.
-            }
-        }
+        ActivityLaunchUtils.showInputMethodPicker(this);
     }
 
     public void onFocusPracticeField(View view) {
@@ -96,7 +88,8 @@ public class BrailleKeyboardTestActivity extends Activity {
                         calibrationCount)
                 : getString(R.string.setup_status_calibration_missing);
         statusView.setText(getString(R.string.braille_keyboard_test_status_template,
-                yesNo(enabled), yesNo(isDefault), calibrationStatus));
+                StatusTextUtils.yesNo(this, enabled),
+                StatusTextUtils.yesNo(this, isDefault), calibrationStatus));
     }
 
     private boolean isKeyboardEnabled() {
@@ -128,12 +121,4 @@ public class BrailleKeyboardTestActivity extends Activity {
         return !TextUtils.isEmpty(id) && id.startsWith(getPackageName());
     }
 
-    private String yesNo(boolean value) {
-        return getString(value ? R.string.main_status_yes : R.string.main_status_no);
-    }
-
-    private boolean canStartActivity(Intent intent) {
-        return intent != null && getPackageManager() != null
-                && intent.resolveActivity(getPackageManager()) != null;
-    }
 }

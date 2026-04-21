@@ -379,13 +379,7 @@ public class ActionHandler {
         case FIVE_DOWN:
             if (fastDoubleSwipe) {
                 message = context.getString(R.string.show_input_switcher);
-                if (inputManager != null) {
-                    try {
-                        inputManager.showInputMethodPicker();
-                    } catch (RuntimeException e) {
-                        // Ignore picker launch failure and keep gesture handling alive.
-                    }
-                }
+                ActivityLaunchUtils.showInputMethodPicker(context);
             } else {
                 message = context.getString(R.string.swipe_confirm_input);
             }
@@ -1143,9 +1137,6 @@ public class ActionHandler {
     }
 
     private static boolean canStartActivity(Context context, Intent intent) {
-        PackageManager packageManager = context == null ? null
-                : context.getPackageManager();
-        return intent != null && packageManager != null
-                && intent.resolveActivity(packageManager) != null;
+        return ActivityLaunchUtils.canStartActivity(context, intent);
     }
 }

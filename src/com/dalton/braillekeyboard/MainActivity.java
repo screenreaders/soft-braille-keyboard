@@ -34,7 +34,6 @@ import android.os.Looper;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -125,22 +124,14 @@ public class MainActivity extends Activity {
     public void onKeyboardSettings(View view) {
         Intent intent = new Intent(
                 android.provider.Settings.ACTION_INPUT_METHOD_SETTINGS);
-        if (canStartActivity(intent)) {
+        if (ActivityLaunchUtils.canStartActivity(this, intent)) {
             startActivity(intent);
         }
     }
 
     // Triggered when the button to change default input method is pressed.
     public void onDefaultInputMethod(View view) {
-        InputMethodManager inputManager = (InputMethodManager) getSystemService(
-                Context.INPUT_METHOD_SERVICE);
-        if (inputManager != null) {
-            try {
-                inputManager.showInputMethodPicker();
-            } catch (RuntimeException e) {
-                // Ignore picker launch failure and leave UI responsive.
-            }
-        }
+        ActivityLaunchUtils.showInputMethodPicker(this);
     }
 
     // Triggered when the user clicks the button to read the manual.
@@ -148,90 +139,90 @@ public class MainActivity extends Activity {
     // browser if the in-app guide cannot be opened.
     public void onURL(View view) {
         Intent intent = new Intent(this, QuickStartActivity.class);
-        if (canStartActivity(intent)) {
+        if (ActivityLaunchUtils.canStartActivity(this, intent)) {
             startActivity(intent);
             return;
         }
         Intent browserIntent = new Intent(Intent.ACTION_VIEW);
         browserIntent.setData(Uri.parse(getString(R.string.info_url)));
-        if (canStartActivity(browserIntent)) {
+        if (ActivityLaunchUtils.canStartActivity(this, browserIntent)) {
             startActivity(browserIntent);
         }
     }
 
     public void onBrailleDisplays(View view) {
         Intent intent = new Intent(this, BrailleDisplayActivity.class);
-        if (canStartActivity(intent)) {
+        if (ActivityLaunchUtils.canStartActivity(this, intent)) {
             startActivity(intent);
         }
     }
 
     public void onAccessibilitySettings(View view) {
         Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
-        if (canStartActivity(intent)) {
+        if (ActivityLaunchUtils.canStartActivity(this, intent)) {
             startActivity(intent);
         }
     }
 
     public void onSetupWizard(View view) {
         Intent intent = new Intent(this, SetupWizardActivity.class);
-        if (canStartActivity(intent)) {
+        if (ActivityLaunchUtils.canStartActivity(this, intent)) {
             startActivity(intent);
         }
     }
 
     public void onBrailleTranslationSettings(View view) {
         Intent intent = new Intent(this, PreferenceIME.class);
-        if (canStartActivity(intent)) {
+        if (ActivityLaunchUtils.canStartActivity(this, intent)) {
             startActivity(intent);
         }
     }
 
     public void onBrailleProfiles(View view) {
         Intent intent = new Intent(this, BrailleProfilesActivity.class);
-        if (canStartActivity(intent)) {
+        if (ActivityLaunchUtils.canStartActivity(this, intent)) {
             startActivity(intent);
         }
     }
 
     public void onAppSettings(View view) {
         Intent intent = new Intent(this, PreferenceIME.class);
-        if (canStartActivity(intent)) {
+        if (ActivityLaunchUtils.canStartActivity(this, intent)) {
             startActivity(intent);
         }
     }
 
     public void onTtsSettings(View view) {
         Intent intent = new Intent(this, TtsSettingsActivity.class);
-        if (canStartActivity(intent)) {
+        if (ActivityLaunchUtils.canStartActivity(this, intent)) {
             startActivity(intent);
         }
     }
 
     public void onBrailleLearn(View view) {
         Intent intent = new Intent(this, BrailleLearnActivity.class);
-        if (canStartActivity(intent)) {
+        if (ActivityLaunchUtils.canStartActivity(this, intent)) {
             startActivity(intent);
         }
     }
 
     public void onBrailleTableTest(View view) {
         Intent intent = new Intent(this, BrailleTableTestActivity.class);
-        if (canStartActivity(intent)) {
+        if (ActivityLaunchUtils.canStartActivity(this, intent)) {
             startActivity(intent);
         }
     }
 
     public void onBrailleNotes(View view) {
         Intent intent = new Intent(this, BrailleNotesActivity.class);
-        if (canStartActivity(intent)) {
+        if (ActivityLaunchUtils.canStartActivity(this, intent)) {
             startActivity(intent);
         }
     }
 
     public void onKeyboardCalibrationTest(View view) {
         Intent intent = new Intent(this, BrailleKeyboardTestActivity.class);
-        if (canStartActivity(intent)) {
+        if (ActivityLaunchUtils.canStartActivity(this, intent)) {
             startActivity(intent);
         }
     }
@@ -294,14 +285,14 @@ public class MainActivity extends Activity {
 
     public void onReportIssue(View view) {
         Intent intent = new Intent(this, SupportReportActivity.class);
-        if (canStartActivity(intent)) {
+        if (ActivityLaunchUtils.canStartActivity(this, intent)) {
             startActivity(intent);
         }
     }
 
     public void onGuidedScreenReport(View view) {
         Intent intent = new Intent(this, GuidedScreenReportActivity.class);
-        if (canStartActivity(intent)) {
+        if (ActivityLaunchUtils.canStartActivity(this, intent)) {
             startActivity(intent);
         }
     }
@@ -312,7 +303,7 @@ public class MainActivity extends Activity {
         intent.setType("application/json");
         intent.putExtra(Intent.EXTRA_TITLE,
                 getString(R.string.app_settings_backup_file_name));
-        if (canStartActivity(intent)) {
+        if (ActivityLaunchUtils.canStartActivity(this, intent)) {
             startActivityForResult(intent, REQUEST_EXPORT_APP_SETTINGS_FILE);
         } else {
             Toast.makeText(this, R.string.app_settings_backup_export_failed,
@@ -324,7 +315,7 @@ public class MainActivity extends Activity {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("*/*");
-        if (canStartActivity(intent)) {
+        if (ActivityLaunchUtils.canStartActivity(this, intent)) {
             startActivityForResult(intent, REQUEST_IMPORT_APP_SETTINGS_FILE);
         } else {
             Toast.makeText(this, R.string.app_settings_backup_import_failed,
@@ -353,7 +344,7 @@ public class MainActivity extends Activity {
         }
         wizardAutoLaunched = true;
         Intent intent = new Intent(this, SetupWizardActivity.class);
-        if (canStartActivity(intent)) {
+        if (ActivityLaunchUtils.canStartActivity(this, intent)) {
             startActivity(intent);
         }
     }
@@ -404,7 +395,8 @@ public class MainActivity extends Activity {
                                 intent.putExtra(
                                         SupportReportSender.EXTRA_ADDITIONAL_DIAGNOSTICS,
                                         pendingCrash.details);
-                                if (canStartActivity(intent)) {
+                                if (ActivityLaunchUtils.canStartActivity(
+                                        MainActivity.this, intent)) {
                                     startActivity(intent);
                                 }
                             }
@@ -495,11 +487,6 @@ public class MainActivity extends Activity {
                 }
             }
         }
-    }
-
-    private boolean canStartActivity(Intent intent) {
-        return intent != null && getPackageManager() != null
-                && intent.resolveActivity(getPackageManager()) != null;
     }
 
     private void setUpdateCheckEnabled(boolean enabled) {
@@ -850,7 +837,7 @@ public class MainActivity extends Activity {
             Intent permissionIntent = new Intent(
                     Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
                     Uri.parse("package:" + getPackageName()));
-            if (canStartActivity(permissionIntent)) {
+            if (ActivityLaunchUtils.canStartActivity(this, permissionIntent)) {
                 startActivity(permissionIntent);
             } else {
                 openUri(fallbackUrl);
@@ -863,7 +850,7 @@ public class MainActivity extends Activity {
         installIntent.putExtra(Intent.EXTRA_RETURN_RESULT, true);
         installIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         installIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        if (canStartActivity(installIntent)) {
+        if (ActivityLaunchUtils.canStartActivity(this, installIntent)) {
             startActivity(installIntent);
         } else {
             openUri(fallbackUrl);
@@ -881,7 +868,7 @@ public class MainActivity extends Activity {
             return;
         }
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(value));
-        if (canStartActivity(intent)) {
+        if (ActivityLaunchUtils.canStartActivity(this, intent)) {
             startActivity(intent);
         }
     }

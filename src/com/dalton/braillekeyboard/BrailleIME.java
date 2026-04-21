@@ -281,8 +281,7 @@ public class BrailleIME extends InputMethodService implements KeyboardListener {
     }
 
     private boolean canStartActivity(Intent intent) {
-        return intent != null && getPackageManager() != null
-                && intent.resolveActivity(getPackageManager()) != null;
+        return ActivityLaunchUtils.canStartActivity(this, intent);
     }
 
     @Override

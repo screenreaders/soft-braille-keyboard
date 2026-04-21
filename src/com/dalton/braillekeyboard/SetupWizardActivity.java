@@ -156,21 +156,13 @@ public class SetupWizardActivity extends Activity
 
     public void onOpenKeyboardSettings(View view) {
         Intent intent = new Intent(Settings.ACTION_INPUT_METHOD_SETTINGS);
-        if (canStartActivity(intent)) {
+        if (ActivityLaunchUtils.canStartActivity(this, intent)) {
             startActivity(intent);
         }
     }
 
     public void onChooseDefaultKeyboard(View view) {
-        InputMethodManager inputManager = (InputMethodManager) getSystemService(
-                Context.INPUT_METHOD_SERVICE);
-        if (inputManager != null) {
-            try {
-                inputManager.showInputMethodPicker();
-            } catch (RuntimeException e) {
-                // Leave wizard responsive if the picker cannot be shown.
-            }
-        }
+        ActivityLaunchUtils.showInputMethodPicker(this);
     }
 
     public void onFocusPracticeField(View view) {
@@ -188,14 +180,14 @@ public class SetupWizardActivity extends Activity
 
     public void onOpenAccessibilitySettings(View view) {
         Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
-        if (canStartActivity(intent)) {
+        if (ActivityLaunchUtils.canStartActivity(this, intent)) {
             startActivity(intent);
         }
     }
 
     public void onOpenBrailleDisplayTools(View view) {
         Intent intent = new Intent(this, BrailleDisplayActivity.class);
-        if (canStartActivity(intent)) {
+        if (ActivityLaunchUtils.canStartActivity(this, intent)) {
             startActivity(intent);
         }
     }
@@ -829,7 +821,7 @@ public class SetupWizardActivity extends Activity
     }
 
     private String yesNo(boolean value) {
-        return getString(value ? R.string.main_status_yes : R.string.main_status_no);
+        return StatusTextUtils.yesNo(this, value);
     }
 
     private void syncKeyboardDotsWithBrailleType(
@@ -1411,11 +1403,6 @@ public class SetupWizardActivity extends Activity
             return MAX_PERCENT;
         }
         return value;
-    }
-
-    private boolean canStartActivity(Intent intent) {
-        return intent != null && getPackageManager() != null
-                && intent.resolveActivity(getPackageManager()) != null;
     }
 
     private abstract class SimpleItemSelectedListener

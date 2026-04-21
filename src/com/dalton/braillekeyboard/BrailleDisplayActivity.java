@@ -138,14 +138,14 @@ public class BrailleDisplayActivity extends Activity {
 
     public void onBluetoothSettings(View view) {
         Intent intent = new Intent(Settings.ACTION_BLUETOOTH_SETTINGS);
-        if (canStartActivity(intent)) {
+        if (ActivityLaunchUtils.canStartActivity(this, intent)) {
             startActivity(intent);
         }
     }
 
     public void onAccessibilitySettings(View view) {
         Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
-        if (canStartActivity(intent)) {
+        if (ActivityLaunchUtils.canStartActivity(this, intent)) {
             startActivity(intent);
         }
     }
@@ -353,7 +353,7 @@ public class BrailleDisplayActivity extends Activity {
 
     public void onExportBrailleProfilesToFile(View view) {
         Intent intent = createProfilesExportIntent();
-        if (canStartActivity(intent)) {
+        if (ActivityLaunchUtils.canStartActivity(this, intent)) {
             startActivityForResult(intent, REQUEST_EXPORT_PROFILES_FILE);
         } else {
             appendLog(getString(R.string.braille_log_profiles_file_export_failed));
@@ -362,7 +362,7 @@ public class BrailleDisplayActivity extends Activity {
 
     public void onImportBrailleProfilesFromFile(View view) {
         Intent intent = createProfilesImportIntent();
-        if (canStartActivity(intent)) {
+        if (ActivityLaunchUtils.canStartActivity(this, intent)) {
             startActivityForResult(intent, REQUEST_IMPORT_PROFILES_FILE);
         } else {
             appendLog(getString(R.string.braille_log_profiles_file_import_failed));
@@ -493,7 +493,7 @@ public class BrailleDisplayActivity extends Activity {
                 buildDiagnosticsReport());
         intent.putExtra(SupportReportActivity.EXTRA_REPORT_TYPE,
                 "braille_display");
-        if (canStartActivity(intent)) {
+        if (ActivityLaunchUtils.canStartActivity(this, intent)) {
             startActivity(intent);
         }
     }
@@ -1172,11 +1172,6 @@ public class BrailleDisplayActivity extends Activity {
         return false;
     }
 
-    private boolean canStartActivity(Intent intent) {
-        return intent != null && getPackageManager() != null
-                && intent.resolveActivity(getPackageManager()) != null;
-    }
-
     private void bindDisplayClientListeners() {
         displayClient.setOnConnectionStateChangeListener(
                 new Display.OnConnectionStateChangeListener() {
@@ -1261,9 +1256,9 @@ public class BrailleDisplayActivity extends Activity {
             intent.putExtra(Intent.EXTRA_TEXT, export);
             Intent chooser = Intent.createChooser(intent,
                     getString(R.string.braille_share_profiles));
-            if (canStartActivity(chooser)) {
+            if (ActivityLaunchUtils.canStartActivity(this, chooser)) {
                 startActivity(chooser);
-            } else if (canStartActivity(intent)) {
+            } else if (ActivityLaunchUtils.canStartActivity(this, intent)) {
                 startActivity(intent);
             } else {
                 appendLog(getString(R.string.braille_log_profiles_share_failed));
