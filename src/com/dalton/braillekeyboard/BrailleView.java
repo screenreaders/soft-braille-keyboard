@@ -418,9 +418,8 @@ public class BrailleView extends View {
     }
 
     private String getTalkBackKeyboardDescription() {
-        return getContext().getString(BrailleImePassthroughBridge.isPassthroughActive()
-                ? R.string.braille_keyboard_talkback_ready
-                : R.string.braille_keyboard_talkback_enable_service);
+        return BrailleViewFeedbackUtils.getTalkBackKeyboardDescription(
+                getContext(), BrailleImePassthroughBridge.isPassthroughActive());
     }
 
     private void handleTouchRelease(int id, int width, int height,
@@ -725,55 +724,18 @@ public class BrailleView extends View {
     }
 
     private boolean shouldUseEightDots() {
-        if (listener != null) {
-            return listener.getDots() == 8;
-        }
-        return Options.getBooleanPreference(
-                getContext(),
-                R.string.pref_use_eight_dots_key,
-                Boolean.parseBoolean(getContext().getString(
-                        R.string.pref_use_eight_dots_default)));
+        return BrailleViewFeedbackUtils.shouldUseEightDots(getContext(),
+                listener);
     }
 
     private byte pressedDotString() {
-        byte mask = 1;
-        byte value = 0;
-
-        // See what dots of the first six are pressed.
-        for (int i = 0; i < dotsDown.length - 2; i++) {
-            if (dotsDown[i] != null) {
-                // it's present so set the bit in the bitstring.
-                value |= mask;
-            }
-            mask <<= 1;
-        }
-
-        // special case for setting dots 7 and 8.
-        // They can be activated by pressing them on the screen or using a swipe
-        // gesture.
-        if (dot7 || dotsDown[6] != null) {
-            value |= mask;
-        }
-        mask <<= 1;
-        if (dot8 || dotsDown[7] != null) {
-            value |= mask;
-        }
-        return value;
+        return BrailleViewFeedbackUtils.buildPressedDotString(dotsDown, dot7,
+                dot8);
     }
 
     private void sendNotification(boolean vibrate, boolean playSound) {
-        int keyboardFeedback = Options.getIntPreference(getContext(),
-                R.string.pref_keyboard_feedback_key,
-                KeyboardFeedback.ALL.getValue());
-        if (vibrate
-                && (KeyboardFeedback.VIBRATE.value & keyboardFeedback) != 0
-                && vibrator != null) {
-            vibrator.vibrate(QUICK_VIBRATION);
-        }
-        if (playSound
-                && (KeyboardFeedback.SOUND.value & keyboardFeedback) != 0) {
-            playSoundEffect(SoundEffectConstants.CLICK);
-        }
+        BrailleViewFeedbackUtils.sendNotification(getContext(), vibrator, this,
+                vibrate, playSound, QUICK_VIBRATION);
     }
 
     private void expandKeyboard() {
@@ -814,11 +776,8 @@ public class BrailleView extends View {
     }
 
     private boolean applyPrivacy() {
-        boolean enabled = Options.getBooleanPreference(
-                getContext(),
-                R.string.pref_privacy_key,
-                Boolean.parseBoolean(getContext().getString(
-                        R.string.pref_privacy_default)));
+        boolean enabled = BrailleViewFeedbackUtils.readPrivacyEnabled(
+                getContext());
         if (privacyEnabled == null || privacyEnabled.booleanValue() != enabled) {
             setBackgroundColor(getContext().getResources().getColor(
                     enabled ? android.R.color.black : android.R.color.transparent));
@@ -880,13 +839,8 @@ public class BrailleView extends View {
     }
 
     public boolean isTalkBackTouchModeActive() {
-        return accessibilityManager != null
-                && accessibilityManager.isTouchExplorationEnabled()
-                && Options.getBooleanPreference(
-                        getContext(),
-                        R.string.pref_talkback_braille_mode_key,
-                        Boolean.parseBoolean(getContext().getString(
-                                R.string.pref_talkback_braille_mode_default)));
+        return BrailleViewFeedbackUtils.isTalkBackTouchModeActive(getContext(),
+                accessibilityManager);
     }
 
     private boolean isCalibrationGestureActive() {
@@ -896,15 +850,9 @@ public class BrailleView extends View {
     }
 
     private void announceTalkBackHint(String message) {
-        if (speech == null || message == null) {
-            return;
-        }
-        long now = System.currentTimeMillis();
-        if (now - lastTalkBackHintAt < TALKBACK_HINT_DEBOUNCE_MS) {
-            return;
-        }
-        lastTalkBackHintAt = now;
-        speech.speak(getContext(), message, Speech.QUEUE_FLUSH);
+        lastTalkBackHintAt = BrailleViewFeedbackUtils.announceTalkBackHint(
+                getContext(), speech, lastTalkBackHintAt, message,
+                TALKBACK_HINT_DEBOUNCE_MS);
     }
 
     private void updateSystemGestureExclusion() {
