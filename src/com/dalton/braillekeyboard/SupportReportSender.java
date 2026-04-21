@@ -5,10 +5,7 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.text.TextUtils;
-
-import java.util.Locale;
 
 public final class SupportReportSender {
     public static final String EXTRA_ADDITIONAL_DIAGNOSTICS =
@@ -87,52 +84,11 @@ public final class SupportReportSender {
         String issueUrl = "https://github.com/" + repoInfo.owner + "/"
                 + repoInfo.repo + "/issues/new";
         boolean hardware = data.reportType == ReportData.ReportType.BRAILLE_DISPLAY;
-        StringBuilder body = new StringBuilder();
-        body.append(hardware ? "Hardware or braille-display report sent from the app.\n\n"
-                : "General app report sent from the app.\n\n");
-        body.append("Summary\n");
-        body.append(data.subject);
-        body.append("\n\n");
-        body.append("Description\n");
-        body.append(data.message);
-        body.append("\n\n");
-        body.append("Expected result\n");
-        body.append("-\n\n");
-        body.append("Actual result\n");
-        body.append("-\n\n");
-        body.append("Steps to reproduce\n");
-        body.append("1. \n2. \n3. \n\n");
-        body.append("Environment\n");
-        body.append("- App version: ").append(BuildConfig.VERSION_NAME)
-                .append(" (").append(BuildConfig.VERSION_CODE).append(")\n");
-        body.append("- Android: ").append(Build.VERSION.RELEASE)
-                .append(" / SDK ").append(Build.VERSION.SDK_INT).append('\n');
-        body.append("- Device: ").append(Build.MANUFACTURER).append(' ')
-                .append(Build.MODEL).append('\n');
-        body.append("- Locale: ").append(Locale.getDefault().toLanguageTag())
-                .append("\n\n");
-        if (!TextUtils.isEmpty(data.name) || !TextUtils.isEmpty(data.email)) {
-            body.append("Reporter:\n");
-            body.append(TextUtils.isEmpty(data.name) ? "(not provided)"
-                    : data.name);
-            if (!TextUtils.isEmpty(data.email)) {
-                body.append(" <");
-                body.append(data.email);
-                body.append(">");
-            }
-            body.append("\n\n");
-        }
-        body.append("Diagnostics\n");
-        body.append("Paste the diagnostics copied from the app here.\n");
-        if (hardware) {
-            body.append("\nBraille display\n");
-            body.append("- Model / transport:\n");
-            body.append("- Connection type: Bluetooth / USB\n");
-        }
+        String issueBody = SupportReportTextUtils.buildGitHubBody(data);
         Uri.Builder builder = Uri.parse(issueUrl).buildUpon()
                 .appendQueryParameter("title",
                         (hardware ? "[hardware] " : "[bug] ") + data.subject)
-                .appendQueryParameter("body", body.toString())
+                .appendQueryParameter("body", issueBody)
                 .appendQueryParameter("labels",
                         hardware ? "hardware,needs-triage"
                                 : "bug,needs-triage");
@@ -159,45 +115,12 @@ public final class SupportReportSender {
     }
 
     private static String buildReportTitle(ReportData data) {
-        return data.reportType == ReportData.ReportType.BRAILLE_DISPLAY
-                ? "[hardware] " + data.subject : "[bug] " + data.subject;
+        return SupportReportTextUtils.buildReportTitle(data);
     }
 
     private static String buildRemoteBody(ReportData data, String title,
             String diagnostics) {
-        StringBuilder remoteBody = new StringBuilder();
-        remoteBody.append("Soft Braille Keyboard report\n");
-        remoteBody.append("Title: ").append(title).append('\n');
-        appendReporter(remoteBody, data);
-        remoteBody.append("Type: ").append(data.reportType.name()).append('\n');
-        remoteBody.append('\n');
-        remoteBody.append("Message\n");
-        remoteBody.append("=======\n");
-        remoteBody.append(data.message).append('\n');
-        appendDiagnostics(remoteBody, diagnostics);
-        return remoteBody.toString();
-    }
-
-    private static void appendReporter(StringBuilder remoteBody, ReportData data) {
-        remoteBody.append("Reporter: ")
-                .append(TextUtils.isEmpty(data.name) ? "(not provided)"
-                        : data.name);
-        if (!TextUtils.isEmpty(data.email)) {
-            remoteBody.append(" <").append(data.email).append('>');
-        }
-        remoteBody.append('\n');
-    }
-
-    private static void appendDiagnostics(StringBuilder remoteBody,
-            String diagnostics) {
-        if (TextUtils.isEmpty(diagnostics)) {
-            return;
-        }
-        remoteBody.append('\n');
-        remoteBody.append(diagnostics);
-        if (!diagnostics.endsWith("\n")) {
-            remoteBody.append('\n');
-        }
+        return SupportReportTextUtils.buildRemoteBody(data, title, diagnostics);
     }
 
     private static void copyDiagnosticsToClipboard(Context context,

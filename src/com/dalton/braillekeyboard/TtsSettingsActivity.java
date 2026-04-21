@@ -93,20 +93,28 @@ public class TtsSettingsActivity extends Activity {
         if (seekBar == null || labelView == null) {
             return;
         }
-        final int currentValue = clampPercent(Options.getIntPreference(this,
-                keyRes, getString(defaultRes)));
+        final int currentValue = TtsSettingsUiUtils.clampPercent(
+                Options.getIntPreference(this, keyRes, getString(defaultRes)),
+                MIN_PERCENT, MAX_PERCENT);
         seekBar.setMax(MAX_PERCENT - MIN_PERCENT);
         seekBar.setKeyProgressIncrement(STEP_PERCENT);
         seekBar.setProgress(currentValue - MIN_PERCENT);
-        updateParameterLabel(labelView, titleRes, currentValue);
-        seekBar.setContentDescription(buildParameterLabel(titleRes, currentValue));
+        TtsSettingsUiUtils.updateParameterLabel(labelView, this, titleRes,
+                currentValue, MIN_PERCENT, MAX_PERCENT);
+        seekBar.setContentDescription(TtsSettingsUiUtils.buildParameterLabel(
+                this, titleRes, currentValue, MIN_PERCENT, MAX_PERCENT));
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress,
                     boolean fromUser) {
                 int value = progress + MIN_PERCENT;
-                updateParameterLabel(labelView, titleRes, value);
-                seekBar.setContentDescription(buildParameterLabel(titleRes, value));
+                TtsSettingsUiUtils.updateParameterLabel(labelView,
+                        TtsSettingsActivity.this, titleRes, value, MIN_PERCENT,
+                        MAX_PERCENT);
+                seekBar.setContentDescription(
+                        TtsSettingsUiUtils.buildParameterLabel(
+                                TtsSettingsActivity.this, titleRes, value,
+                                MIN_PERCENT, MAX_PERCENT));
                 if (fromUser) {
                     Options.writeStringPreference(TtsSettingsActivity.this,
                             keyRes, String.valueOf(value));
@@ -223,7 +231,9 @@ public class TtsSettingsActivity extends Activity {
         if (seekBar == null) {
             return;
         }
-        int target = clampPercent((seekBar.getProgress() + MIN_PERCENT) + delta);
+        int target = TtsSettingsUiUtils.clampPercent(
+                (seekBar.getProgress() + MIN_PERCENT) + delta,
+                MIN_PERCENT, MAX_PERCENT);
         seekBar.setProgress(target - MIN_PERCENT);
         Options.writeStringPreference(this, keyRes, String.valueOf(target));
         applyCurrentSpeechParameters();
@@ -402,38 +412,13 @@ public class TtsSettingsActivity extends Activity {
     }
 
     private int getSeekPercent(SeekBar seekBar) {
-        return clampPercent((seekBar == null ? 0 : seekBar.getProgress())
-                + MIN_PERCENT);
-    }
-
-    private void updateParameterLabel(TextView view, int titleRes, int value) {
-        if (view != null) {
-            view.setText(buildParameterLabel(titleRes, value));
-        }
-    }
-
-    private String buildParameterLabel(int titleRes, int value) {
-        return getString(R.string.pref_text_to_speech_slider_label,
-                getString(titleRes), Integer.valueOf(clampPercent(value)));
-    }
-
-    private int clampPercent(int value) {
-        if (value < MIN_PERCENT) {
-            return MIN_PERCENT;
-        }
-        if (value > MAX_PERCENT) {
-            return MAX_PERCENT;
-        }
-        return value;
+        return TtsSettingsUiUtils.clampPercent(
+                (seekBar == null ? 0 : seekBar.getProgress()) + MIN_PERCENT,
+                MIN_PERCENT, MAX_PERCENT);
     }
 
     private String getCheckedTag(RadioGroup group, int checkedId) {
-        View checkedView = group.findViewById(checkedId);
-        if (!(checkedView instanceof RadioButton)) {
-            return "";
-        }
-        Object tag = checkedView.getTag();
-        return tag == null ? "" : tag.toString();
+        return TtsSettingsUiUtils.getCheckedTag(group, checkedId);
     }
 
 }
