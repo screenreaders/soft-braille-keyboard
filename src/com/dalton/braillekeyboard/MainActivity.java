@@ -436,75 +436,135 @@ public class MainActivity extends Activity {
             return;
         }
         if (releaseInfo == null) {
-            new AlertDialog.Builder(this)
-                    .setTitle(R.string.update_no_release_title)
-                    .setMessage(R.string.update_no_release_message)
-                    .setPositiveButton(android.R.string.ok, null)
-                    .setNeutralButton(R.string.update_action_open_release,
-                            new android.content.DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(
-                                        android.content.DialogInterface dialog,
-                                        int which) {
-                                    openUri(repoInfo.releasesUrl);
-                                }
-                            })
-                    .show();
+            showNoReleaseDialog(repoInfo);
             return;
         }
 
-        String installedVersion = TextUtils.isEmpty(BuildConfig.VERSION_NAME)
-                ? getString(R.string.update_unknown_version)
-                : BuildConfig.VERSION_NAME;
-        String latestVersion = TextUtils.isEmpty(releaseInfo.getDisplayVersion())
-                ? getString(R.string.update_unknown_version)
-                : releaseInfo.getDisplayVersion();
+        String installedVersion = getInstalledVersionLabel();
+        String latestVersion = getReleaseVersionLabel(releaseInfo);
 
         if (!GitHubReleaseChecker.isNewerThanInstalled(releaseInfo,
                 BuildConfig.VERSION_NAME)) {
-            final String releasePage = TextUtils.isEmpty(releaseInfo.htmlUrl)
-                    ? repoInfo.releasesUrl : releaseInfo.htmlUrl;
-            AlertDialog.Builder builder = new AlertDialog.Builder(this)
-                    .setTitle(R.string.update_up_to_date_title)
-                    .setMessage(getString(R.string.update_up_to_date_message,
-                            installedVersion, latestVersion))
-                    .setNegativeButton(android.R.string.cancel, null);
-            if (!TextUtils.isEmpty(releaseInfo.apkUrl)) {
-                final GitHubReleaseChecker.ReleaseInfo currentRelease = releaseInfo;
-                builder.setPositiveButton(R.string.update_action_download,
-                        new android.content.DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(
-                                    android.content.DialogInterface dialog,
-                                    int which) {
-                                startReleaseDownload(currentRelease);
-                            }
-                        });
-                builder.setNeutralButton(R.string.update_action_open_release,
-                        new android.content.DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(
-                                    android.content.DialogInterface dialog,
-                                    int which) {
-                                openUri(releasePage);
-                            }
-                        });
-            } else {
-                builder.setPositiveButton(android.R.string.ok, null)
-                        .setNeutralButton(R.string.update_action_open_release,
-                                new android.content.DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(
-                                            android.content.DialogInterface dialog,
-                                            int which) {
-                                        openUri(releasePage);
-                                    }
-                                });
-            }
-            builder.show();
+            showUpToDateDialog(repoInfo, releaseInfo, installedVersion, latestVersion);
             return;
         }
+        showAvailableUpdateDialog(repoInfo, releaseInfo, installedVersion, latestVersion);
+    }
 
+    private void showNoReleaseDialog(final GitHubReleaseChecker.RepoInfo repoInfo) {
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.update_no_release_title)
+                .setMessage(R.string.update_no_release_message)
+                .setPositiveButton(android.R.string.ok, null)
+                .setNeutralButton(R.string.update_action_open_release,
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                openUri(repoInfo.releasesUrl);
+                            }
+                        })
+                .show();
+    }
+
+    private void showUpToDateDialog(GitHubReleaseChecker.RepoInfo repoInfo,
+            final GitHubReleaseChecker.ReleaseInfo releaseInfo, String installedVersion,
+            String latestVersion) {
+        final String releasePage = getReleasePageUrl(repoInfo, releaseInfo);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this)
+                .setTitle(R.string.update_up_to_date_title)
+                .setMessage(getString(R.string.update_up_to_date_message,
+                        installedVersion, latestVersion))
+                .setNegativeButton(android.R.string.cancel, null);
+        if (!TextUtils.isEmpty(releaseInfo.apkUrl)) {
+            builder.setPositiveButton(R.string.update_action_download,
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            startReleaseDownload(releaseInfo);
+                        }
+                    });
+            builder.setNeutralButton(R.string.update_action_open_release,
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            openUri(releasePage);
+                        }
+                    });
+        } else {
+            builder.setPositiveButton(android.R.string.ok, null)
+                    .setNeutralButton(R.string.update_action_open_release,
+                            new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    openUri(releasePage);
+                                }
+                            });
+        }
+        builder.show();
+    }
+
+    private void showAvailableUpdateDialog(GitHubReleaseChecker.RepoInfo repoInfo,
+            final GitHubReleaseChecker.ReleaseInfo releaseInfo, String installedVersion,
+            String latestVersion) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this)
+                .setTitle(R.string.update_available_title)
+                .setMessage(buildAvailableUpdateMessage(releaseInfo,
+                        installedVersion, latestVersion))
+                .setNegativeButton(android.R.string.cancel, null);
+        if (TextUtils.isEmpty(releaseInfo.apkUrl)) {
+            final String releasePage = getReleasePageUrl(repoInfo, releaseInfo);
+            builder.setPositiveButton(R.string.update_action_open_release,
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            openUri(releasePage);
+                        }
+                    });
+        } else {
+            builder.setPositiveButton(R.string.update_action_download,
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            startReleaseDownload(releaseInfo);
+                        }
+                    });
+            if (!TextUtils.isEmpty(releaseInfo.htmlUrl)) {
+                builder.setNeutralButton(R.string.update_action_open_release,
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                openUri(releaseInfo.htmlUrl);
+                            }
+                        });
+            }
+        }
+        builder.show();
+    }
+
+    private String getInstalledVersionLabel() {
+        return TextUtils.isEmpty(BuildConfig.VERSION_NAME)
+                ? getString(R.string.update_unknown_version)
+                : BuildConfig.VERSION_NAME;
+    }
+
+    private String getReleaseVersionLabel(
+            GitHubReleaseChecker.ReleaseInfo releaseInfo) {
+        return releaseInfo == null || TextUtils.isEmpty(releaseInfo.getDisplayVersion())
+                ? getString(R.string.update_unknown_version)
+                : releaseInfo.getDisplayVersion();
+    }
+
+    private String getReleasePageUrl(GitHubReleaseChecker.RepoInfo repoInfo,
+            GitHubReleaseChecker.ReleaseInfo releaseInfo) {
+        if (releaseInfo != null && !TextUtils.isEmpty(releaseInfo.htmlUrl)) {
+            return releaseInfo.htmlUrl;
+        }
+        return repoInfo == null ? null : repoInfo.releasesUrl;
+    }
+
+    private String buildAvailableUpdateMessage(
+            GitHubReleaseChecker.ReleaseInfo releaseInfo, String installedVersion,
+            String latestVersion) {
         int messageId = TextUtils.isEmpty(releaseInfo.apkUrl)
                 ? R.string.update_no_apk_message
                 : R.string.update_available_message;
@@ -516,47 +576,7 @@ public class MainActivity extends Activity {
                     .append("\n")
                     .append(trimReleaseNotes(releaseInfo.body));
         }
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this)
-                .setTitle(R.string.update_available_title)
-                .setMessage(message.toString())
-                .setNegativeButton(android.R.string.cancel, null);
-        if (TextUtils.isEmpty(releaseInfo.apkUrl)) {
-            final String releasePage = TextUtils.isEmpty(releaseInfo.htmlUrl)
-                    ? repoInfo.releasesUrl : releaseInfo.htmlUrl;
-            builder.setPositiveButton(R.string.update_action_open_release,
-                    new android.content.DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(
-                                android.content.DialogInterface dialog,
-                                int which) {
-                            openUri(releasePage);
-                        }
-                    });
-        } else {
-            final GitHubReleaseChecker.ReleaseInfo finalReleaseInfo = releaseInfo;
-            builder.setPositiveButton(R.string.update_action_download,
-                    new android.content.DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(
-                                android.content.DialogInterface dialog,
-                                int which) {
-                            startReleaseDownload(finalReleaseInfo);
-                        }
-                    });
-            if (!TextUtils.isEmpty(releaseInfo.htmlUrl)) {
-                builder.setNeutralButton(R.string.update_action_open_release,
-                        new android.content.DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(
-                                    android.content.DialogInterface dialog,
-                                    int which) {
-                                openUri(finalReleaseInfo.htmlUrl);
-                            }
-                        });
-            }
-        }
-        builder.show();
+        return message.toString();
     }
 
     private String trimReleaseNotes(String body) {
@@ -584,42 +604,49 @@ public class MainActivity extends Activity {
             openUri(releaseInfo == null ? null : releaseInfo.htmlUrl);
             return;
         }
-        DownloadManager downloadManager
-                = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+        DownloadManager downloadManager = getDownloadManager();
         if (downloadManager == null) {
-            Toast.makeText(this, R.string.update_download_fallback,
-                    Toast.LENGTH_LONG).show();
-            openUri(TextUtils.isEmpty(releaseInfo.htmlUrl)
-                    ? releaseInfo.apkUrl : releaseInfo.htmlUrl);
+            fallbackToReleaseDownload(releaseInfo);
             return;
         }
         try {
-            String fileName = GitHubReleaseChecker.buildApkFileName(
-                    getString(R.string.app_name),
-                    releaseInfo.getDisplayVersion());
-            DownloadManager.Request request = new DownloadManager.Request(
-                    Uri.parse(releaseInfo.apkUrl));
-            request.setAllowedOverMetered(true);
-            request.setAllowedOverRoaming(true);
-            request.setMimeType("application/vnd.android.package-archive");
-            request.setNotificationVisibility(
-                    DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-            request.setTitle(getString(R.string.update_download_title,
-                    TextUtils.isEmpty(releaseInfo.getDisplayVersion())
-                            ? getString(R.string.update_unknown_version)
-                            : releaseInfo.getDisplayVersion()));
-            request.setDescription(
-                    getString(R.string.update_download_description));
-            request.setDestinationInExternalFilesDir(this,
-                    android.os.Environment.DIRECTORY_DOWNLOADS, fileName);
-            long downloadId = downloadManager.enqueue(request);
+            long downloadId = downloadManager.enqueue(buildReleaseDownloadRequest(releaseInfo));
             showUpdateDownloadDialog(downloadId, releaseInfo);
         } catch (RuntimeException e) {
-            Toast.makeText(this, R.string.update_download_fallback,
-                    Toast.LENGTH_LONG).show();
-            openUri(TextUtils.isEmpty(releaseInfo.htmlUrl)
-                    ? releaseInfo.apkUrl : releaseInfo.htmlUrl);
+            fallbackToReleaseDownload(releaseInfo);
         }
+    }
+
+    private DownloadManager getDownloadManager() {
+        return (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+    }
+
+    private DownloadManager.Request buildReleaseDownloadRequest(
+            GitHubReleaseChecker.ReleaseInfo releaseInfo) {
+        String fileName = GitHubReleaseChecker.buildApkFileName(
+                getString(R.string.app_name), releaseInfo.getDisplayVersion());
+        DownloadManager.Request request = new DownloadManager.Request(
+                Uri.parse(releaseInfo.apkUrl));
+        request.setAllowedOverMetered(true);
+        request.setAllowedOverRoaming(true);
+        request.setMimeType("application/vnd.android.package-archive");
+        request.setNotificationVisibility(
+                DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+        request.setTitle(getString(R.string.update_download_title,
+                getReleaseVersionLabel(releaseInfo)));
+        request.setDescription(getString(R.string.update_download_description));
+        request.setDestinationInExternalFilesDir(this,
+                android.os.Environment.DIRECTORY_DOWNLOADS, fileName);
+        return request;
+    }
+
+    private void fallbackToReleaseDownload(
+            GitHubReleaseChecker.ReleaseInfo releaseInfo) {
+        Toast.makeText(this, R.string.update_download_fallback,
+                Toast.LENGTH_LONG).show();
+        openUri(releaseInfo == null ? null
+                : TextUtils.isEmpty(releaseInfo.htmlUrl)
+                        ? releaseInfo.apkUrl : releaseInfo.htmlUrl);
     }
 
     private void showUpdateDownloadDialog(long downloadId,
@@ -677,8 +704,7 @@ public class MainActivity extends Activity {
         if (activeUpdateDownloadId < 0 || updateDownloadDialog == null) {
             return;
         }
-        DownloadManager downloadManager
-                = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+        DownloadManager downloadManager = getDownloadManager();
         if (downloadManager == null) {
             updateDownloadDialog.setMessage(
                     getString(R.string.update_download_status_failed));
@@ -702,15 +728,8 @@ public class MainActivity extends Activity {
                     DownloadManager.COLUMN_TOTAL_SIZE_BYTES));
             updateDownloadDialog.setMessage(buildDownloadStatusMessage(status,
                     downloaded, total));
-            Button installButton = updateDownloadDialog.getButton(
-                    AlertDialog.BUTTON_POSITIVE);
-            if (installButton != null) {
-                installButton.setEnabled(
-                        status == DownloadManager.STATUS_SUCCESSFUL);
-            }
-            if (status == DownloadManager.STATUS_RUNNING
-                    || status == DownloadManager.STATUS_PAUSED
-                    || status == DownloadManager.STATUS_PENDING) {
+            updateInstallButtonState(status);
+            if (shouldContinuePollingDownload(status)) {
                 updateDownloadHandler.postDelayed(updateDownloadPoller, 1000);
             }
         } catch (RuntimeException e) {
@@ -743,29 +762,39 @@ public class MainActivity extends Activity {
         }
     }
 
+    private void updateInstallButtonState(int status) {
+        Button installButton = updateDownloadDialog == null ? null
+                : updateDownloadDialog.getButton(AlertDialog.BUTTON_POSITIVE);
+        if (installButton != null) {
+            installButton.setEnabled(status == DownloadManager.STATUS_SUCCESSFUL);
+        }
+    }
+
+    private boolean shouldContinuePollingDownload(int status) {
+        return status == DownloadManager.STATUS_RUNNING
+                || status == DownloadManager.STATUS_PAUSED
+                || status == DownloadManager.STATUS_PENDING;
+    }
+
     private void installDownloadedUpdate(long downloadId, String fallbackUrl) {
         if (downloadId < 0) {
             openUri(fallbackUrl);
             return;
         }
-        DownloadManager downloadManager
-                = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+        DownloadManager downloadManager = getDownloadManager();
         if (downloadManager == null) {
             openUri(fallbackUrl);
             return;
         }
-        Uri apkUri = downloadManager.getUriForDownloadedFile(downloadId);
+        Uri apkUri = resolveDownloadedApkUri(downloadManager, downloadId);
         if (apkUri == null) {
             openUri(fallbackUrl);
             return;
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
-                && !getPackageManager().canRequestPackageInstalls()) {
+        if (requiresUnknownSourcesPermission()) {
             Toast.makeText(this, R.string.update_install_permission_required,
                     Toast.LENGTH_LONG).show();
-            Intent permissionIntent = new Intent(
-                    Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
-                    Uri.parse("package:" + getPackageName()));
+            Intent permissionIntent = buildUnknownSourcesSettingsIntent();
             if (ActivityLaunchUtils.canStartActivity(this, permissionIntent)) {
                 startActivity(permissionIntent);
             } else {
@@ -784,6 +813,22 @@ public class MainActivity extends Activity {
         } else {
             openUri(fallbackUrl);
         }
+    }
+
+    private Uri resolveDownloadedApkUri(DownloadManager downloadManager,
+            long downloadId) {
+        return downloadManager == null ? null
+                : downloadManager.getUriForDownloadedFile(downloadId);
+    }
+
+    private boolean requiresUnknownSourcesPermission() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                && !getPackageManager().canRequestPackageInstalls();
+    }
+
+    private Intent buildUnknownSourcesSettingsIntent() {
+        return new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                Uri.parse("package:" + getPackageName()));
     }
 
     private void stopUpdateDownloadPolling() {
