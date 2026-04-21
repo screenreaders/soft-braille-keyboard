@@ -59,75 +59,11 @@ public class PreferenceIME extends PreferenceActivity {
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
-            // Load the preferences from an XML resource
             addPreferencesFromResource(R.xml.ime_preferences);
-            ListPreference keyboardEcho = (ListPreference) findPreference(getString(R.string.pref_echo_feedback_key));
-            ListPreference keyboardFeedback = (ListPreference) findPreference(getString(R.string.pref_keyboard_feedback_key));
-            Preference brailleDisplayTools = findPreference(getString(
-                    R.string.pref_braille_display_tools_key));
-            Preference brailleLearn = findPreference(getString(
-                    R.string.pref_braille_learn_key));
-            Preference brailleProfiles = findPreference(getString(
-                    R.string.pref_braille_profiles_key));
-            Preference accessibilityTools = findPreference(getString(
-                    R.string.pref_accessibility_tools_key));
-            Preference quickStartGuide = findPreference(getString(
-                    R.string.pref_quick_start_guide_key));
-            Preference ttsSettings = findPreference(getString(
-                    R.string.pref_text_to_speech_settings_key));
-
-            addOptions(keyboardFeedback, KeyboardFeedback.ALL);
-            addOptions(keyboardEcho, KeyboardEcho.ALL);
-
-            Preference preference = findPreference(getActivity().getString(
-                    R.string.pref_app_version_key));
-            try {
-                String versionCode = getActivity().getPackageManager()
-                        .getPackageInfo(getActivity().getPackageName(), 0).versionName;
-                if (preference != null) {
-                    preference.setTitle(String.format(
-                            getActivity()
-                                    .getString(R.string.pref_app_version_title),
-                            versionCode));
-                }
-            } catch (Exception e) {
-                if (preference != null) {
-                    preference.setEnabled(false);
-                }
-            }
-            if (brailleDisplayTools != null) {
-                brailleDisplayTools.setIntent(new Intent(getActivity(),
-                        BrailleDisplayActivity.class));
-            }
-            if (brailleLearn != null) {
-                brailleLearn.setIntent(new Intent(getActivity(),
-                        BrailleLearnActivity.class));
-            }
-            if (brailleProfiles != null) {
-                brailleProfiles.setIntent(new Intent(getActivity(),
-                        BrailleProfilesActivity.class));
-            }
-            if (accessibilityTools != null) {
-                accessibilityTools.setIntent(new Intent(
-                        android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS));
-            }
-            if (quickStartGuide != null) {
-                quickStartGuide.setIntent(new Intent(getActivity(),
-                        QuickStartActivity.class));
-            }
-            if (ttsSettings != null) {
-                ttsSettings.setIntent(new Intent(getActivity(),
-                        TtsSettingsActivity.class));
-            }
-
-            brailleParser = new BrailleParser(getActivity(),
-                    new BrailleParser.BrailleParserListener() {
-
-                        @Override
-                        public void onTranslatorReady(int status) {
-                            addTables(status);
-                        }
-                    });
+            configureListPreferences();
+            configureToolPreferences();
+            configureVersionPreference();
+            initBrailleParser();
         }
 
         @Override
@@ -139,9 +75,6 @@ public class PreferenceIME extends PreferenceActivity {
         }
 
         private void addTables(int status) {
-            List<String> entries = new ArrayList<String>();
-            List<String> entryValues = new ArrayList<String>();
-
             ListPreference compBraille = (ListPreference) findPreference(getString(R.string.pref_braille_computer_table_key));
             ListPreference literaryBraille = (ListPreference) findPreference(getString(R.string.pref_braille_literary_table_key));
             MultiSelectListPreference switchPref = (MultiSelectListPreference) findPreference(getActivity()
@@ -156,35 +89,29 @@ public class PreferenceIME extends PreferenceActivity {
                     || status == BrailleParser.STATUS_TABLE_ERROR) {
                 tables = brailleParser.getTables(BrailleType.ALL);
             }
-            populateWithTables(tables, entries, entryValues, true, null);
-            switchPref.setEntries(entries.toArray(new String[entries.size()]));
-            switchPref.setEntryValues(entryValues
-                    .toArray(new String[entryValues.size()]));
+            TableEntries switchEntries = buildTableEntries(tables, true, null);
+            switchPref.setEntries(switchEntries.entries);
+            switchPref.setEntryValues(switchEntries.entryValues);
 
-            resetLists(entries, entryValues);
             if (status == BrailleParser.STATUS_OK
                     || status == BrailleParser.STATUS_TABLE_ERROR) {
                 tables = brailleParser.getTables(BrailleType.LITERARY);
             }
-            populateWithTables(tables, entries, entryValues, true,
+            TableEntries literaryEntries = buildTableEntries(tables, true,
                     brailleParser.getDefaultId(getActivity(),
                             BrailleType.LITERARY));
-            literaryBraille.setEntries(entries.toArray(new String[entries
-                    .size()]));
-            literaryBraille.setEntryValues(entryValues
-                    .toArray(new String[entryValues.size()]));
+            literaryBraille.setEntries(literaryEntries.entries);
+            literaryBraille.setEntryValues(literaryEntries.entryValues);
 
-            resetLists(entries, entryValues);
             if (status == BrailleParser.STATUS_OK
                     || status == BrailleParser.STATUS_TABLE_ERROR) {
                 tables = brailleParser.getTables(BrailleType.COMPUTER);
             }
-            populateWithTables(tables, entries, entryValues, false,
+            TableEntries computerEntries = buildTableEntries(tables, false,
                     brailleParser.getDefaultId(getActivity(),
                             BrailleType.COMPUTER));
-            compBraille.setEntries(entries.toArray(new String[entries.size()]));
-            compBraille.setEntryValues(entryValues
-                    .toArray(new String[entryValues.size()]));
+            compBraille.setEntries(computerEntries.entries);
+            compBraille.setEntryValues(computerEntries.entryValues);
         }
 
         private void addOptions(ListPreference pref, OptionList option) {
@@ -200,6 +127,15 @@ public class PreferenceIME extends PreferenceActivity {
             }
             pref.setEntries(entries);
             pref.setEntryValues(entryValues);
+        }
+
+        private TableEntries buildTableEntries(List<TableInfo> tables,
+                boolean verbose, String defaultId) {
+            List<String> entries = new ArrayList<String>();
+            List<String> entryValues = new ArrayList<String>();
+            populateWithTables(tables, entries, entryValues, verbose, defaultId);
+            return new TableEntries(entries.toArray(new String[entries.size()]),
+                    entryValues.toArray(new String[entryValues.size()]));
         }
 
         private void populateWithTables(List<TableInfo> tables,
@@ -237,9 +173,75 @@ public class PreferenceIME extends PreferenceActivity {
             }
         }
 
-        private static void resetLists(List<String> list1, List<String> list2) {
-            list1.clear();
-            list2.clear();
+        private void configureListPreferences() {
+            ListPreference keyboardEcho = (ListPreference) findPreference(
+                    getString(R.string.pref_echo_feedback_key));
+            ListPreference keyboardFeedback = (ListPreference) findPreference(
+                    getString(R.string.pref_keyboard_feedback_key));
+            addOptions(keyboardFeedback, KeyboardFeedback.ALL);
+            addOptions(keyboardEcho, KeyboardEcho.ALL);
+        }
+
+        private void configureToolPreferences() {
+            setPreferenceIntent(R.string.pref_braille_display_tools_key,
+                    new Intent(getActivity(), BrailleDisplayActivity.class));
+            setPreferenceIntent(R.string.pref_braille_learn_key,
+                    new Intent(getActivity(), BrailleLearnActivity.class));
+            setPreferenceIntent(R.string.pref_braille_profiles_key,
+                    new Intent(getActivity(), BrailleProfilesActivity.class));
+            setPreferenceIntent(R.string.pref_accessibility_tools_key,
+                    new Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS));
+            setPreferenceIntent(R.string.pref_quick_start_guide_key,
+                    new Intent(getActivity(), QuickStartActivity.class));
+            setPreferenceIntent(R.string.pref_text_to_speech_settings_key,
+                    new Intent(getActivity(), TtsSettingsActivity.class));
+        }
+
+        private void configureVersionPreference() {
+            Preference preference = findPreference(getActivity().getString(
+                    R.string.pref_app_version_key));
+            try {
+                String versionCode = getActivity().getPackageManager()
+                        .getPackageInfo(getActivity().getPackageName(),
+                                0).versionName;
+                if (preference != null) {
+                    preference.setTitle(String.format(
+                            getActivity().getString(
+                                    R.string.pref_app_version_title),
+                            versionCode));
+                }
+            } catch (Exception e) {
+                if (preference != null) {
+                    preference.setEnabled(false);
+                }
+            }
+        }
+
+        private void initBrailleParser() {
+            brailleParser = new BrailleParser(getActivity(),
+                    new BrailleParser.BrailleParserListener() {
+                        @Override
+                        public void onTranslatorReady(int status) {
+                            addTables(status);
+                        }
+                    });
+        }
+
+        private void setPreferenceIntent(int keyRes, Intent intent) {
+            Preference preference = findPreference(getString(keyRes));
+            if (preference != null) {
+                preference.setIntent(intent);
+            }
+        }
+
+        private static final class TableEntries {
+            final CharSequence[] entries;
+            final CharSequence[] entryValues;
+
+            TableEntries(CharSequence[] entries, CharSequence[] entryValues) {
+                this.entries = entries;
+                this.entryValues = entryValues;
+            }
         }
     }
 }

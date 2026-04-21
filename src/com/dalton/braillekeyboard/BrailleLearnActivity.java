@@ -82,48 +82,8 @@ public class BrailleLearnActivity extends Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_braille_learn);
         setTitle(R.string.braille_learn_title);
-
-        modeView = (TextView) findViewById(R.id.braille_learn_mode);
-        categoryView = (TextView) findViewById(R.id.braille_learn_category);
-        progressView = (TextView) findViewById(R.id.braille_learn_progress);
-        tableView = (TextView) findViewById(R.id.braille_learn_table);
-        promptView = (TextView) findViewById(R.id.braille_learn_prompt);
-        dotsView = (TextView) findViewById(R.id.braille_learn_selected_dots);
-        statusView = (TextView) findViewById(R.id.braille_learn_status);
-        scoreView = (TextView) findViewById(R.id.braille_learn_score);
-        keyboardInputView = (EditText) findViewById(R.id.braille_learn_keyboard_input);
-        keyboardResultView = (TextView) findViewById(R.id.braille_learn_keyboard_result);
-        dotsContainer = findViewById(R.id.braille_learn_dots_container);
-        choiceContainer = findViewById(R.id.braille_learn_choices);
-
-        for (int i = 0; i < dotButtons.length; i++) {
-            int id = getResources().getIdentifier("braille_learn_dot_" + (i + 1),
-                    "id", getPackageName());
-            dotButtons[i] = (Button) findViewById(id);
-        }
-        for (int i = 0; i < choiceButtons.length; i++) {
-            int id = getResources().getIdentifier(
-                    "braille_learn_choice_" + (i + 1), "id", getPackageName());
-            choiceButtons[i] = (Button) findViewById(id);
-        }
-
-        keyboardInputView.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count,
-                    int after) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before,
-                    int count) {
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                updateKeyboardHelper();
-            }
-        });
-
+        bindViews();
+        bindKeyboardHelper();
         brailleParser = new BrailleParser(this, this);
         refreshViews();
     }
@@ -283,20 +243,9 @@ public class BrailleLearnActivity extends Activity
     private void rebuildLessonItems(boolean resetStatus) {
         lessonItems = buildLessonItems();
         if (lessonItems.isEmpty()) {
-            currentItem = null;
-            currentChoices.clear();
-            currentIndex = 0;
-            if (resetStatus) {
-                statusView.setText(R.string.braille_learn_empty);
-            }
+            resetEmptyLessonState(resetStatus);
         } else {
-            Collections.shuffle(lessonItems, random);
-            currentIndex = 0;
-            currentItem = lessonItems.get(currentIndex);
-            rebuildChoices();
-            if (resetStatus) {
-                statusView.setText(R.string.braille_learn_ready);
-            }
+            initializeLessonState(resetStatus);
         }
         selectedDotsMask = 0;
         refreshViews();
@@ -304,9 +253,7 @@ public class BrailleLearnActivity extends Activity
 
     private void nextChallenge() {
         if (lessonItems.isEmpty()) {
-            currentItem = null;
-            currentChoices.clear();
-            selectedDotsMask = 0;
+            resetCurrentChallenge();
             refreshViews();
             return;
         }
@@ -488,23 +435,103 @@ public class BrailleLearnActivity extends Activity
     }
 
     private void refreshViews() {
+        refreshHeaderViews();
+        refreshModeViews();
+        refreshDotButtons();
+        refreshChoiceButtons();
+        refreshScore();
+        updateKeyboardHelper();
+    }
+
+    private void bindViews() {
+        modeView = (TextView) findViewById(R.id.braille_learn_mode);
+        categoryView = (TextView) findViewById(R.id.braille_learn_category);
+        progressView = (TextView) findViewById(R.id.braille_learn_progress);
+        tableView = (TextView) findViewById(R.id.braille_learn_table);
+        promptView = (TextView) findViewById(R.id.braille_learn_prompt);
+        dotsView = (TextView) findViewById(R.id.braille_learn_selected_dots);
+        statusView = (TextView) findViewById(R.id.braille_learn_status);
+        scoreView = (TextView) findViewById(R.id.braille_learn_score);
+        keyboardInputView = (EditText) findViewById(
+                R.id.braille_learn_keyboard_input);
+        keyboardResultView = (TextView) findViewById(
+                R.id.braille_learn_keyboard_result);
+        dotsContainer = findViewById(R.id.braille_learn_dots_container);
+        choiceContainer = findViewById(R.id.braille_learn_choices);
+        bindIndexedButtons(dotButtons, "braille_learn_dot_");
+        bindIndexedButtons(choiceButtons, "braille_learn_choice_");
+    }
+
+    private void bindIndexedButtons(Button[] buttons, String idPrefix) {
+        for (int i = 0; i < buttons.length; i++) {
+            int id = getResources().getIdentifier(idPrefix + (i + 1), "id",
+                    getPackageName());
+            buttons[i] = (Button) findViewById(id);
+        }
+    }
+
+    private void bindKeyboardHelper() {
+        if (keyboardInputView == null) {
+            return;
+        }
+        keyboardInputView.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count,
+                    int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before,
+                    int count) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                updateKeyboardHelper();
+            }
+        });
+    }
+
+    private void resetEmptyLessonState(boolean resetStatus) {
+        currentItem = null;
+        currentChoices.clear();
+        currentIndex = 0;
+        if (resetStatus) {
+            statusView.setText(R.string.braille_learn_empty);
+        }
+    }
+
+    private void initializeLessonState(boolean resetStatus) {
+        Collections.shuffle(lessonItems, random);
+        currentIndex = 0;
+        currentItem = lessonItems.get(currentIndex);
+        rebuildChoices();
+        if (resetStatus) {
+            statusView.setText(R.string.braille_learn_ready);
+        }
+    }
+
+    private void resetCurrentChallenge() {
+        currentItem = null;
+        currentChoices.clear();
+        selectedDotsMask = 0;
+    }
+
+    private void refreshHeaderViews() {
         modeView.setText(getModeLabel());
         categoryView.setText(getCategoryLabel());
         progressView.setText(getProgressLabel());
         tableView.setText(getCurrentTableLabel());
         promptView.setText(buildPromptLabel());
+    }
+
+    private void refreshModeViews() {
+        boolean symbolToDots = currentMode == LessonMode.SYMBOL_TO_DOTS;
         dotsView.setText(getString(R.string.braille_learn_selected_dots_value,
                 formatDots(selectedDotsMask)));
-        dotsContainer.setVisibility(currentMode == LessonMode.SYMBOL_TO_DOTS
-                ? View.VISIBLE : View.GONE);
-        dotsView.setVisibility(currentMode == LessonMode.SYMBOL_TO_DOTS
-                ? View.VISIBLE : View.GONE);
-        choiceContainer.setVisibility(currentMode == LessonMode.DOTS_TO_SYMBOL
-                ? View.VISIBLE : View.GONE);
-        refreshDotButtons();
-        refreshChoiceButtons();
-        refreshScore();
-        updateKeyboardHelper();
+        dotsContainer.setVisibility(symbolToDots ? View.VISIBLE : View.GONE);
+        dotsView.setVisibility(symbolToDots ? View.VISIBLE : View.GONE);
+        choiceContainer.setVisibility(symbolToDots ? View.GONE : View.VISIBLE);
     }
 
     private void refreshDotButtons() {
