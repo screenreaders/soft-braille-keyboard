@@ -474,37 +474,20 @@ public class ActionHandler {
     }
 
     private String togglePrivacy(Context context) {
-        Options.switchBooleanPreference(context, R.string.pref_privacy_key,
-                Boolean.parseBoolean(context
-                        .getString(R.string.pref_privacy_default)));
         callback.onPrivacy();
-        return Options.getBooleanPreference(context, R.string.pref_privacy_key,
-                Boolean.parseBoolean(context
-                        .getString(R.string.pref_privacy_default))) ? context
-                .getString(R.string.privacy_enabled) : context
-                .getString(R.string.privacy_disabled);
+        return ActionHandlerContextUtils.togglePrivacy(context);
     }
 
     private String maybeShowInputSwitcher(Context context,
             boolean fastDoubleSwipe) {
-        if (!fastDoubleSwipe) {
-            return context.getString(R.string.swipe_confirm_input);
-        }
-        ActivityLaunchUtils.showInputMethodPicker(context);
-        return context.getString(R.string.show_input_switcher);
+        return ActionHandlerContextUtils.maybeShowInputSwitcher(context,
+                fastDoubleSwipe);
     }
 
     private String maybeShowSettings(Context context, boolean fastDoubleSwipe) {
-        if (!fastDoubleSwipe) {
-            return context.getString(R.string.swipe_confirm_settings);
-        }
         callback.onSetLocale(Locale.getDefault());
-        Intent intent = new Intent(context, PreferenceIME.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        if (canStartActivity(context, intent)) {
-            context.startActivity(intent);
-        }
-        return context.getString(R.string.show_settings);
+        return ActionHandlerContextUtils.maybeShowSettings(context,
+                fastDoubleSwipe);
     }
 
     private String togglePasswordEcho(Context context) {

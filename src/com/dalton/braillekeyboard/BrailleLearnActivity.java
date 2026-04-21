@@ -174,15 +174,15 @@ public class BrailleLearnActivity extends Activity
             correctAnswers++;
             streak++;
             bestStreak = Math.max(bestStreak, streak);
-            statusView.setText(getString(R.string.braille_learn_correct_choice,
-                    currentItem.symbol, BrailleLearnUiUtils.formatDots(this,
-                            currentItem.dotsMask)));
+            statusView.setText(BrailleLearnStatusUtils
+                    .buildCorrectChoiceMessage(this, currentItem.symbol,
+                            currentItem.dotsMask));
             nextChallenge();
         } else {
             streak = 0;
-            statusView.setText(getString(R.string.braille_learn_incorrect_choice,
-                    currentItem.symbol, BrailleLearnUiUtils.formatDots(this,
-                            currentItem.dotsMask)));
+            statusView.setText(BrailleLearnStatusUtils
+                    .buildIncorrectChoiceMessage(this, currentItem.symbol,
+                            currentItem.dotsMask));
         }
         refreshScore();
         refreshViews();
@@ -202,15 +202,14 @@ public class BrailleLearnActivity extends Activity
             correctAnswers++;
             streak++;
             bestStreak = Math.max(bestStreak, streak);
-            statusView.setText(getString(R.string.braille_learn_correct,
-                    currentItem.symbol, BrailleLearnUiUtils.formatDots(this,
-                            currentItem.dotsMask)));
+            statusView.setText(BrailleLearnStatusUtils.buildCorrectDotsMessage(
+                    this, currentItem.symbol, currentItem.dotsMask));
             nextChallenge();
         } else {
             streak = 0;
-            statusView.setText(getString(R.string.braille_learn_incorrect,
-                    currentItem.symbol, BrailleLearnUiUtils.formatDots(this,
-                            currentItem.dotsMask)));
+            statusView.setText(BrailleLearnStatusUtils
+                    .buildIncorrectDotsMessage(this, currentItem.symbol,
+                            currentItem.dotsMask));
         }
         refreshScore();
         refreshViews();
@@ -222,13 +221,11 @@ public class BrailleLearnActivity extends Activity
             return;
         }
         if (currentMode == LessonMode.SYMBOL_TO_DOTS) {
-            statusView.setText(getString(R.string.braille_learn_hint,
-                    currentItem.symbol, BrailleLearnUiUtils.formatDots(this,
-                            currentItem.dotsMask)));
+            statusView.setText(BrailleLearnStatusUtils.buildHintMessage(this,
+                    true, currentItem.symbol, currentItem.dotsMask));
         } else {
-            statusView.setText(getString(R.string.braille_learn_hint_choice,
-                    currentItem.symbol, BrailleLearnUiUtils.formatDots(this,
-                            currentItem.dotsMask)));
+            statusView.setText(BrailleLearnStatusUtils.buildHintMessage(this,
+                    false, currentItem.symbol, currentItem.dotsMask));
         }
     }
 
