@@ -248,10 +248,7 @@ public class BrailleView extends View {
             // We should show a visual representation of the view according to
             // user preference.
             if (isTalkBackTouchModeActive()) {
-                setContentDescription(getContext().getString(
-                        BrailleImePassthroughBridge.isPassthroughActive()
-                                ? R.string.braille_keyboard_talkback_ready
-                                : R.string.braille_keyboard_talkback_enable_service));
+                setContentDescription(getTalkBackKeyboardDescription());
             } else {
                 setContentDescription(null);
             }
@@ -368,7 +365,6 @@ public class BrailleView extends View {
         y = displayParams.autoRotate || getWidth() >= getHeight() ? y : tempX;
         boolean calibrationRequested = KeyboardCalibrationUtils
                 .isCalibrationModeRequested() || !lastDotList.isEmpty();
-        Swipe swipe;
         switch (action) {
         case MotionEvent.ACTION_DOWN:
         case MotionEvent.ACTION_POINTER_DOWN:
@@ -394,56 +390,7 @@ public class BrailleView extends View {
             break;
         case MotionEvent.ACTION_HOVER_EXIT:
         case MotionEvent.ACTION_UP:
-            if (calibrationRequested) {
-                boolean calibrationHandled = setPad(id, width, height,
-                        displayParams.autoRotate);
-                if (!calibrationHandled && speech != null) {
-                    speech.speak(getContext(),
-                            getContext().getString(R.string.keyboard_not_set),
-                            Speech.QUEUE_FLUSH);
-                }
-                if (!calibrationHandled && vibrator != null) {
-                    vibrator.vibrate(QUICK_VIBRATION);
-                }
-                resetDots();
-                lastDotList.clear();
-                handledSwipe = false;
-            } else if (isCalibrationGestureActive()) {
-                resetDots();
-                lastDotList.clear();
-                handledSwipe = false;
-            } else if (!handleVoiceInput()) {
-                if (pad != null && pressedDotString() != NO_DOTS) {
-                    setDots();
-                    if (!handledSwipe) {
-                        // single finger flicks
-                        if ((swipe = handledSwipeAction(dotsDown,
-                                getHeight() > getWidth()
-                                        && !displayParams.autoRotate)) != Swipe.NONE) {
-                            actionHandler.handleSwipe(getContext(), swipe);
-                        } else { // all swipe attempts failed so resort to
-                            // entering character
-                            handleTypedCharacter();
-                        }
-                    }
-                    lastDotList.clear();
-                }
-            }
-            resetDots();
-
-            if (pad != null) {
-                pad.updateKeys(!displayParams.autoRotate
-                        && getHeight() > getWidth());
-            }
-
-            if (Options.getBooleanPreference(
-                    getContext(),
-                    R.string.pref_show_circles_key,
-                    Boolean.parseBoolean(getContext().getString(
-                            R.string.pref_show_circles_default)))) {
-                // redraw to show the new positions of the Braille dots.
-                invalidate();
-            }
+            handleTouchRelease(id, width, height, calibrationRequested);
             break;
         case MotionEvent.ACTION_HOVER_MOVE:
         case MotionEvent.ACTION_MOVE:
@@ -456,8 +403,9 @@ public class BrailleView extends View {
                 }
                 updatePointer(dotsDown, id, x, y, false);
                 setDots();
-                if ((swipe = handledSwipeAction(dotsDown,
-                        getHeight() > getWidth() && !displayParams.autoRotate)) != Swipe.NONE) {
+                Swipe swipe = handledSwipeAction(dotsDown,
+                        getHeight() > getWidth() && !displayParams.autoRotate);
+                if (swipe != Swipe.NONE) {
                     // Hold one finger while swiping with another
                     handledSwipe = true;
                     actionHandler.handleSwipe(getContext(), swipe);
@@ -467,6 +415,84 @@ public class BrailleView extends View {
         default:
         }
         return true;
+    }
+
+    private String getTalkBackKeyboardDescription() {
+        return getContext().getString(BrailleImePassthroughBridge.isPassthroughActive()
+                ? R.string.braille_keyboard_talkback_ready
+                : R.string.braille_keyboard_talkback_enable_service);
+    }
+
+    private void handleTouchRelease(int id, int width, int height,
+            boolean calibrationRequested) {
+        if (calibrationRequested) {
+            finishCalibrationRelease(id, width, height);
+        } else if (isCalibrationGestureActive()) {
+            clearCalibrationState();
+        } else if (!handleVoiceInput()) {
+            handleTypingRelease();
+        }
+        resetDots();
+        updatePadAfterTouch();
+        maybeInvalidatePad();
+    }
+
+    private void finishCalibrationRelease(int id, int width, int height) {
+        boolean calibrationHandled = setPad(id, width, height,
+                displayParams.autoRotate);
+        if (!calibrationHandled) {
+            speakAndVibrateCalibrationFailure();
+        }
+        clearCalibrationState();
+    }
+
+    private void speakAndVibrateCalibrationFailure() {
+        if (speech != null) {
+            speech.speak(getContext(), getContext().getString(R.string.keyboard_not_set),
+                    Speech.QUEUE_FLUSH);
+        }
+        if (vibrator != null) {
+            vibrator.vibrate(QUICK_VIBRATION);
+        }
+    }
+
+    private void clearCalibrationState() {
+        resetDots();
+        lastDotList.clear();
+        handledSwipe = false;
+    }
+
+    private void handleTypingRelease() {
+        if (pad == null || pressedDotString() == NO_DOTS) {
+            return;
+        }
+        setDots();
+        if (!handledSwipe) {
+            Swipe swipe = handledSwipeAction(dotsDown,
+                    getHeight() > getWidth() && !displayParams.autoRotate);
+            if (swipe != Swipe.NONE) {
+                actionHandler.handleSwipe(getContext(), swipe);
+            } else {
+                handleTypedCharacter();
+            }
+        }
+        lastDotList.clear();
+    }
+
+    private void updatePadAfterTouch() {
+        if (pad != null) {
+            pad.updateKeys(!displayParams.autoRotate && getHeight() > getWidth());
+        }
+    }
+
+    private void maybeInvalidatePad() {
+        if (Options.getBooleanPreference(
+                getContext(),
+                R.string.pref_show_circles_key,
+                Boolean.parseBoolean(getContext().getString(
+                        R.string.pref_show_circles_default)))) {
+            invalidate();
+        }
     }
 
     public boolean getShrinkKeyboard() {

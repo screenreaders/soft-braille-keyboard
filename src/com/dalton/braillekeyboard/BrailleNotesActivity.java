@@ -196,8 +196,8 @@ public class BrailleNotesActivity extends Activity {
         if (saveCurrentNote()) {
             File file = getCurrentFile();
             if (file != null) {
-                statusView.setText(getString(R.string.braille_notes_autosaved,
-                        file.getAbsolutePath()));
+                showStatus(R.string.braille_notes_autosaved,
+                        file.getAbsolutePath());
             }
         }
     }
@@ -271,8 +271,7 @@ public class BrailleNotesActivity extends Activity {
         suppressAutosave = false;
         updateListView();
         if (showStatus) {
-            statusView.setText(getString(R.string.braille_notes_loaded,
-                    file.getAbsolutePath()));
+            showStatus(R.string.braille_notes_loaded, file.getAbsolutePath());
         }
     }
 
@@ -287,30 +286,34 @@ public class BrailleNotesActivity extends Activity {
 
     private boolean saveCurrentNote() {
         File current = getCurrentFile();
-        String desiredTitle = sanitizeFileName(textOf(titleView));
-        if (TextUtils.isEmpty(desiredTitle)) {
-            desiredTitle = defaultNoteName();
-        }
+        String desiredTitle = getDesiredNoteTitle();
         if (current == null) {
             current = new File(notesDir, desiredTitle + ".txt");
         }
-        File target = current;
-        String desiredFileName = desiredTitle + ".txt";
-        if (!desiredFileName.equals(current.getName())) {
-            target = new File(notesDir, desiredFileName);
-            int suffix = 2;
-            while (target.exists() && !target.equals(current)) {
-                target = new File(notesDir, desiredTitle + "-" + suffix + ".txt");
-                suffix++;
-            }
-            if (!current.renameTo(target)) {
-                target = current;
-            }
-        }
+        File target = resolveSaveTarget(current, desiredTitle);
         boolean result = saveFile(target, notesView.getText().toString());
         refreshNoteList();
         loadNoteByName(target.getName(), false);
         return result;
+    }
+
+    private String getDesiredNoteTitle() {
+        String desiredTitle = sanitizeFileName(textOf(titleView));
+        return TextUtils.isEmpty(desiredTitle) ? defaultNoteName() : desiredTitle;
+    }
+
+    private File resolveSaveTarget(File current, String desiredTitle) {
+        String desiredFileName = desiredTitle + ".txt";
+        if (current == null || desiredFileName.equals(current.getName())) {
+            return current;
+        }
+        File target = new File(notesDir, desiredFileName);
+        int suffix = 2;
+        while (target.exists() && !target.equals(current)) {
+            target = new File(notesDir, desiredTitle + "-" + suffix + ".txt");
+            suffix++;
+        }
+        return current.renameTo(target) ? target : current;
     }
 
     private boolean saveFile(File file, String content) {
@@ -336,66 +339,36 @@ public class BrailleNotesActivity extends Activity {
         if (file == null || !file.exists()) {
             return "";
         }
-        FileInputStream stream = null;
         try {
-            stream = new FileInputStream(file);
-            byte[] data = new byte[(int) file.length()];
-            int read = stream.read(data);
-            return read <= 0 ? "" : new String(data, 0, read,
-                    StandardCharsets.UTF_8);
+            return readStream(new FileInputStream(file), file.length());
         } catch (IOException e) {
-            statusView.setText(R.string.braille_notes_load_failed);
+            showStatus(R.string.braille_notes_load_failed);
             return "";
-        } finally {
-            if (stream != null) {
-                try {
-                    stream.close();
-                } catch (IOException e) {
-                    // Ignore close failure after note load.
-                }
-            }
         }
     }
 
     private void exportNoteToUri(Uri uri) {
-        java.io.OutputStream stream = null;
         try {
-            stream = getContentResolver().openOutputStream(uri);
+            java.io.OutputStream stream = getContentResolver().openOutputStream(uri);
             if (stream == null) {
-                statusView.setText(R.string.braille_notes_export_failed);
+                showStatus(R.string.braille_notes_export_failed);
                 return;
             }
-            stream.write(notesView.getText().toString().getBytes(StandardCharsets.UTF_8));
-            statusView.setText(getString(R.string.braille_notes_exported,
-                    uri.toString()));
+            writeStream(stream, notesView.getText().toString());
+            showStatus(R.string.braille_notes_exported, uri.toString());
         } catch (IOException e) {
-            statusView.setText(R.string.braille_notes_export_failed);
-        } finally {
-            if (stream != null) {
-                try {
-                    stream.close();
-                } catch (IOException e) {
-                    // Ignore close failure after export.
-                }
-            }
+            showStatus(R.string.braille_notes_export_failed);
         }
     }
 
     private void importNoteFromUri(Uri uri) {
-        java.io.InputStream stream = null;
         try {
-            stream = getContentResolver().openInputStream(uri);
+            java.io.InputStream stream = getContentResolver().openInputStream(uri);
             if (stream == null) {
-                statusView.setText(R.string.braille_notes_import_failed);
+                showStatus(R.string.braille_notes_import_failed);
                 return;
             }
-            java.io.ByteArrayOutputStream output = new java.io.ByteArrayOutputStream();
-            byte[] buffer = new byte[4096];
-            int read;
-            while ((read = stream.read(buffer)) >= 0) {
-                output.write(buffer, 0, read);
-            }
-            String text = output.toString(StandardCharsets.UTF_8.name());
+            String text = readStream(stream, -1);
             String name = uri.getLastPathSegment();
             if (TextUtils.isEmpty(name)) {
                 name = defaultNoteName();
@@ -405,10 +378,55 @@ public class BrailleNotesActivity extends Activity {
             notesView.setText(text);
             suppressAutosave = false;
             saveCurrentNote();
-            statusView.setText(getString(R.string.braille_notes_imported,
-                    uri.toString()));
+            showStatus(R.string.braille_notes_imported, uri.toString());
         } catch (IOException e) {
-            statusView.setText(R.string.braille_notes_import_failed);
+            showStatus(R.string.braille_notes_import_failed);
+        }
+    }
+
+    private void showStatus(int messageId, Object... args) {
+        if (statusView == null) {
+            return;
+        }
+        statusView.setText(args == null || args.length == 0 ? getString(messageId)
+                : getString(messageId, args));
+    }
+
+    private static void writeStream(java.io.OutputStream stream, String text)
+            throws IOException {
+        try {
+            stream.write(text.getBytes(StandardCharsets.UTF_8));
+        } finally {
+            try {
+                stream.close();
+            } catch (IOException ignored) {
+                // Ignore close failure after note write.
+            }
+        }
+    }
+
+    private static String readStream(java.io.InputStream stream, long expectedSize)
+            throws IOException {
+        try {
+            if (expectedSize >= 0 && expectedSize <= Integer.MAX_VALUE) {
+                byte[] data = new byte[(int) expectedSize];
+                int read = stream.read(data);
+                return read <= 0 ? "" : new String(data, 0, read,
+                        StandardCharsets.UTF_8);
+            }
+            java.io.ByteArrayOutputStream output = new java.io.ByteArrayOutputStream();
+            byte[] buffer = new byte[4096];
+            int read;
+            while ((read = stream.read(buffer)) >= 0) {
+                output.write(buffer, 0, read);
+            }
+            return output.toString(StandardCharsets.UTF_8.name());
+        } finally {
+            try {
+                stream.close();
+            } catch (IOException ignored) {
+                // Ignore close failure after note read.
+            }
         }
     }
 

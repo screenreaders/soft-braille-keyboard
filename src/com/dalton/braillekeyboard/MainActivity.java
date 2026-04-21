@@ -151,10 +151,7 @@ public class MainActivity extends Activity {
     }
 
     public void onBrailleDisplays(View view) {
-        Intent intent = new Intent(this, BrailleDisplayActivity.class);
-        if (ActivityLaunchUtils.canStartActivity(this, intent)) {
-            startActivity(intent);
-        }
+        launchActivity(BrailleDisplayActivity.class);
     }
 
     public void onAccessibilitySettings(View view) {
@@ -165,66 +162,39 @@ public class MainActivity extends Activity {
     }
 
     public void onSetupWizard(View view) {
-        Intent intent = new Intent(this, SetupWizardActivity.class);
-        if (ActivityLaunchUtils.canStartActivity(this, intent)) {
-            startActivity(intent);
-        }
+        launchActivity(SetupWizardActivity.class);
     }
 
     public void onBrailleTranslationSettings(View view) {
-        Intent intent = new Intent(this, PreferenceIME.class);
-        if (ActivityLaunchUtils.canStartActivity(this, intent)) {
-            startActivity(intent);
-        }
+        launchActivity(PreferenceIME.class);
     }
 
     public void onBrailleProfiles(View view) {
-        Intent intent = new Intent(this, BrailleProfilesActivity.class);
-        if (ActivityLaunchUtils.canStartActivity(this, intent)) {
-            startActivity(intent);
-        }
+        launchActivity(BrailleProfilesActivity.class);
     }
 
     public void onAppSettings(View view) {
-        Intent intent = new Intent(this, PreferenceIME.class);
-        if (ActivityLaunchUtils.canStartActivity(this, intent)) {
-            startActivity(intent);
-        }
+        launchActivity(PreferenceIME.class);
     }
 
     public void onTtsSettings(View view) {
-        Intent intent = new Intent(this, TtsSettingsActivity.class);
-        if (ActivityLaunchUtils.canStartActivity(this, intent)) {
-            startActivity(intent);
-        }
+        launchActivity(TtsSettingsActivity.class);
     }
 
     public void onBrailleLearn(View view) {
-        Intent intent = new Intent(this, BrailleLearnActivity.class);
-        if (ActivityLaunchUtils.canStartActivity(this, intent)) {
-            startActivity(intent);
-        }
+        launchActivity(BrailleLearnActivity.class);
     }
 
     public void onBrailleTableTest(View view) {
-        Intent intent = new Intent(this, BrailleTableTestActivity.class);
-        if (ActivityLaunchUtils.canStartActivity(this, intent)) {
-            startActivity(intent);
-        }
+        launchActivity(BrailleTableTestActivity.class);
     }
 
     public void onBrailleNotes(View view) {
-        Intent intent = new Intent(this, BrailleNotesActivity.class);
-        if (ActivityLaunchUtils.canStartActivity(this, intent)) {
-            startActivity(intent);
-        }
+        launchActivity(BrailleNotesActivity.class);
     }
 
     public void onKeyboardCalibrationTest(View view) {
-        Intent intent = new Intent(this, BrailleKeyboardTestActivity.class);
-        if (ActivityLaunchUtils.canStartActivity(this, intent)) {
-            startActivity(intent);
-        }
+        launchActivity(BrailleKeyboardTestActivity.class);
     }
 
     public void onCheckForUpdates(View view) {
@@ -284,17 +254,11 @@ public class MainActivity extends Activity {
     }
 
     public void onReportIssue(View view) {
-        Intent intent = new Intent(this, SupportReportActivity.class);
-        if (ActivityLaunchUtils.canStartActivity(this, intent)) {
-            startActivity(intent);
-        }
+        launchActivity(SupportReportActivity.class);
     }
 
     public void onGuidedScreenReport(View view) {
-        Intent intent = new Intent(this, GuidedScreenReportActivity.class);
-        if (ActivityLaunchUtils.canStartActivity(this, intent)) {
-            startActivity(intent);
-        }
+        launchActivity(GuidedScreenReportActivity.class);
     }
 
     public void onExportAppSettings(View view) {
@@ -343,10 +307,7 @@ public class MainActivity extends Activity {
             return;
         }
         wizardAutoLaunched = true;
-        Intent intent = new Intent(this, SetupWizardActivity.class);
-        if (ActivityLaunchUtils.canStartActivity(this, intent)) {
-            startActivity(intent);
-        }
+        launchActivity(SetupWizardActivity.class);
     }
 
     private void maybeCheckForUpdatesOnStartup() {
@@ -395,14 +356,23 @@ public class MainActivity extends Activity {
                                 intent.putExtra(
                                         SupportReportSender.EXTRA_ADDITIONAL_DIAGNOSTICS,
                                         pendingCrash.details);
-                                if (ActivityLaunchUtils.canStartActivity(
-                                        MainActivity.this, intent)) {
-                                    startActivity(intent);
-                                }
+                                startIfPossible(intent);
                             }
                         })
                 .setNegativeButton(android.R.string.cancel, null)
                 .show();
+    }
+
+    private void launchActivity(Class<?> activityClass) {
+        startIfPossible(new Intent(this, activityClass));
+    }
+
+    private boolean startIfPossible(Intent intent) {
+        if (ActivityLaunchUtils.canStartActivity(this, intent)) {
+            startActivity(intent);
+            return true;
+        }
+        return false;
     }
 
     private void exportAppSettingsToUri(Uri uri) {
@@ -411,17 +381,15 @@ public class MainActivity extends Activity {
                     Toast.LENGTH_LONG).show();
             return;
         }
-        OutputStream stream = null;
         try {
             String payload = AppSettingsBackup.exportPreferences(this);
-            stream = getContentResolver().openOutputStream(uri);
+            OutputStream stream = getContentResolver().openOutputStream(uri);
             if (stream == null) {
                 Toast.makeText(this, R.string.app_settings_backup_export_failed,
                         Toast.LENGTH_LONG).show();
                 return;
             }
-            stream.write(payload.getBytes(StandardCharsets.UTF_8));
-            stream.flush();
+            writeTextToStream(stream, payload);
             Toast.makeText(this, getString(R.string.app_settings_backup_exported,
                     uri.toString()), Toast.LENGTH_LONG).show();
         } catch (IOException e) {
@@ -430,14 +398,6 @@ public class MainActivity extends Activity {
         } catch (JSONException e) {
             Toast.makeText(this, R.string.app_settings_backup_export_failed,
                     Toast.LENGTH_LONG).show();
-        } finally {
-            if (stream != null) {
-                try {
-                    stream.close();
-                } catch (IOException ignored) {
-                    // Ignore close failure after export.
-                }
-            }
         }
     }
 
@@ -447,22 +407,14 @@ public class MainActivity extends Activity {
                     Toast.LENGTH_LONG).show();
             return;
         }
-        InputStream stream = null;
         try {
-            stream = getContentResolver().openInputStream(uri);
+            InputStream stream = getContentResolver().openInputStream(uri);
             if (stream == null) {
                 Toast.makeText(this, R.string.app_settings_backup_import_failed,
                         Toast.LENGTH_LONG).show();
                 return;
             }
-            ByteArrayOutputStream output = new ByteArrayOutputStream();
-            byte[] buffer = new byte[4096];
-            int read;
-            while ((read = stream.read(buffer)) != -1) {
-                output.write(buffer, 0, read);
-            }
-            String payload = new String(output.toByteArray(),
-                    StandardCharsets.UTF_8);
+            String payload = readTextFromStream(stream);
             int restored = AppSettingsBackup.importPreferences(this, payload);
             if (restored <= 0) {
                 Toast.makeText(this, R.string.app_settings_backup_import_empty,
@@ -478,13 +430,38 @@ public class MainActivity extends Activity {
         } catch (JSONException e) {
             Toast.makeText(this, R.string.app_settings_backup_import_failed,
                     Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private static void writeTextToStream(OutputStream stream, String payload)
+            throws IOException {
+        try {
+            stream.write(payload.getBytes(StandardCharsets.UTF_8));
+            stream.flush();
         } finally {
-            if (stream != null) {
-                try {
-                    stream.close();
-                } catch (IOException ignored) {
-                    // Ignore close failure after import.
-                }
+            try {
+                stream.close();
+            } catch (IOException ignored) {
+                // Ignore close failure after writing text.
+            }
+        }
+    }
+
+    private static String readTextFromStream(InputStream stream)
+            throws IOException {
+        try {
+            ByteArrayOutputStream output = new ByteArrayOutputStream();
+            byte[] buffer = new byte[4096];
+            int read;
+            while ((read = stream.read(buffer)) != -1) {
+                output.write(buffer, 0, read);
+            }
+            return new String(output.toByteArray(), StandardCharsets.UTF_8);
+        } finally {
+            try {
+                stream.close();
+            } catch (IOException ignored) {
+                // Ignore close failure after reading text.
             }
         }
     }
