@@ -35,7 +35,12 @@ public class UserProfileSetupActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_profile_setup);
         setTitle(R.string.user_profile_setup_title);
+        bindViews();
+        bindSpinners();
+        bindCurrentValues();
+    }
 
+    private void bindViews() {
         startProfileSpinner = (Spinner) findViewById(
                 R.id.user_profile_start_profile_spinner);
         keyboardEchoSpinner = (Spinner) findViewById(
@@ -63,7 +68,9 @@ public class UserProfileSetupActivity extends Activity {
         profileNameView = (EditText) findViewById(
                 R.id.user_profile_name_input);
         ttsSummaryView = (TextView) findViewById(R.id.user_profile_tts_summary);
+    }
 
+    private void bindSpinners() {
         bindSimpleSpinner(startProfileSpinner, new String[] {
                 getString(R.string.user_profile_setup_start_profile_custom),
                 getString(R.string.user_profile_setup_start_profile_polish),
@@ -90,7 +97,6 @@ public class UserProfileSetupActivity extends Activity {
                 getString(R.string.keyboard_style_slate),
                 getString(R.string.keyboard_style_top_bottom)
         });
-        bindCurrentValues();
     }
 
     @Override
@@ -104,69 +110,13 @@ public class UserProfileSetupActivity extends Activity {
     }
 
     public void onSaveProfileSettings(View view) {
-        applyStartProfilePreset();
-        KeyboardEcho[] echoes = KeyboardEcho.values();
-        int index = keyboardEchoSpinner == null ? KeyboardEcho.CHARACTER.value
-                : keyboardEchoSpinner.getSelectedItemPosition();
-        index = Math.max(0, Math.min(index, echoes.length - 1));
-        Options.writeStringPreference(this, R.string.pref_echo_feedback_key,
-                echoes[index].getValue());
+        int preset = getSelectedPreset();
+        UserProfilePresetUtils.applyPreset(this, preset);
+        writeKeyboardEchoPreference();
         syncKeyboardDotsWithBrailleType();
-        Options.writeStringPreference(this, R.string.pref_default_keyboard_key,
-                String.valueOf(keyboardLayoutSpinner == null ? 0
-                        : keyboardLayoutSpinner.getSelectedItemPosition()));
-        String keyboardStyle = getString(
-                keyboardStyleSpinner != null
-                        && keyboardStyleSpinner.getSelectedItemPosition() == 1
-                                ? R.string.pref_keyboard_style_slate_value
-                                : keyboardStyleSpinner != null
-                                        && keyboardStyleSpinner
-                                                .getSelectedItemPosition() == 2
-                                                        ? R.string.pref_keyboard_style_top_bottom_value
-                                                        : R.string.pref_keyboard_style_normal_value);
-        Options.writeStringPreference(this, R.string.pref_keyboard_style_key,
-                keyboardStyle);
-        Options.writeBooleanPreference(this,
-                R.string.pref_echo_misspellings_key,
-                misspellingsCheckBox != null && misspellingsCheckBox.isChecked());
-        Options.writeBooleanPreference(this,
-                R.string.pref_double_space_period_key,
-                doubleSpaceCheckBox != null && doubleSpaceCheckBox.isChecked());
-        Options.writeBooleanPreference(this, R.string.pref_auto_caps_key,
-                autoCapsCheckBox != null && autoCapsCheckBox.isChecked());
-        Options.writeBooleanPreference(this, R.string.pref_voice_shortcut_key,
-                voiceShortcutCheckBox != null
-                        && voiceShortcutCheckBox.isChecked());
-        Options.writeBooleanPreference(this,
-                R.string.pref_auto_check_updates_key,
-                autoUpdatesCheckBox != null && autoUpdatesCheckBox.isChecked());
-        Options.writeBooleanPreference(this,
-                R.string.pref_prompt_crash_report_key,
-                crashPromptCheckBox != null && crashPromptCheckBox.isChecked());
-        Options.writeBooleanPreference(this,
-                R.string.pref_user_uses_braille_display_key,
-                usesBrailleDisplayCheckBox != null
-                        && usesBrailleDisplayCheckBox.isChecked());
-        if (saveNamedProfileCheckBox != null
-                && saveNamedProfileCheckBox.isChecked()) {
-            String name = profileNameView == null || profileNameView.getText() == null
-                    ? "" : profileNameView.getText().toString().trim();
-            if (TextUtils.isEmpty(name)) {
-                int preset = startProfileSpinner == null ? 0
-                        : startProfileSpinner.getSelectedItemPosition();
-                if (preset == 1) {
-                    name = getString(
-                            R.string.user_profile_setup_default_profile_name_polish);
-                } else if (preset == 2) {
-                    name = getString(
-                            R.string.user_profile_setup_default_profile_name_english);
-                } else {
-                    name = getString(
-                            R.string.user_profile_setup_default_profile_name_custom);
-                }
-            }
-            BrailleUserProfiles.saveCurrentProfile(this, name);
-        }
+        writeKeyboardOptions();
+        writeBooleanOptions();
+        maybeSaveNamedProfile(preset);
         setResult(RESULT_OK);
         finish();
     }
@@ -275,22 +225,65 @@ public class UserProfileSetupActivity extends Activity {
         }
     }
 
-    private void applyStartProfilePreset() {
-        int preset = startProfileSpinner == null ? 0
+    private int getSelectedPreset() {
+        return startProfileSpinner == null ? UserProfilePresetUtils.PRESET_CUSTOM
                 : startProfileSpinner.getSelectedItemPosition();
-        if (preset == 1) {
-            Options.writeStringPreference(this, R.string.pref_braille_type_key, "1");
-            Options.writeStringPreference(this,
-                    R.string.pref_braille_literary_table_key, "pl-g1");
-            Options.writeStringPreference(this,
-                    R.string.pref_braille_computer_table_key, "pl-comp");
-        } else if (preset == 2) {
-            Options.writeStringPreference(this, R.string.pref_braille_type_key, "0");
-            Options.writeStringPreference(this,
-                    R.string.pref_braille_literary_table_key, "en-US-g2");
-            Options.writeStringPreference(this,
-                    R.string.pref_braille_computer_table_key, "en-US-comp8");
+    }
+
+    private void writeKeyboardEchoPreference() {
+        KeyboardEcho[] echoes = KeyboardEcho.values();
+        int index = keyboardEchoSpinner == null ? KeyboardEcho.CHARACTER.value
+                : keyboardEchoSpinner.getSelectedItemPosition();
+        index = Math.max(0, Math.min(index, echoes.length - 1));
+        Options.writeStringPreference(this, R.string.pref_echo_feedback_key,
+                echoes[index].getValue());
+    }
+
+    private void writeKeyboardOptions() {
+        Options.writeStringPreference(this, R.string.pref_default_keyboard_key,
+                String.valueOf(keyboardLayoutSpinner == null ? 0
+                        : keyboardLayoutSpinner.getSelectedItemPosition()));
+        Options.writeStringPreference(this, R.string.pref_keyboard_style_key,
+                getSelectedKeyboardStyleValue());
+    }
+
+    private String getSelectedKeyboardStyleValue() {
+        if (keyboardStyleSpinner == null) {
+            return getString(R.string.pref_keyboard_style_normal_value);
         }
+        int selection = keyboardStyleSpinner.getSelectedItemPosition();
+        if (selection == 1) {
+            return getString(R.string.pref_keyboard_style_slate_value);
+        }
+        if (selection == 2) {
+            return getString(R.string.pref_keyboard_style_top_bottom_value);
+        }
+        return getString(R.string.pref_keyboard_style_normal_value);
+    }
+
+    private void writeBooleanOptions() {
+        writeBooleanPreference(R.string.pref_echo_misspellings_key, misspellingsCheckBox);
+        writeBooleanPreference(R.string.pref_double_space_period_key, doubleSpaceCheckBox);
+        writeBooleanPreference(R.string.pref_auto_caps_key, autoCapsCheckBox);
+        writeBooleanPreference(R.string.pref_voice_shortcut_key, voiceShortcutCheckBox);
+        writeBooleanPreference(R.string.pref_auto_check_updates_key, autoUpdatesCheckBox);
+        writeBooleanPreference(R.string.pref_prompt_crash_report_key, crashPromptCheckBox);
+        writeBooleanPreference(R.string.pref_user_uses_braille_display_key,
+                usesBrailleDisplayCheckBox);
+    }
+
+    private void writeBooleanPreference(int keyRes, CheckBox checkBox) {
+        Options.writeBooleanPreference(this, keyRes,
+                checkBox != null && checkBox.isChecked());
+    }
+
+    private void maybeSaveNamedProfile(int preset) {
+        if (saveNamedProfileCheckBox == null || !saveNamedProfileCheckBox.isChecked()) {
+            return;
+        }
+        CharSequence customName = profileNameView == null ? "" : profileNameView.getText();
+        String name = UserProfilePresetUtils.resolveProfileName(this, preset, customName);
+        BrailleUserProfiles.saveCurrentProfile(this, name);
     }
 
     private void syncKeyboardDotsWithBrailleType() {

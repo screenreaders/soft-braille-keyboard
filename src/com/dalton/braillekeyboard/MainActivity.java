@@ -41,12 +41,8 @@ import android.widget.Toast;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import org.json.JSONException;
-import java.nio.charset.StandardCharsets;
 
 /**
  * This is the MainActivity of the application.
@@ -376,20 +372,14 @@ public class MainActivity extends Activity {
     }
 
     private void exportAppSettingsToUri(Uri uri) {
-        if (uri == null) {
-            Toast.makeText(this, R.string.app_settings_backup_export_failed,
-                    Toast.LENGTH_LONG).show();
-            return;
-        }
         try {
-            String payload = AppSettingsBackup.exportPreferences(this);
-            OutputStream stream = getContentResolver().openOutputStream(uri);
-            if (stream == null) {
-                Toast.makeText(this, R.string.app_settings_backup_export_failed,
-                        Toast.LENGTH_LONG).show();
-                return;
+            if (uri == null) {
+                throw new IOException("Missing export uri");
             }
-            writeTextToStream(stream, payload);
+            String payload = AppSettingsBackup.exportPreferences(this);
+            if (!TextTransferUtils.writeTextToUri(this, uri, payload)) {
+                throw new IOException("Failed to write export payload");
+            }
             Toast.makeText(this, getString(R.string.app_settings_backup_exported,
                     uri.toString()), Toast.LENGTH_LONG).show();
         } catch (IOException e) {
@@ -402,19 +392,14 @@ public class MainActivity extends Activity {
     }
 
     private void importAppSettingsFromUri(Uri uri) {
-        if (uri == null) {
-            Toast.makeText(this, R.string.app_settings_backup_import_failed,
-                    Toast.LENGTH_LONG).show();
-            return;
-        }
         try {
-            InputStream stream = getContentResolver().openInputStream(uri);
-            if (stream == null) {
-                Toast.makeText(this, R.string.app_settings_backup_import_failed,
-                        Toast.LENGTH_LONG).show();
-                return;
+            if (uri == null) {
+                throw new IOException("Missing import uri");
             }
-            String payload = readTextFromStream(stream);
+            String payload = TextTransferUtils.readTextFromUri(this, uri);
+            if (payload == null) {
+                throw new IOException("Failed to read import payload");
+            }
             int restored = AppSettingsBackup.importPreferences(this, payload);
             if (restored <= 0) {
                 Toast.makeText(this, R.string.app_settings_backup_import_empty,
@@ -430,39 +415,6 @@ public class MainActivity extends Activity {
         } catch (JSONException e) {
             Toast.makeText(this, R.string.app_settings_backup_import_failed,
                     Toast.LENGTH_LONG).show();
-        }
-    }
-
-    private static void writeTextToStream(OutputStream stream, String payload)
-            throws IOException {
-        try {
-            stream.write(payload.getBytes(StandardCharsets.UTF_8));
-            stream.flush();
-        } finally {
-            try {
-                stream.close();
-            } catch (IOException ignored) {
-                // Ignore close failure after writing text.
-            }
-        }
-    }
-
-    private static String readTextFromStream(InputStream stream)
-            throws IOException {
-        try {
-            ByteArrayOutputStream output = new ByteArrayOutputStream();
-            byte[] buffer = new byte[4096];
-            int read;
-            while ((read = stream.read(buffer)) != -1) {
-                output.write(buffer, 0, read);
-            }
-            return new String(output.toByteArray(), StandardCharsets.UTF_8);
-        } finally {
-            try {
-                stream.close();
-            } catch (IOException ignored) {
-                // Ignore close failure after reading text.
-            }
         }
     }
 
