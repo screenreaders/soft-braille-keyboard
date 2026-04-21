@@ -2,10 +2,13 @@ package com.dalton.braillekeyboard;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 public class HelperLogicTest {
     @Test
@@ -35,6 +38,15 @@ public class HelperLogicTest {
     }
 
     @Test
+    public void extractPunctuation_usesSpeechMapForSingleCharacter() {
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("?", "question mark");
+        assertEquals("question mark", SpeechTextUtils.extractPunctuation("?", map));
+        assertEquals("ab", SpeechTextUtils.extractPunctuation("ab", map));
+        assertNull(SpeechTextUtils.extractPunctuation(null, map));
+    }
+
+    @Test
     public void matchRank_prefersLanguageThenCountryThenVariant() {
         Locale base = Locale.forLanguageTag("pl-PL");
         assertEquals(3, BrailleParserTableUtils.matchRank(Locale.forLanguageTag("pl-PL"), base));
@@ -47,6 +59,13 @@ public class HelperLogicTest {
         Byte[] cells = new Byte[] { 1, 2, null, 4 };
         assertArrayEquals(new byte[] { 0, 1, 2, 0, 4, 0 },
                 BrailleParserTableUtils.buildPaddedCells(cells));
+    }
+
+    @Test
+    public void padSwipeValueOf_mapsKnownAndUnknownValues() {
+        assertEquals(Pad.Swipe.ONE_LEFT, Pad.Swipe.valueOf(1));
+        assertEquals(Pad.Swipe.HOLD_SIX_RIGHT, Pad.Swipe.valueOf(229392));
+        assertEquals(Pad.Swipe.UNKNOWN, Pad.Swipe.valueOf(999999));
     }
 
 }
