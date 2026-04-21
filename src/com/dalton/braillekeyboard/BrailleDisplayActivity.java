@@ -19,14 +19,12 @@ package com.dalton.braillekeyboard;
 import android.Manifest;
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.app.Activity;
-import android.bluetooth.BluetoothAdapter;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.hardware.usb.UsbDevice;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -50,13 +48,10 @@ import com.googlecode.eyesfree.braille.display.Display;
 import com.googlecode.eyesfree.braille.display.DisplayClient;
 import com.googlecode.eyesfree.braille.service.display.DeviceFinder;
 import org.json.JSONException;
-import org.a11y.brltty.android.UsbHelper;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Locale;
 import java.util.List;
 
 public class BrailleDisplayActivity extends Activity {
@@ -509,7 +504,8 @@ public class BrailleDisplayActivity extends Activity {
     private void refreshAll() {
         statusView.setText(displayClient == null
                 ? getString(R.string.braille_status_disconnected)
-                : formatConnectionState(Display.STATE_NOT_CONNECTED));
+                : BrailleDisplayUiUtils.formatConnectionState(this,
+                        Display.STATE_NOT_CONNECTED));
         progressView.setText(getString(R.string.braille_progress_idle));
         refreshServiceSection();
         refreshRecognizedDevices();
@@ -533,7 +529,8 @@ public class BrailleDisplayActivity extends Activity {
     }
 
     private void refreshRecognizedDevices() {
-        devicesView.setText(buildRecognizedDevicesText());
+        devicesView.setText(BrailleDisplayUiUtils.buildRecognizedDevicesText(
+                this, getRecognizedDevices()));
     }
 
     private void updateDisplayProperties() {
@@ -584,7 +581,8 @@ public class BrailleDisplayActivity extends Activity {
                     }
                 }
                 sb.append(": ");
-                sb.append(formatKeyNames(binding));
+                sb.append(BrailleDisplayUiUtils.formatKeyNames(this, binding,
+                        properties));
             }
             if (bindings.length > shown) {
                 sb.append('\n');
@@ -593,166 +591,6 @@ public class BrailleDisplayActivity extends Activity {
             }
         }
         displayPropsView.setText(sb.toString());
-    }
-
-    private String formatConnectionState(int state) {
-        switch (state) {
-        case Display.STATE_CONNECTED:
-            return getString(R.string.braille_status_connected);
-        case Display.STATE_ERROR:
-            return getString(R.string.braille_status_error);
-        case Display.STATE_NOT_CONNECTED:
-        default:
-            return getString(R.string.braille_status_disconnected);
-        }
-    }
-
-    private String formatInputEvent(BrailleInputEvent event) {
-        if (event == null) {
-            return getString(R.string.braille_command_waiting);
-        }
-        if (event.isRawKeyEvent()) {
-            return "RAW " + (event.isRawPress() ? "down" : "up")
-                    + " group=" + event.getRawGroup()
-                    + " number=" + event.getRawNumber();
-        }
-        StringBuilder sb = new StringBuilder();
-        sb.append(BrailleInputEvent.commandToString(event.getCommand()));
-        if (!TextUtils.isEmpty(event.getBindingSignature())) {
-            sb.append(" sig=");
-            sb.append(event.getBindingSignature());
-        }
-        if (event.isRawRemapped()) {
-            sb.append(" raw-remap");
-        }
-        switch (BrailleInputEvent.argumentType(event.getCommand())) {
-        case BrailleInputEvent.ARGUMENT_DOTS:
-            sb.append(" dots=");
-            sb.append(formatDots(event.getArgument()));
-            break;
-        case BrailleInputEvent.ARGUMENT_POSITION:
-            sb.append(" position=");
-            sb.append(event.getArgument());
-            break;
-        default:
-            if (event.getArgument() != 0) {
-                sb.append(" arg=");
-                sb.append(event.getArgument());
-            }
-        }
-        return sb.toString();
-    }
-
-    private String buildCommandStatus(BrailleInputEvent event) {
-        if (event == null) {
-            return getString(R.string.braille_command_waiting);
-        }
-        String raw = formatInputEvent(event);
-        if (event.isRawKeyEvent()) {
-            return getString(R.string.braille_command_status_template, raw,
-                    getString(R.string.braille_command_raw_key));
-        }
-        String interpretation;
-        switch (event.getCommand()) {
-        case BrailleInputEvent.CMD_NAV_PAN_LEFT:
-            interpretation = getString(R.string.braille_command_pan_left);
-            break;
-        case BrailleInputEvent.CMD_NAV_PAN_RIGHT:
-            interpretation = getString(R.string.braille_command_pan_right);
-            break;
-        case BrailleInputEvent.CMD_NAV_ITEM_PREVIOUS:
-            interpretation = getString(R.string.braille_command_focus_previous);
-            break;
-        case BrailleInputEvent.CMD_NAV_ITEM_NEXT:
-            interpretation = getString(R.string.braille_command_focus_next);
-            break;
-        case BrailleInputEvent.CMD_NAV_LINE_PREVIOUS:
-            interpretation = getString(R.string.braille_command_line_previous);
-            break;
-        case BrailleInputEvent.CMD_NAV_LINE_NEXT:
-            interpretation = getString(R.string.braille_command_line_next);
-            break;
-        case BrailleInputEvent.CMD_SCROLL_BACKWARD:
-            interpretation = getString(R.string.braille_command_scroll_backward);
-            break;
-        case BrailleInputEvent.CMD_SCROLL_FORWARD:
-            interpretation = getString(R.string.braille_command_scroll_forward);
-            break;
-        case BrailleInputEvent.CMD_NAV_TOP:
-            interpretation = getString(R.string.braille_command_nav_top);
-            break;
-        case BrailleInputEvent.CMD_NAV_BOTTOM:
-            interpretation = getString(R.string.braille_command_nav_bottom);
-            break;
-        case BrailleInputEvent.CMD_SECTION_NEXT:
-            interpretation = getString(R.string.braille_command_section_next);
-            break;
-        case BrailleInputEvent.CMD_SECTION_PREVIOUS:
-            interpretation = getString(R.string.braille_command_section_previous);
-            break;
-        case BrailleInputEvent.CMD_CONTROL_NEXT:
-            interpretation = getString(R.string.braille_command_control_next);
-            break;
-        case BrailleInputEvent.CMD_CONTROL_PREVIOUS:
-            interpretation = getString(R.string.braille_command_control_previous);
-            break;
-        case BrailleInputEvent.CMD_LIST_NEXT:
-            interpretation = getString(R.string.braille_command_list_next);
-            break;
-        case BrailleInputEvent.CMD_LIST_PREVIOUS:
-            interpretation = getString(R.string.braille_command_list_previous);
-            break;
-        case BrailleInputEvent.CMD_ROUTE:
-            interpretation = getString(R.string.braille_command_route_template,
-                    event.getArgument());
-            break;
-        case BrailleInputEvent.CMD_BRAILLE_KEY:
-            interpretation = getString(R.string.braille_command_dots_template,
-                    formatDots(event.getArgument()));
-            break;
-        case BrailleInputEvent.CMD_KEY_DEL:
-            interpretation = getString(R.string.braille_command_delete_backward);
-            break;
-        case BrailleInputEvent.CMD_KEY_FORWARD_DEL:
-            interpretation = getString(R.string.braille_command_delete_forward);
-            break;
-        case BrailleInputEvent.CMD_KEY_ENTER:
-            interpretation = getString(R.string.braille_command_insert_newline);
-            break;
-        case BrailleInputEvent.CMD_GLOBAL_BACK:
-            interpretation = getString(R.string.braille_command_back);
-            break;
-        case BrailleInputEvent.CMD_GLOBAL_HOME:
-            interpretation = getString(R.string.braille_command_home);
-            break;
-        case BrailleInputEvent.CMD_GLOBAL_RECENTS:
-            interpretation = getString(R.string.braille_command_recents);
-            break;
-        case BrailleInputEvent.CMD_GLOBAL_NOTIFICATIONS:
-            interpretation = getString(R.string.braille_command_notifications);
-            break;
-        case BrailleInputEvent.CMD_TOGGLE_BRAILLE_GRADE:
-            interpretation = getString(R.string.braille_command_toggle_grade);
-            break;
-        default:
-            interpretation = getString(R.string.braille_command_unknown);
-            break;
-        }
-        return getString(R.string.braille_command_status_template, raw,
-                interpretation);
-    }
-
-    private String formatDots(int dotsMask) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < 8; i++) {
-            if ((dotsMask & (1 << i)) != 0) {
-                if (sb.length() > 0) {
-                    sb.append(',');
-                }
-                sb.append(i + 1);
-            }
-        }
-        return sb.length() == 0 ? getString(R.string.blank) : sb.toString();
     }
 
     private void appendLog(String line) {
@@ -791,65 +629,6 @@ public class BrailleDisplayActivity extends Activity {
         return new DeviceFinder(this).findDevices();
     }
 
-    private String buildRecognizedDevicesText() {
-        StringBuilder sb = new StringBuilder();
-        String preferredAddress = BrailleDisplayPreferences
-                .getPreferredDeviceAddress(this);
-        String lastAddress = BrailleDisplayPreferences
-                .getLastConnectedDeviceAddress(this);
-        List<DeviceFinder.DeviceInfo> devices = getRecognizedDevices();
-        if (devices.isEmpty()) {
-            sb.append(getString(R.string.braille_no_recognized_devices));
-        } else {
-            for (DeviceFinder.DeviceInfo info : devices) {
-                String address = info.getDeviceAddress();
-                sb.append(info.getDeviceName());
-                sb.append(" [");
-                sb.append(info.isUsb() ? "USB/" : "BT/");
-                sb.append(info.getDriverCode());
-                sb.append("] ");
-                sb.append(TextUtils.isEmpty(address)
-                        ? getString(R.string.braille_profile_no_device)
-                        : address);
-                if (TextUtils.equals(address, preferredAddress)) {
-                    sb.append(" ");
-                    sb.append(getString(R.string.braille_profile_marker_preferred));
-                }
-                if (TextUtils.equals(address, lastAddress)) {
-                    sb.append(" ");
-                    sb.append(getString(R.string.braille_profile_marker_last));
-                }
-                String tableOverride = TextUtils.isEmpty(address) ? null
-                        : BrailleDisplayPreferences.getDeviceTable(this, address);
-                if (tableOverride != null) {
-                    sb.append(" ");
-                    sb.append(getString(R.string.braille_profile_table_short,
-                            tableOverride));
-                }
-                if (info.isBluetooth()) {
-                    sb.append(info.getConnectSecurely() ? " secure" : " insecure");
-                } else {
-                    sb.append(" ");
-                    sb.append(String.format(Locale.US, "%04X:%04X",
-                            info.getUsbVendorId(), info.getUsbProductId()));
-                    sb.append(" if=");
-                    sb.append(info.getUsbInterfaceCount());
-                    if (info.hasExactUsbProfile()) {
-                        sb.append(" ");
-                        sb.append(getString(R.string.braille_usb_profile_exact));
-                    }
-                    sb.append(" ");
-                    UsbDevice usbDevice = info.getUsbDevice();
-                    sb.append(usbDevice != null && UsbHelper.hasPermission(usbDevice)
-                            ? getString(R.string.braille_usb_permission_granted)
-                            : getString(R.string.braille_usb_permission_missing));
-                }
-                sb.append('\n');
-            }
-        }
-        return sb.toString().trim();
-    }
-
     private String buildAccessibilityStatus() {
         StringBuilder sb = new StringBuilder();
         sb.append(getString(isBrailleAccessibilityServiceEnabled()
@@ -875,15 +654,18 @@ public class BrailleDisplayActivity extends Activity {
         StringBuilder sb = new StringBuilder();
         sb.append(getString(R.string.braille_profile_preferred_label));
         sb.append(' ');
-        sb.append(formatProfileDevice(preferred, preferredInfo));
+        sb.append(BrailleDisplayUiUtils.formatProfileDevice(this, preferred,
+                preferredInfo));
         sb.append('\n');
         sb.append(getString(R.string.braille_profile_last_label));
         sb.append(' ');
-        sb.append(formatProfileDevice(last, lastInfo));
+        sb.append(BrailleDisplayUiUtils.formatProfileDevice(this, last,
+                lastInfo));
         sb.append('\n');
         sb.append(getString(R.string.braille_profile_target_label));
         sb.append(' ');
-        sb.append(formatProfileDevice(target, targetInfo));
+        sb.append(BrailleDisplayUiUtils.formatProfileDevice(this, target,
+                targetInfo));
         sb.append('\n');
         sb.append(getString(R.string.braille_profile_table_label));
         sb.append(' ');
@@ -961,7 +743,8 @@ public class BrailleDisplayActivity extends Activity {
         sb.append('\n');
         sb.append(getString(R.string.braille_remap_keys_label));
         sb.append(' ');
-        sb.append(formatKeyNames(binding));
+        sb.append(BrailleDisplayUiUtils.formatKeyNames(this, binding,
+                getCurrentDisplayProperties()));
         sb.append('\n');
         sb.append(getString(R.string.braille_remap_target_label));
         sb.append(' ');
@@ -1011,44 +794,6 @@ public class BrailleDisplayActivity extends Activity {
         return bindings[selectedBindingIndex];
     }
 
-    private String formatProfileDevice(String address, DeviceFinder.DeviceInfo info) {
-        if (TextUtils.isEmpty(address)) {
-            return getString(R.string.braille_profile_no_device);
-        }
-        if (info == null) {
-            return address;
-        }
-        return info.getDeviceName() + " (" + address + ")";
-    }
-
-    private String formatKeyNames(BrailleKeyBinding binding) {
-        if (binding == null) {
-            return getString(R.string.blank);
-        }
-        String[] keyNames = binding.getKeyNames();
-        if (keyNames == null || keyNames.length == 0) {
-            return getString(R.string.blank);
-        }
-        BrailleDisplayProperties properties = getCurrentDisplayProperties();
-        java.util.Map<String, String> friendlyNames = properties == null
-                ? null : properties.getFriendlyKeyNames();
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < keyNames.length; i++) {
-            if (i > 0) {
-                sb.append(" + ");
-            }
-            String keyName = keyNames[i];
-            if (TextUtils.isEmpty(keyName)) {
-                sb.append(getString(R.string.blank));
-                continue;
-            }
-            String friendly = friendlyNames == null ? null
-                    : friendlyNames.get(keyName);
-            sb.append(TextUtils.isEmpty(friendly) ? keyName : friendly);
-        }
-        return sb.toString();
-    }
-
     private String getProfileTargetAddress() {
         String preferred = BrailleDisplayPreferences.getPreferredDeviceAddress(this);
         if (!TextUtils.isEmpty(preferred)) {
@@ -1063,72 +808,21 @@ public class BrailleDisplayActivity extends Activity {
     }
 
     private String buildDiagnosticsReport() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Soft Braille Keyboard braille diagnostics");
-        sb.append('\n');
-        sb.append("Generated at: ");
-        sb.append(new java.util.Date());
-        sb.append('\n');
-        sb.append("Bluetooth permission: ");
-        sb.append(hasBluetoothConnectPermission() ? "granted" : "missing");
-        sb.append('\n');
-        sb.append("Bluetooth adapter: ");
-        sb.append(BluetoothAdapter.getDefaultAdapter() == null ? "unavailable" : "present");
-        sb.append('\n');
-        sb.append("Accessibility service: ");
-        sb.append(isBrailleAccessibilityServiceEnabled() ? "enabled" : "disabled");
-        sb.append('\n');
-        sb.append("Service status:");
-        sb.append('\n');
-        sb.append(serviceView.getText());
-        sb.append('\n');
-        sb.append('\n');
-        sb.append("Profile:");
-        sb.append('\n');
-        sb.append(profileView.getText());
-        sb.append('\n');
-        sb.append('\n');
-        sb.append("Remap:");
-        sb.append('\n');
-        sb.append(remapView.getText());
-        sb.append('\n');
-        sb.append('\n');
-        sb.append("Last command:");
-        sb.append('\n');
-        sb.append(commandView.getText());
-        sb.append('\n');
-        sb.append('\n');
-        sb.append("Last rendered content:");
-        sb.append('\n');
-        sb.append(contentView.getText());
-        sb.append('\n');
-        sb.append('\n');
-        sb.append("Connection state: ");
-        sb.append(statusView.getText());
-        sb.append('\n');
-        sb.append("Progress: ");
-        sb.append(progressView.getText());
-        sb.append('\n');
-        sb.append('\n');
-        sb.append("Recognized paired displays:");
-        sb.append('\n');
-        sb.append(buildRecognizedDevicesText());
-        sb.append('\n');
-        sb.append('\n');
-        sb.append("Connected display properties:");
-        sb.append('\n');
-        sb.append(displayPropsView.getText());
-        sb.append('\n');
-        sb.append('\n');
-        sb.append("IME trace:");
-        sb.append('\n');
-        sb.append(BrailleIME.dumpImeTrace());
-        sb.append('\n');
-        sb.append('\n');
-        sb.append("Event log:");
-        sb.append('\n');
-        sb.append(eventLogView.getText());
-        return sb.toString();
+        return BrailleDisplayUiUtils.buildDiagnosticsReport(this,
+                hasBluetoothConnectPermission(),
+                android.bluetooth.BluetoothAdapter.getDefaultAdapter() != null,
+                isBrailleAccessibilityServiceEnabled(),
+                serviceView.getText(),
+                profileView.getText(),
+                remapView.getText(),
+                commandView.getText(),
+                contentView.getText(),
+                statusView.getText(),
+                progressView.getText(),
+                BrailleDisplayUiUtils.buildRecognizedDevicesText(this,
+                        getRecognizedDevices()),
+                displayPropsView.getText(),
+                eventLogView.getText());
     }
 
     private void maybeRequestBluetoothPermission() {
@@ -1193,18 +887,22 @@ public class BrailleDisplayActivity extends Activity {
                 new Display.OnInputEventListener() {
                     @Override
                     public void onInputEvent(BrailleInputEvent inputEvent) {
-                        commandView.setText(buildCommandStatus(inputEvent));
-                        appendLog(formatInputEvent(inputEvent));
+                        commandView.setText(
+                                BrailleDisplayUiUtils.buildCommandStatus(
+                                        BrailleDisplayActivity.this, inputEvent));
+                        appendLog(BrailleDisplayUiUtils.formatInputEvent(
+                                BrailleDisplayActivity.this, inputEvent));
                     }
                 });
     }
 
     private void handleConnectionStateChanged(int state) {
-        statusView.setText(formatConnectionState(state));
+        statusView.setText(BrailleDisplayUiUtils.formatConnectionState(this,
+                state));
         updateDisplayProperties();
         refreshServiceSection();
         appendLog(getString(R.string.braille_log_state_changed,
-                formatConnectionState(state)));
+                BrailleDisplayUiUtils.formatConnectionState(this, state)));
     }
 
     private void exportBrailleProfilesToClipboard() {
