@@ -34,17 +34,16 @@ import com.googlecode.eyesfree.braille.translate.TableInfo;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 
 public class SetupWizardActivity extends Activity
         implements BrailleParser.BrailleParserListener {
     private static final int BLUETOOTH_CONNECT_REQUEST = 30;
     private static final int RECORD_AUDIO_REQUEST = 31;
-    private static final int PAGE_KEYBOARD = 0;
-    private static final int PAGE_CALIBRATION = 1;
-    private static final int PAGE_TTS = 2;
-    private static final int PAGE_PROFILE = 3;
+    static final int PAGE_KEYBOARD = 0;
+    static final int PAGE_CALIBRATION = 1;
+    static final int PAGE_TTS = 2;
+    static final int PAGE_PROFILE = 3;
     private static final int PAGE_COUNT = 4;
     private static final int MIN_PERCENT = 50;
     private static final int MAX_PERCENT = 200;
@@ -650,47 +649,22 @@ public class SetupWizardActivity extends Activity
     }
 
     private void showPage(int page) {
-        currentPage = Math.max(PAGE_KEYBOARD, Math.min(page, PAGE_PROFILE));
+        currentPage = SetupWizardUiUtils.clampPage(page, PAGE_KEYBOARD,
+                PAGE_PROFILE);
         if (pages != null) {
             pages.setDisplayedChild(currentPage);
         }
         if (stepIndicatorView != null) {
             stepIndicatorView.setText(getString(
                     R.string.setup_step_indicator_value, currentPage + 1,
-                    PAGE_COUNT, getString(getStepTitleRes(currentPage))));
+                    PAGE_COUNT, getString(SetupWizardUiUtils.getStepTitleRes(
+                            currentPage))));
         }
         if (stepIntroView != null) {
-            stepIntroView.setText(getString(getStepIntroRes(currentPage)));
+            stepIntroView.setText(getString(SetupWizardUiUtils.getStepIntroRes(
+                    currentPage)));
         }
         updateNavigationButtons();
-    }
-
-    private int getStepTitleRes(int page) {
-        switch (page) {
-        case PAGE_CALIBRATION:
-            return R.string.setup_section_calibration;
-        case PAGE_TTS:
-            return R.string.user_profile_setup_speech_title;
-        case PAGE_PROFILE:
-            return R.string.setup_section_profile;
-        case PAGE_KEYBOARD:
-        default:
-            return R.string.setup_section_keyboard;
-        }
-    }
-
-    private int getStepIntroRes(int page) {
-        switch (page) {
-        case PAGE_CALIBRATION:
-            return R.string.setup_intro_calibration;
-        case PAGE_TTS:
-            return R.string.setup_intro_tts;
-        case PAGE_PROFILE:
-            return R.string.setup_intro_profile;
-        case PAGE_KEYBOARD:
-        default:
-            return R.string.setup_intro_keyboard;
-        }
     }
 
     private boolean isKeyboardEnabled() {
@@ -743,64 +717,27 @@ public class SetupWizardActivity extends Activity
     }
 
     private String buildAccessibilityStatus(boolean accessibilityEnabled) {
-        if (requiresAccessibilityForTalkBack()) {
-            if (!isTalkBackBrailleModeEnabled()) {
-                return getString(
-                        R.string.setup_status_accessibility_disabled_for_talkback_mode_off);
-            }
-            return getString(accessibilityEnabled
-                    ? R.string.setup_status_accessibility_enabled_for_talkback
-                    : R.string.setup_status_accessibility_required_for_talkback);
-        }
-        return getString(accessibilityEnabled
-                ? R.string.setup_status_accessibility_enabled
-                : R.string.setup_status_accessibility_disabled);
+        return SetupWizardUiUtils.buildAccessibilityStatus(this,
+                requiresAccessibilityForTalkBack(),
+                isTalkBackBrailleModeEnabled(),
+                accessibilityEnabled);
     }
 
     private String buildPermissionsStatus() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(getString(ContextCompat.checkSelfPermission(this,
-                Manifest.permission.RECORD_AUDIO)
-                == PackageManager.PERMISSION_GRANTED
-                        ? R.string.setup_status_microphone_granted
-                        : R.string.setup_status_microphone_missing));
-        boolean usingBrailleDisplay = usesDisplayCheckBox != null
-                && usesDisplayCheckBox.isChecked();
-        if (!usingBrailleDisplay) {
-            sb.append('\n');
-            sb.append(getString(R.string.setup_status_braille_display_optional));
-            return sb.toString();
-        }
-        sb.append('\n');
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            sb.append(getString(ContextCompat.checkSelfPermission(this,
-                    Manifest.permission.BLUETOOTH_CONNECT)
-                    == PackageManager.PERMISSION_GRANTED
-                            ? R.string.setup_status_bluetooth_granted
-                            : R.string.setup_status_bluetooth_missing));
-        } else {
-            sb.append(getString(R.string.setup_bluetooth_not_required));
-        }
-        sb.append('\n');
-        sb.append(getString(R.string.setup_status_usb_info));
-        return sb.toString();
+        return SetupWizardUiUtils.buildPermissionsStatus(this,
+                ContextCompat.checkSelfPermission(this,
+                        Manifest.permission.RECORD_AUDIO)
+                        == PackageManager.PERMISSION_GRANTED,
+                usesDisplayCheckBox != null && usesDisplayCheckBox.isChecked(),
+                ContextCompat.checkSelfPermission(this,
+                        Manifest.permission.BLUETOOTH_CONNECT)
+                        == PackageManager.PERMISSION_GRANTED,
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.S);
     }
 
     private String buildBrailleTranslationStatus() {
-        if (brailleParser == null
-                || brailleParser.getStatus() == BrailleParser.STATUS_PREPARING) {
-            return getString(R.string.setup_status_braille_loading);
-        }
-        TableInfo table = brailleParser.getTable(this);
-        BrailleParser.BrailleType type = brailleParser.getBrailleType(this);
-        if (table == null) {
-            return getString(R.string.setup_status_braille_missing);
-        }
-        String kind = type == BrailleParser.BrailleType.COMPUTER
-                ? getString(R.string.grade_computer)
-                : getString(R.string.grade_literary);
-        return getString(R.string.setup_status_braille_ready,
-                kind, table.getId());
+        return SetupWizardUiUtils.buildBrailleTranslationStatus(this,
+                brailleParser);
     }
 
     private String buildProfileStatus() {
@@ -808,19 +745,14 @@ public class SetupWizardActivity extends Activity
                 || keyboardEchoSpinner.getSelectedItem() == null
                         ? getString(R.string.keyboard_echo_character)
                         : keyboardEchoSpinner.getSelectedItem().toString();
-        String engine = getSelectedEngineLabel();
-        return getString(R.string.setup_status_profile_summary,
+        return SetupWizardUiUtils.buildProfileStatus(this,
                 echoText,
-                yesNo(isChecked(misspellingsCheckBox)),
-                yesNo(isChecked(doubleSpaceCheckBox)),
-                yesNo(isChecked(talkBackModeCheckBox)),
-                yesNo(isChecked(autoUpdatesCheckBox)),
-                yesNo(isChecked(crashPromptCheckBox)),
-                engine);
-    }
-
-    private String yesNo(boolean value) {
-        return StatusTextUtils.yesNo(this, value);
+                isChecked(misspellingsCheckBox),
+                isChecked(doubleSpaceCheckBox),
+                isChecked(talkBackModeCheckBox),
+                isChecked(autoUpdatesCheckBox),
+                isChecked(crashPromptCheckBox),
+                getSelectedEngineLabel());
     }
 
     private void syncKeyboardDotsWithBrailleType(

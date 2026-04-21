@@ -498,7 +498,9 @@ public class BrailleIME extends InputMethodService implements KeyboardListener {
             }
 
             // Return the update to the input field to be read to the user.
-            return text != null ? stringDifference(oldText, text) : null;
+            return text != null
+                    ? BrailleImeCompositionUtils.stringDifference(oldText, text)
+                    : null;
         }
         return null;
     }
@@ -528,7 +530,7 @@ public class BrailleIME extends InputMethodService implements KeyboardListener {
         }
 
         text = compose(text.subSequence(0, text.length()));
-        return stringDifference(oldText, text);
+        return BrailleImeCompositionUtils.stringDifference(oldText, text);
     }
 
     @Override
@@ -594,7 +596,12 @@ public class BrailleIME extends InputMethodService implements KeyboardListener {
         // user adds more Braille patterns.
         // First make sure the new text gets capitalised in the appropriate way
         // according to auto-capitalisation rules.
-        text = capitalise(text);
+        text = BrailleImeCompositionUtils.capitalise(text,
+                Options.getBooleanPreference(this,
+                        R.string.pref_auto_caps_key,
+                        Boolean.parseBoolean(
+                                getString(R.string.pref_auto_caps_default))),
+                caps);
 
         if (predictionOn) {
             // we can use composing text capabilities of android to make life
@@ -625,25 +632,6 @@ public class BrailleIME extends InputMethodService implements KeyboardListener {
 
         // return the new text we wrote if any.
         return text.toString();
-    }
-
-    // Capitalise the text if auto-caps is enabled and the IME told us to
-    // capitalise this first character.
-    private CharSequence capitalise(CharSequence text) {
-        if (Options
-                .getBooleanPreference(
-                        this,
-                        R.string.pref_auto_caps_key,
-                        Boolean.parseBoolean(getString(R.string.pref_auto_caps_default)))) {
-            if (caps != 0 && text != null) {
-                if (text.length() > 0) {
-                    text = String
-                            .valueOf(Character.toUpperCase(text.charAt(0)))
-                            + text.subSequence(1, text.length());
-                }
-            }
-        }
-        return text;
     }
 
     @Override
@@ -697,16 +685,8 @@ public class BrailleIME extends InputMethodService implements KeyboardListener {
     }
 
     private int[] getSelectionBoundaries(int cursor) {
-        ExtractedText text = getAllText();
-        if (text == null || text.text == null || cursor < 0) {
-            return null;
-        }
-
-        int start = InputConnectionTextUtils.getSelectionStart(text);
-        int end = text.startOffset + text.text.length();
-        mark = InputConnectionTextUtils.clampToRange(mark, start, end);
-        cursor = InputConnectionTextUtils.clampToRange(cursor, start, end);
-        return new int[] { Math.min(cursor, mark), Math.max(cursor, mark) };
+        return BrailleImeCompositionUtils.getSelectionBoundaries(getAllText(),
+                mark, cursor);
     }
 
     @Override
@@ -718,7 +698,9 @@ public class BrailleIME extends InputMethodService implements KeyboardListener {
         InputConnection ic = getCurrentInputConnection();
         String composingSnapshot = composingText.toString();
         if (composingSnapshot.length() > 0) {
-            boolean editorMatchesComposingText = hasEditorComposingState(ic);
+            boolean editorMatchesComposingText =
+                    BrailleImeCompositionUtils.hasEditorComposingState(ic,
+                            composingSnapshot);
             traceIme("finishComposingText commit=" + commit
                     + " prediction=" + predictionOn
                     + " editorMatches=" + editorMatchesComposingText
@@ -727,7 +709,11 @@ public class BrailleIME extends InputMethodService implements KeyboardListener {
                 ic.finishComposingText();
             }
             if (predictionOn && commit && editorMatchesComposingText) {
-                if (shouldSkipFallbackCommit(ic, composingSnapshot)) {
+                if (BrailleImeCompositionUtils.shouldSkipFallbackCommit(ic,
+                        composingSnapshot, getCursor(), lastFallbackCommitText,
+                        lastFallbackCommitCursor, lastFallbackCommitAt,
+                        SystemClock.uptimeMillis(),
+                        FALLBACK_COMMIT_DEDUP_WINDOW_MS)) {
                     traceIme("skip fallback commit \"" + composingSnapshot + "\"");
                 } else {
                     ic.commitText(composingSnapshot, 1);
@@ -760,21 +746,6 @@ public class BrailleIME extends InputMethodService implements KeyboardListener {
      * @param str2
      *            The new text.
      */
-    private static String stringDifference(String str1, String str2) {
-        if (str1 == null) {
-            return str2;
-        }
-        if (str2 == null) {
-            return null;
-        }
-        int i = -1;
-        while (++i < Math.min(str1.length(), str2.length())
-                && Character.toLowerCase(str1.charAt(i)) == Character
-                        .toLowerCase(str2.charAt(i))) {
-        }
-        return i >= str2.length() ? str2 : str2.substring(i, str2.length());
-    }
-
     private void updateShiftState() {
         caps = 0;
         EditorInfo editorInfo = getCurrentInputEditorInfo();
@@ -798,7 +769,13 @@ public class BrailleIME extends InputMethodService implements KeyboardListener {
             selectAll = false;
         }
         updateShiftState();
-        text = capitalise(text.subSequence(0, text.length())).toString();
+        text = BrailleImeCompositionUtils.capitalise(
+                text.subSequence(0, text.length()),
+                Options.getBooleanPreference(this,
+                        R.string.pref_auto_caps_key,
+                        Boolean.parseBoolean(
+                                getString(R.string.pref_auto_caps_default))),
+                caps).toString();
         ic.commitText(text, newCursorPosition);
         traceIme("external commitText \"" + text + "\"");
     }
@@ -853,7 +830,8 @@ public class BrailleIME extends InputMethodService implements KeyboardListener {
         if (composingText.length() == 0) {
             return;
         }
-        if (!hasEditorComposingState(getCurrentInputConnection())) {
+        if (!BrailleImeCompositionUtils.hasEditorComposingState(
+                getCurrentInputConnection(), composingText.toString())) {
             traceIme("clear stale composing state \"" + composingText + "\"");
             clearComposingState();
         }
@@ -871,33 +849,6 @@ public class BrailleIME extends InputMethodService implements KeyboardListener {
         } else {
             ic.deleteSurroundingText(composingText.length(), 0);
         }
-    }
-
-    private boolean hasEditorComposingState(InputConnection ic) {
-        if (composingText.length() == 0) {
-            return false;
-        }
-        if (ic == null) {
-            return false;
-        }
-
-        return InputConnectionTextUtils.matchesSelectedOrPreviousText(ic,
-                composingText.toString());
-    }
-
-    private boolean shouldSkipFallbackCommit(InputConnection ic, String text) {
-        if (text == null || text.length() == 0) {
-            return true;
-        }
-        if (InputConnectionTextUtils.matchesSelectedOrPreviousText(ic, text)) {
-            return true;
-        }
-        int cursor = getCursor();
-        return cursor >= 0
-                && cursor == lastFallbackCommitCursor
-                && text.equals(lastFallbackCommitText)
-                && SystemClock.uptimeMillis() - lastFallbackCommitAt
-                < FALLBACK_COMMIT_DEDUP_WINDOW_MS;
     }
 
     private static void traceIme(String message) {
