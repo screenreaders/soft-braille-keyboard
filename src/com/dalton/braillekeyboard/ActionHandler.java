@@ -703,67 +703,62 @@ public class ActionHandler {
 
     // Move the cursor left by the appropriate granularity and speak the result.
     private void moveLeft(Context context, Granularity granularity) {
-        EditingUtilities.Word word = null;
-        listener.finishComposingText();
-        if (listener.isSelectAll()) {
-            granularity = Granularity.ALL;
-            listener.setSelection(0);
-        }
-        switch (granularity) {
-        case CHARACTER:
-            word = EditingUtilities.moveToPreviousCharacter(listener);
-            break;
-        case WORD:
-            word = EditingUtilities.moveToPreviousWord(listener);
-            break;
-        case LINE:
-            word = EditingUtilities.moveToPreviousLine(listener);
-            break;
-        case ALL:
-            word = EditingUtilities.moveToHome(listener);
-            break;
-        default:
-        }
-
-        if (word != null) {
-            callback.onText("%s",
-                    !word.moveLeft ? context.getString(R.string.start_of_text)
-                            : word.word,
-                    word.moveLeft && listener.isPasswordField());
-        }
+        speakCursorMove(context, resolveMoveWord(normalizeGranularityForSelection(
+                granularity), false), false);
     }
 
     // Move the cursor right by the appropriate granularity and speak the
     // result.
     private void moveRight(Context context, Granularity granularity) {
-        EditingUtilities.Word word = null;
         listener.finishComposingText();
+        speakCursorMove(context, resolveMoveWord(normalizeGranularityForSelection(
+                granularity), true), true);
+    }
+
+    private Granularity normalizeGranularityForSelection(Granularity granularity) {
         if (listener.isSelectAll()) {
-            granularity = Granularity.ALL;
             listener.setSelection(0);
+            return Granularity.ALL;
         }
+        return granularity;
+    }
+
+    private EditingUtilities.Word resolveMoveWord(Granularity granularity,
+            boolean forward) {
         switch (granularity) {
         case CHARACTER:
-            word = EditingUtilities.moveToNextCharacter(listener);
-            break;
+            return forward
+                    ? EditingUtilities.moveToNextCharacter(listener)
+                    : EditingUtilities.moveToPreviousCharacter(listener);
         case WORD:
-            word = EditingUtilities.moveToNextWord(listener);
-            break;
+            return forward
+                    ? EditingUtilities.moveToNextWord(listener)
+                    : EditingUtilities.moveToPreviousWord(listener);
         case LINE:
-            word = EditingUtilities.moveToNextLine(listener);
-            break;
+            return forward
+                    ? EditingUtilities.moveToNextLine(listener)
+                    : EditingUtilities.moveToPreviousLine(listener);
         case ALL:
-            word = EditingUtilities.moveToEnd(listener);
-            break;
+            return forward
+                    ? EditingUtilities.moveToEnd(listener)
+                    : EditingUtilities.moveToHome(listener);
         default:
+            return null;
         }
+    }
 
-        if (word != null) {
-            callback.onText("%s",
-                    !word.moveRight ? context.getString(R.string.end_of_text)
-                            : word.word,
-                    word.moveRight && listener.isPasswordField());
+    private void speakCursorMove(Context context, EditingUtilities.Word word,
+            boolean forward) {
+        if (word == null) {
+            return;
         }
+        boolean moved = forward ? word.moveRight : word.moveLeft;
+        callback.onText("%s",
+                !moved
+                        ? context.getString(forward ? R.string.end_of_text
+                                : R.string.start_of_text)
+                        : word.word,
+                moved && listener.isPasswordField());
     }
 
     // Perform backspace by the specified Granularity.

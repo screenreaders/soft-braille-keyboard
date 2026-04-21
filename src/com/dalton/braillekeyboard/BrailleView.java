@@ -563,29 +563,8 @@ public class BrailleView extends View {
 
         if (activeDots == TOTAL_DOTS) {
             setDotsSevenEight(false, false);
-            Coords[] sixDots = new Coords[TOTAL_DOTS];
-            for (int i = 0, j = 0; i < dotsDown.length && j < sixDots.length; i++) {
-                if (dotsDown[i] != null) {
-                    int localX = dotsDown[i].getSecondX();
-                    int localY = dotsDown[i].getSecondY();
-                    sixDots[j++] = new Coords(localX, localY);
-                }
-            }
-            boolean result = selectPad(sixDots, width, height);
-            if (result) {
-                KeyboardCalibrationUtils.clearCalibrationMode();
-            }
-            if (speech != null) {
-                speech.speak(getContext(), getContext().getString(result
-                        ? pad.padString : R.string.keyboard_error),
-                        Speech.QUEUE_FLUSH);
-            }
-            if (vibrator != null) {
-                vibrator.vibrate(result ? MEDIUM_VIBRATION : QUICK_VIBRATION);
-            }
-            lastDotList.clear();
-            resetDots();
-            return result;
+            return applySixDotCalibration(buildCalibrationDots(TOTAL_DOTS), width,
+                    height);
         }
 
         // Add the first three dots to the current dot list.
@@ -596,56 +575,65 @@ public class BrailleView extends View {
 
         if (countDotsDown(dotsDown) == TOTAL_DOTS) {
             setDotsSevenEight(false, false);
-            Coords[] sixDots = new Coords[TOTAL_DOTS];
-
-            for (int i = 0, j = 0; i < dotsDown.length && j < sixDots.length; i++) {
-                if (dotsDown[i] != null) {
-                    int localX = dotsDown[i].getSecondX();
-                    int localY = dotsDown[i].getSecondY();
-                    sixDots[j++] = new Coords(localX, localY);
-                }
-            }
-            boolean result;
-            if ((result = selectPad(sixDots, width, height))) {
-                KeyboardCalibrationUtils.clearCalibrationMode();
-                if (speech != null) {
-                    speech.speak(getContext(), getContext()
-                            .getString(pad.padString), Speech.QUEUE_FLUSH);
-                }
-                if (vibrator != null) {
-                    vibrator.vibrate(MEDIUM_VIBRATION);
-                }
-            } else {
-                if (speech != null) {
-                    speech.speak(getContext(),
-                            getContext().getString(R.string.keyboard_error),
-                            Speech.QUEUE_FLUSH);
-                }
-                if (vibrator != null) {
-                    vibrator.vibrate(QUICK_VIBRATION);
-                }
-            }
-            lastDotList.clear();
-            resetDots();
-            return result;
+            return applySixDotCalibration(buildCalibrationDots(TOTAL_DOTS), width,
+                    height);
         } else {
-            // Add the first three dots that have been tuched to a member
-            // variable for reference on the second touch of three fingers
-            for (int i = 0; i < dotsDown.length; i++) {
-                if (dotsDown[i] != null) {
-                    lastDotList.add(dotsDown[i]);
-                    dotsDown[i] = null;
-                }
-            }
-            if (speech != null) {
-                speech.speak(getContext(),
-                        getContext().getString(R.string.keyboard_next_three),
-                        Speech.QUEUE_FLUSH);
-            }
-            if (vibrator != null) {
-                vibrator.vibrate(MEDIUM_VIBRATION);
-            }
+            storeFirstCalibrationHalf();
+            notifyCalibrationHalfStored();
             return true;
+        }
+    }
+
+    private Coords[] buildCalibrationDots(int totalDots) {
+        Coords[] sixDots = new Coords[totalDots];
+        for (int i = 0, j = 0; i < dotsDown.length && j < sixDots.length; i++) {
+            if (dotsDown[i] != null) {
+                sixDots[j++] = new Coords(dotsDown[i].getSecondX(),
+                        dotsDown[i].getSecondY());
+            }
+        }
+        return sixDots;
+    }
+
+    private boolean applySixDotCalibration(Coords[] sixDots, int width,
+            int height) {
+        boolean result = selectPad(sixDots, width, height);
+        if (result) {
+            KeyboardCalibrationUtils.clearCalibrationMode();
+        }
+        speakCalibrationResult(result);
+        lastDotList.clear();
+        resetDots();
+        return result;
+    }
+
+    private void speakCalibrationResult(boolean success) {
+        if (speech != null) {
+            speech.speak(getContext(), getContext().getString(success
+                    ? pad.padString : R.string.keyboard_error), Speech.QUEUE_FLUSH);
+        }
+        if (vibrator != null) {
+            vibrator.vibrate(success ? MEDIUM_VIBRATION : QUICK_VIBRATION);
+        }
+    }
+
+    private void storeFirstCalibrationHalf() {
+        for (int i = 0; i < dotsDown.length; i++) {
+            if (dotsDown[i] != null) {
+                lastDotList.add(dotsDown[i]);
+                dotsDown[i] = null;
+            }
+        }
+    }
+
+    private void notifyCalibrationHalfStored() {
+        if (speech != null) {
+            speech.speak(getContext(),
+                    getContext().getString(R.string.keyboard_next_three),
+                    Speech.QUEUE_FLUSH);
+        }
+        if (vibrator != null) {
+            vibrator.vibrate(MEDIUM_VIBRATION);
         }
     }
 
