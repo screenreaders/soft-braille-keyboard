@@ -85,80 +85,22 @@ public class BrailleIME extends InputMethodService implements KeyboardListener {
     @Override
     public void onCreate() {
         super.onCreate();
-        if (brailleParser == null) {
-            brailleParser = new BrailleParser(this,
-                    new BrailleParser.BrailleParserListener() {
-
-                        @Override
-                        public void onTranslatorReady(int status) {
-                            brailleParserReady(status);
-                        }
-                    });
-        }
+        initBrailleParser();
     }
 
     @Override
     public View onCreateInputView() {
         super.onCreateInputView();
-        if (brailleView != null) {
-            brailleView.removeOnLayoutChangeListener(brailleViewLayoutListener);
-        }
-        brailleView = (BrailleView) getLayoutInflater().inflate(
-                R.layout.keyboard, null);
-        brailleView.addOnLayoutChangeListener(brailleViewLayoutListener);
-
-        if (!Options.getBooleanPreference(this,
-                R.string.pref_has_asked_record_audio_key, false)) {
-            Options.switchBooleanPreference(this,
-                    R.string.pref_has_asked_record_audio_key, false);
-            // Android 6+ show a permission dialog for record audio dangerous
-            // permission.
-            // Only do this once on the very first run though.
-            if (ContextCompat.checkSelfPermission(this,
-                    Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-                Intent intent = new Intent(this, IntentActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                intent.setAction(getString(R.string.action_record_audio_permission));
-                if (canStartActivity(intent)) {
-                    startActivity(intent);
-                }
-            }
-        }
+        brailleView = createBrailleInputView();
+        maybePromptInitialRecordAudioPermission();
         return brailleView;
     }
 
     @Override
     public void onStartInput(EditorInfo info, boolean restarting) {
         super.onStartInput(info, restarting);
-        clearComposingState();
-        // remove any existing selection.
-        selectAll = false;
-        mark = -1;
-
-        predictionOn = false;
-        // We are now going to initialize our state based on the type of
-        // text being edited.
-        switch (info.inputType & InputType.TYPE_MASK_CLASS) {
-        case InputType.TYPE_CLASS_TEXT:
-            predictionOn = true;
-            // We now look for a few special variations of text that will
-            // modify our behavior.
-            int variation = info.inputType & InputType.TYPE_MASK_VARIATION;
-            if (variation == InputType.TYPE_TEXT_VARIATION_PASSWORD
-                    || variation == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-                    || variation == InputType.TYPE_TEXT_VARIATION_WEB_PASSWORD
-                    || variation == InputType.TYPE_TEXT_VARIATION_URI) {
-                // Do not display predictions / what the user is typing
-                // when they are entering a password or uri.
-                predictionOn = false;
-            }
-
-            if ((info.inputType & InputType.TYPE_TEXT_FLAG_AUTO_COMPLETE) != 0) {
-                predictionOn = false;
-            }
-            break;
-        default:
-        }
+        resetInputSessionState();
+        predictionOn = shouldEnablePrediction(info);
     }
 
     @Override
@@ -241,6 +183,73 @@ public class BrailleIME extends InputMethodService implements KeyboardListener {
             }
             publishAccessibilityPassthroughRegion();
         }
+    }
+
+    private void initBrailleParser() {
+        if (brailleParser != null) {
+            return;
+        }
+        brailleParser = new BrailleParser(this,
+                new BrailleParser.BrailleParserListener() {
+                    @Override
+                    public void onTranslatorReady(int status) {
+                        brailleParserReady(status);
+                    }
+                });
+    }
+
+    private BrailleView createBrailleInputView() {
+        if (brailleView != null) {
+            brailleView.removeOnLayoutChangeListener(brailleViewLayoutListener);
+        }
+        BrailleView view = (BrailleView) getLayoutInflater().inflate(
+                R.layout.keyboard, null);
+        view.addOnLayoutChangeListener(brailleViewLayoutListener);
+        return view;
+    }
+
+    private void maybePromptInitialRecordAudioPermission() {
+        if (Options.getBooleanPreference(this,
+                R.string.pref_has_asked_record_audio_key, false)) {
+            return;
+        }
+        Options.switchBooleanPreference(this,
+                R.string.pref_has_asked_record_audio_key, false);
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.RECORD_AUDIO)
+                == PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        Intent intent = new Intent(this, IntentActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.setAction(getString(R.string.action_record_audio_permission));
+        if (canStartActivity(intent)) {
+            startActivity(intent);
+        }
+    }
+
+    private void resetInputSessionState() {
+        clearComposingState();
+        selectAll = false;
+        mark = -1;
+    }
+
+    private boolean shouldEnablePrediction(EditorInfo info) {
+        if (info == null) {
+            return false;
+        }
+        if ((info.inputType & InputType.TYPE_MASK_CLASS)
+                != InputType.TYPE_CLASS_TEXT) {
+            return false;
+        }
+        int variation = info.inputType & InputType.TYPE_MASK_VARIATION;
+        if (variation == InputType.TYPE_TEXT_VARIATION_PASSWORD
+                || variation == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+                || variation == InputType.TYPE_TEXT_VARIATION_WEB_PASSWORD
+                || variation == InputType.TYPE_TEXT_VARIATION_URI) {
+            return false;
+        }
+        return (info.inputType & InputType.TYPE_TEXT_FLAG_AUTO_COMPLETE) == 0;
     }
 
     private void publishAccessibilityPassthroughRegion() {

@@ -297,41 +297,7 @@ public class BrailleAccessibilityService extends AccessibilityService
             return;
         }
         displayClient = new DisplayClient(this);
-        displayClient.setOnConnectionStateChangeListener(
-                new com.googlecode.eyesfree.braille.display.Display.OnConnectionStateChangeListener() {
-                    @Override
-                    public void onConnectionStateChanged(int state) {
-                        BrailleDisplayPreferences.setServiceStatus(
-                                BrailleAccessibilityService.this,
-                                buildStatusText(state));
-                        if (state == com.googlecode.eyesfree.braille.display.Display.STATE_CONNECTED) {
-                            panOffset = 0;
-                            updateDisplayedContent(null, null);
-                        } else if (state == com.googlecode.eyesfree.braille.display.Display.STATE_NOT_CONNECTED) {
-                            lastTranslation = null;
-                            lastVisiblePositions = new int[0];
-                        }
-                    }
-                });
-        displayClient.setOnConnectionChangeProgressListener(
-                new com.googlecode.eyesfree.braille.display.Display.OnConnectionChangeProgressListener() {
-                    @Override
-                    public void onConnectionChangeProgress(String description) {
-                        BrailleDisplayPreferences.setServiceStatus(
-                                BrailleAccessibilityService.this,
-                                description == null
-                                        ? getString(
-                                                R.string.braille_service_status_idle)
-                                        : description);
-                    }
-                });
-        displayClient.setOnInputEventListener(
-                new com.googlecode.eyesfree.braille.display.Display.OnInputEventListener() {
-                    @Override
-                    public void onInputEvent(BrailleInputEvent inputEvent) {
-                        handleDisplayInput(inputEvent);
-                    }
-                });
+        bindDisplayClientListeners();
     }
 
     private void handleDisplayInput(BrailleInputEvent inputEvent) {
@@ -454,6 +420,57 @@ public class BrailleAccessibilityService extends AccessibilityService
 
     private void updateDisplayedContent(AccessibilityNodeInfo node,
             AccessibilityEvent event) {
+        AccessibilityNodeInfo snapshot = updateFocusedSnapshot(node);
+        CharSequence rendered = buildRenderedText(snapshot, event);
+        updateRenderedState(snapshot, rendered);
+        if (snapshot != null) {
+            snapshot.recycle();
+        }
+        BrailleDisplayPreferences.setServiceContent(this, lastRenderedText);
+        renderToBrailleDisplay();
+    }
+
+    private void bindDisplayClientListeners() {
+        displayClient.setOnConnectionStateChangeListener(
+                new com.googlecode.eyesfree.braille.display.Display.OnConnectionStateChangeListener() {
+                    @Override
+                    public void onConnectionStateChanged(int state) {
+                        handleConnectionStateChanged(state);
+                    }
+                });
+        displayClient.setOnConnectionChangeProgressListener(
+                new com.googlecode.eyesfree.braille.display.Display.OnConnectionChangeProgressListener() {
+                    @Override
+                    public void onConnectionChangeProgress(String description) {
+                        BrailleDisplayPreferences.setServiceStatus(
+                                BrailleAccessibilityService.this,
+                                description == null
+                                        ? getString(
+                                                R.string.braille_service_status_idle)
+                                        : description);
+                    }
+                });
+        displayClient.setOnInputEventListener(
+                new com.googlecode.eyesfree.braille.display.Display.OnInputEventListener() {
+                    @Override
+                    public void onInputEvent(BrailleInputEvent inputEvent) {
+                        handleDisplayInput(inputEvent);
+                    }
+                });
+    }
+
+    private void handleConnectionStateChanged(int state) {
+        BrailleDisplayPreferences.setServiceStatus(this, buildStatusText(state));
+        if (state == com.googlecode.eyesfree.braille.display.Display.STATE_CONNECTED) {
+            panOffset = 0;
+            updateDisplayedContent(null, null);
+        } else if (state
+                == com.googlecode.eyesfree.braille.display.Display.STATE_NOT_CONNECTED) {
+            clearRenderedState();
+        }
+    }
+
+    private AccessibilityNodeInfo updateFocusedSnapshot(AccessibilityNodeInfo node) {
         AccessibilityNodeInfo activeNode = node;
         if (activeNode == null) {
             activeNode = obtainCurrentFocusedNode();
@@ -463,18 +480,19 @@ public class BrailleAccessibilityService extends AccessibilityService
         } else {
             clearFocusedNode();
         }
+        return obtainStoredFocusedNode();
+    }
 
-        AccessibilityNodeInfo snapshot = obtainStoredFocusedNode();
-        CharSequence rendered = buildRenderedText(snapshot, event);
-        int cursorPosition = getCursorPosition(snapshot, rendered);
-        if (snapshot != null) {
-            snapshot.recycle();
-        }
-
+    private void updateRenderedState(AccessibilityNodeInfo snapshot,
+            CharSequence rendered) {
         lastRenderedText = rendered == null ? "" : rendered.toString();
-        lastCursorPosition = cursorPosition;
+        lastCursorPosition = getCursorPosition(snapshot, rendered);
         BrailleDisplayPreferences.setServiceContent(this, lastRenderedText);
-        renderToBrailleDisplay();
+    }
+
+    private void clearRenderedState() {
+        lastTranslation = null;
+        lastVisiblePositions = new int[0];
     }
 
     private void renderToBrailleDisplay() {

@@ -47,37 +47,12 @@ public class SupportReportActivity extends Activity {
     }
 
     public void onSendReport(View view) {
-        String subject = textOf(subjectView);
-        String message = textOf(messageView);
-        if (TextUtils.isEmpty(subject)) {
-            subjectView.setError(getString(R.string.report_issue_subject_required));
-            subjectView.requestFocus();
-            return;
-        }
-        if (TextUtils.isEmpty(message)) {
-            messageView.setError(getString(R.string.report_issue_message_required));
-            messageView.requestFocus();
+        if (!validateInput()) {
             return;
         }
         SupportReportSender.ReportResult result = SupportReportSender.submit(this,
-                new SupportReportSender.ReportData(subject, message,
-                        textOf(nameView), textOf(emailView),
-                        diagnosticsView.isChecked(), additionalDiagnostics,
-                        reportType));
-        if (result.mode == SupportReportSender.ReportResult.Mode.SERVER) {
-            Toast.makeText(this, R.string.report_issue_sent_server,
-                    Toast.LENGTH_LONG).show();
-            finish();
-            return;
-        }
-        if (result.mode == SupportReportSender.ReportResult.Mode.GITHUB) {
-            Toast.makeText(this, R.string.report_issue_sent_github,
-                    Toast.LENGTH_LONG).show();
-            finish();
-            return;
-        }
-        Toast.makeText(this, R.string.report_issue_failed,
-                Toast.LENGTH_LONG).show();
+                buildReportData());
+        handleReportResult(result);
     }
 
     private void updateStatus() {
@@ -92,6 +67,46 @@ public class SupportReportActivity extends Activity {
     private static String textOf(EditText view) {
         return view == null || view.getText() == null
                 ? "" : view.getText().toString().trim();
+    }
+
+    private boolean validateInput() {
+        String subject = textOf(subjectView);
+        if (TextUtils.isEmpty(subject)) {
+            subjectView.setError(getString(R.string.report_issue_subject_required));
+            subjectView.requestFocus();
+            return false;
+        }
+        String message = textOf(messageView);
+        if (TextUtils.isEmpty(message)) {
+            messageView.setError(getString(R.string.report_issue_message_required));
+            messageView.requestFocus();
+            return false;
+        }
+        return true;
+    }
+
+    private SupportReportSender.ReportData buildReportData() {
+        return new SupportReportSender.ReportData(textOf(subjectView),
+                textOf(messageView), textOf(nameView), textOf(emailView),
+                diagnosticsView != null && diagnosticsView.isChecked(),
+                additionalDiagnostics, reportType);
+    }
+
+    private void handleReportResult(SupportReportSender.ReportResult result) {
+        if (result.mode == SupportReportSender.ReportResult.Mode.SERVER) {
+            Toast.makeText(this, R.string.report_issue_sent_server,
+                    Toast.LENGTH_LONG).show();
+            finish();
+            return;
+        }
+        if (result.mode == SupportReportSender.ReportResult.Mode.GITHUB) {
+            Toast.makeText(this, R.string.report_issue_sent_github,
+                    Toast.LENGTH_LONG).show();
+            finish();
+            return;
+        }
+        Toast.makeText(this, R.string.report_issue_failed,
+                Toast.LENGTH_LONG).show();
     }
 
     private void applyPrefill() {

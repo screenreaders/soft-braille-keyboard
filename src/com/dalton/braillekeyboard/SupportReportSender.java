@@ -60,37 +60,12 @@ public final class SupportReportSender {
     }
 
     public static ReportResult submit(Context context, final ReportData data) {
-        final String diagnostics = data.includeDiagnostics
-                ? SupportDiagnostics.buildReport(context, data.message,
-                        data.additionalDiagnostics)
-                : null;
-        String title = data.reportType == ReportData.ReportType.BRAILLE_DISPLAY
-                ? "[hardware] " + data.subject : "[bug] " + data.subject;
-        StringBuilder remoteBody = new StringBuilder();
-        remoteBody.append("Soft Braille Keyboard report\n");
-        remoteBody.append("Title: ").append(title).append('\n');
-        remoteBody.append("Reporter: ")
-                .append(TextUtils.isEmpty(data.name) ? "(not provided)"
-                        : data.name);
-        if (!TextUtils.isEmpty(data.email)) {
-            remoteBody.append(" <").append(data.email).append('>');
-        }
-        remoteBody.append('\n');
-        remoteBody.append("Type: ").append(data.reportType.name()).append('\n');
-        remoteBody.append('\n');
-        remoteBody.append("Message\n");
-        remoteBody.append("=======\n");
-        remoteBody.append(data.message).append('\n');
-        if (!TextUtils.isEmpty(diagnostics)) {
-            remoteBody.append('\n');
-            remoteBody.append(diagnostics);
-            if (!diagnostics.endsWith("\n")) {
-                remoteBody.append('\n');
-            }
-        }
+        final String diagnostics = buildDiagnostics(context, data);
+        String title = buildReportTitle(data);
+        String remoteBody = buildRemoteBody(data, title, diagnostics);
         RemoteReportUploader.UploadResult uploadResult
                 = RemoteReportUploader.uploadTextReport(context, title,
-                        remoteBody.toString(),
+                        remoteBody,
                         data.reportType == ReportData.ReportType.BRAILLE_DISPLAY
                                 ? "braille-display" : "bug-report");
         if (uploadResult.success) {
@@ -174,6 +149,55 @@ public final class SupportReportSender {
         }
         context.startActivity(intent);
         return true;
+    }
+
+    private static String buildDiagnostics(Context context, ReportData data) {
+        return data.includeDiagnostics
+                ? SupportDiagnostics.buildReport(context, data.message,
+                        data.additionalDiagnostics)
+                : null;
+    }
+
+    private static String buildReportTitle(ReportData data) {
+        return data.reportType == ReportData.ReportType.BRAILLE_DISPLAY
+                ? "[hardware] " + data.subject : "[bug] " + data.subject;
+    }
+
+    private static String buildRemoteBody(ReportData data, String title,
+            String diagnostics) {
+        StringBuilder remoteBody = new StringBuilder();
+        remoteBody.append("Soft Braille Keyboard report\n");
+        remoteBody.append("Title: ").append(title).append('\n');
+        appendReporter(remoteBody, data);
+        remoteBody.append("Type: ").append(data.reportType.name()).append('\n');
+        remoteBody.append('\n');
+        remoteBody.append("Message\n");
+        remoteBody.append("=======\n");
+        remoteBody.append(data.message).append('\n');
+        appendDiagnostics(remoteBody, diagnostics);
+        return remoteBody.toString();
+    }
+
+    private static void appendReporter(StringBuilder remoteBody, ReportData data) {
+        remoteBody.append("Reporter: ")
+                .append(TextUtils.isEmpty(data.name) ? "(not provided)"
+                        : data.name);
+        if (!TextUtils.isEmpty(data.email)) {
+            remoteBody.append(" <").append(data.email).append('>');
+        }
+        remoteBody.append('\n');
+    }
+
+    private static void appendDiagnostics(StringBuilder remoteBody,
+            String diagnostics) {
+        if (TextUtils.isEmpty(diagnostics)) {
+            return;
+        }
+        remoteBody.append('\n');
+        remoteBody.append(diagnostics);
+        if (!diagnostics.endsWith("\n")) {
+            remoteBody.append('\n');
+        }
     }
 
     private static void copyDiagnosticsToClipboard(Context context,
