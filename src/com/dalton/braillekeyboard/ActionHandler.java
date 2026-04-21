@@ -458,24 +458,11 @@ public class ActionHandler {
     }
 
     private String cycleKeyboardFeedback(Context context) {
-        KeyboardFeedback feedback = KeyboardFeedback.valueOf(
-                Options.getIntPreference(context,
-                        R.string.pref_keyboard_feedback_key,
-                        KeyboardFeedback.ALL.getValue()));
-        feedback = KeyboardFeedback.next(feedback);
-        Options.writeStringPreference(context,
-                R.string.pref_keyboard_feedback_key, feedback.getValue());
-        return context.getString(feedback.resource);
+        return ActionHandlerTextUtils.cycleKeyboardFeedback(context);
     }
 
     private String cycleKeyboardEcho(Context context) {
-        KeyboardEcho echo = KeyboardEcho.valueOf(Options.getIntPreference(
-                context, R.string.pref_echo_feedback_key,
-                KeyboardEcho.CHARACTER.getValue()));
-        echo = KeyboardEcho.next(echo);
-        Options.writeStringPreference(context,
-                R.string.pref_echo_feedback_key, echo.getValue());
-        return context.getString(echo.resource);
+        return ActionHandlerTextUtils.cycleKeyboardEcho(context);
     }
 
     private String handleDotSwipe(Context context, boolean[] dots, int index) {
@@ -521,33 +508,15 @@ public class ActionHandler {
     }
 
     private String togglePasswordEcho(Context context) {
-        boolean echoPassword = Options.switchBooleanPreference(context,
-                R.string.pref_echo_passwords_key, false);
-        return echoPassword ? context.getString(R.string.speak_passwords)
-                : context.getString(R.string.no_password_echo);
+        return ActionHandlerTextUtils.togglePasswordEcho(context);
     }
 
     private String buildTextStatsMessage(Context context) {
-        ExtractedText extractedText = listener.getAllText();
-        CharSequence text = extractedText == null ? null : extractedText.text;
-        if (text == null) {
-            return context.getString(R.string.blank);
-        }
-        return String.format(context.getString(R.string.word_count),
-                EditingUtilities.lineCount(text),
-                EditingUtilities.wordCount(text),
-                EditingUtilities.characterCount(text));
+        return ActionHandlerTextUtils.buildTextStatsMessage(context, listener);
     }
 
     private String toggleAutoCaps(Context context) {
-        Options.switchBooleanPreference(context, R.string.pref_auto_caps_key,
-                Boolean.parseBoolean(context
-                        .getString(R.string.pref_auto_caps_default)));
-        return Options.getBooleanPreference(context,
-                R.string.pref_auto_caps_key, Boolean.parseBoolean(context
-                        .getString(R.string.pref_auto_caps_default))) ? context
-                .getString(R.string.auto_caps_enabled) : context
-                .getString(R.string.auto_caps_disabled);
+        return ActionHandlerTextUtils.toggleAutoCaps(context);
     }
 
     /**
@@ -585,7 +554,8 @@ public class ActionHandler {
 
             // Decide what to deliver to the callback such as a key echo or
             // autocompletion string.
-            String character = echoCharacter(context, result);
+            String character = ActionHandlerTextUtils.echoCharacter(context,
+                    result);
             result = character == null ? "" : character;
             if (!(result = result.trim()).equals("")) {
                 callback.onText("%s", result.toString(),
@@ -861,8 +831,8 @@ public class ActionHandler {
         }
         listener.onKey(code);
 
-        if ((message = echoWord(context, message)) == null) {
-            message = echoCharacter(context, charName);
+        if ((message = ActionHandlerTextUtils.echoWord(context, message)) == null) {
+            message = ActionHandlerTextUtils.echoCharacter(context, charName);
         }
         callback.onText("%s", message, listener.isPasswordField());
 
@@ -1015,24 +985,6 @@ public class ActionHandler {
 
     // Rules for echoing character. Return the character if it should be echoed
     // else null.
-    private static String echoCharacter(Context context, String character) {
-        if ((Options.getIntPreference(context, R.string.pref_echo_feedback_key,
-                KeyboardEcho.CHARACTER.getValue()) & KeyboardEcho.CHARACTER.value) != 0) {
-            return character;
-        }
-        return null;
-    }
-
-    // Rules for echoing word. Return the word if it should be echoed
-    // else null.
-    private static String echoWord(Context context, String word) {
-        if ((Options.getIntPreference(context, R.string.pref_echo_feedback_key,
-                KeyboardEcho.CHARACTER.getValue()) & KeyboardEcho.WORD.value) != 0) {
-            return word;
-        }
-        return null;
-    }
-
     // Some swipe actions should resolve to the same thing eg. dots 4 and 5
     // swipe right.
     private static Swipe normaliseSwipe(Swipe swipe) {

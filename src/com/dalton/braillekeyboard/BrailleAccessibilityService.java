@@ -1149,63 +1149,13 @@ public class BrailleAccessibilityService extends AccessibilityService
 
     private CharSequence buildRenderedText(AccessibilityNodeInfo node,
             AccessibilityEvent event) {
-        if (node == null) {
-            return getString(R.string.braille_service_no_focus);
-        }
-
-        if (node.isPassword()) {
-            return getString(R.string.braille_service_password_field);
-        }
-
-        CharSequence label = node.getContentDescription();
-        CharSequence value = node.getText();
-        boolean valueFromEvent = false;
-        if (TextUtils.isEmpty(value) && event != null && event.getText() != null
-                && !event.getText().isEmpty()) {
-            value = TextUtils.join(" ", event.getText());
-            valueFromEvent = true;
-        }
-        List<CharSequence> parts = new ArrayList<CharSequence>();
-        CharSequence liveRegionAnnouncement = buildLiveRegionAnnouncement(node,
-                event);
-        addPart(parts, liveRegionAnnouncement);
-        addPart(parts, describeNodeRole(node));
-        addPart(parts, buildPrimaryLabelAndValue(node, label, value,
-                valueFromEvent, liveRegionAnnouncement));
-        addPart(parts, buildSecondaryMetadata(node));
-
-        if (parts.isEmpty()) {
-            if (node.isEditable()) {
-                return getString(R.string.braille_service_empty_field);
-            }
-            CharSequence className = node.getClassName();
-            return TextUtils.isEmpty(className)
-                    ? getString(R.string.braille_service_no_focus) : className;
-        }
-        return TextUtils.join(". ", parts);
+        return BrailleAccessibilityRenderUtils.buildRenderedText(this, node, event);
     }
 
     private int getCursorPosition(AccessibilityNodeInfo node,
             CharSequence renderedText) {
-        if (node == null || renderedText == null) {
-            return 0;
-        }
-        int selection = node.getTextSelectionStart();
-        if (selection >= 0) {
-            CharSequence text = node.getText();
-            if (!TextUtils.isEmpty(text)) {
-                String rendered = renderedText.toString();
-                int offset = rendered.lastIndexOf(text.toString());
-                if (offset >= 0) {
-                    int inText = Math.min(selection, text.length());
-                    return Math.min(rendered.length(), offset + inText);
-                }
-            }
-            if (selection <= renderedText.length()) {
-                return selection;
-            }
-        }
-        return renderedText.length();
+        return BrailleAccessibilityRenderUtils.getCursorPosition(node,
+                renderedText);
     }
 
     private int getDisplayWidth() {
@@ -1218,126 +1168,16 @@ public class BrailleAccessibilityService extends AccessibilityService
         String address = BrailleDisplayPreferences.getLastConnectedDeviceAddress(this);
         String tableOverride = BrailleDisplayPreferences.getDeviceTable(this,
                 address);
-        String tableText = tableOverride == null
-                ? getString(R.string.braille_profile_table_global)
-                : tableOverride;
-        String connectionText;
-        switch (connectionState) {
-        case com.googlecode.eyesfree.braille.display.Display.STATE_CONNECTED:
-            connectionText = getString(R.string.braille_status_connected);
-            break;
-        case com.googlecode.eyesfree.braille.display.Display.STATE_ERROR:
-            connectionText = getString(R.string.braille_status_error);
-            break;
-        case com.googlecode.eyesfree.braille.display.Display.STATE_NOT_CONNECTED:
-        default:
-            connectionText = getString(R.string.braille_status_disconnected);
-            break;
-        }
-        return getString(R.string.braille_service_status_template, connectionText,
-                address == null ? getString(R.string.braille_profile_no_device)
-                        : address,
-                tableText);
+        return BrailleAccessibilityRenderUtils.buildStatusText(this,
+                connectionState, address, tableOverride);
     }
 
     private String interpretInputEvent(BrailleInputEvent event) {
-        if (event == null) {
-            return getString(R.string.braille_command_waiting);
-        }
-        String command = BrailleInputEvent.commandToString(event.getCommand());
-        switch (event.getCommand()) {
-        case BrailleInputEvent.CMD_NAV_PAN_LEFT:
-            return command + ": "
-                    + getString(R.string.braille_command_pan_left);
-        case BrailleInputEvent.CMD_NAV_PAN_RIGHT:
-            return command + ": "
-                    + getString(R.string.braille_command_pan_right);
-        case BrailleInputEvent.CMD_NAV_ITEM_PREVIOUS:
-            return command + ": "
-                    + getString(R.string.braille_command_focus_previous);
-        case BrailleInputEvent.CMD_NAV_ITEM_NEXT:
-            return command + ": "
-                    + getString(R.string.braille_command_focus_next);
-        case BrailleInputEvent.CMD_NAV_LINE_PREVIOUS:
-            return command + ": "
-                    + getString(R.string.braille_command_line_previous);
-        case BrailleInputEvent.CMD_NAV_LINE_NEXT:
-            return command + ": "
-                    + getString(R.string.braille_command_line_next);
-        case BrailleInputEvent.CMD_SCROLL_BACKWARD:
-            return command + ": "
-                    + getString(R.string.braille_command_scroll_backward);
-        case BrailleInputEvent.CMD_SCROLL_FORWARD:
-            return command + ": "
-                    + getString(R.string.braille_command_scroll_forward);
-        case BrailleInputEvent.CMD_NAV_TOP:
-            return command + ": " + getString(R.string.braille_command_nav_top);
-        case BrailleInputEvent.CMD_NAV_BOTTOM:
-            return command + ": "
-                    + getString(R.string.braille_command_nav_bottom);
-        case BrailleInputEvent.CMD_SECTION_NEXT:
-            return command + ": "
-                    + getString(R.string.braille_command_section_next);
-        case BrailleInputEvent.CMD_SECTION_PREVIOUS:
-            return command + ": "
-                    + getString(R.string.braille_command_section_previous);
-        case BrailleInputEvent.CMD_CONTROL_NEXT:
-            return command + ": "
-                    + getString(R.string.braille_command_control_next);
-        case BrailleInputEvent.CMD_CONTROL_PREVIOUS:
-            return command + ": "
-                    + getString(R.string.braille_command_control_previous);
-        case BrailleInputEvent.CMD_LIST_NEXT:
-            return command + ": "
-                    + getString(R.string.braille_command_list_next);
-        case BrailleInputEvent.CMD_LIST_PREVIOUS:
-            return command + ": "
-                    + getString(R.string.braille_command_list_previous);
-        case BrailleInputEvent.CMD_ROUTE:
-            return getString(R.string.braille_command_route_template,
-                    event.getArgument());
-        case BrailleInputEvent.CMD_BRAILLE_KEY:
-            return getString(R.string.braille_command_dots_template,
-                    formatDots(event.getArgument()));
-        case BrailleInputEvent.CMD_KEY_DEL:
-            return command + ": "
-                    + getString(R.string.braille_command_delete_backward);
-        case BrailleInputEvent.CMD_KEY_FORWARD_DEL:
-            return command + ": "
-                    + getString(R.string.braille_command_delete_forward);
-        case BrailleInputEvent.CMD_KEY_ENTER:
-            return command + ": "
-                    + getString(R.string.braille_command_insert_newline);
-        case BrailleInputEvent.CMD_GLOBAL_BACK:
-            return command + ": " + getString(R.string.braille_command_back);
-        case BrailleInputEvent.CMD_GLOBAL_HOME:
-            return command + ": " + getString(R.string.braille_command_home);
-        case BrailleInputEvent.CMD_GLOBAL_RECENTS:
-            return command + ": "
-                    + getString(R.string.braille_command_recents);
-        case BrailleInputEvent.CMD_GLOBAL_NOTIFICATIONS:
-            return command + ": "
-                    + getString(R.string.braille_command_notifications);
-        case BrailleInputEvent.CMD_TOGGLE_BRAILLE_GRADE:
-            return command + ": "
-                    + getString(R.string.braille_command_toggle_grade);
-        default:
-            return command;
-        }
+        return BrailleAccessibilityRenderUtils.interpretInputEvent(this, event);
     }
 
     private String formatDots(int dotsMask) {
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < 8; i++) {
-            if ((dotsMask & (1 << i)) != 0) {
-                if (builder.length() > 0) {
-                    builder.append(',');
-                }
-                builder.append(i + 1);
-            }
-        }
-        return builder.length() == 0 ? getString(R.string.blank)
-                : builder.toString();
+        return BrailleAccessibilityRenderUtils.formatDots(this, dotsMask);
     }
 
     private boolean openDiagnostics() {
@@ -1349,143 +1189,6 @@ public class BrailleAccessibilityService extends AccessibilityService
             return true;
         }
         return false;
-    }
-
-    private String describeNodeRole(AccessibilityNodeInfo node) {
-        List<String> roles = new ArrayList<String>();
-        CharSequence className = node.getClassName();
-        String cls = className == null ? "" : className.toString();
-        if (BrailleNodeUtils.isHeading(node)) {
-            roles.add(getString(R.string.braille_role_heading));
-        }
-        if (BrailleNodeUtils.isLandmark(node)) {
-            roles.add(getString(R.string.braille_role_landmark));
-        }
-        if (BrailleNodeUtils.isTable(node)) {
-            roles.add(getString(R.string.braille_role_table));
-        } else if (BrailleNodeUtils.isListLike(node)) {
-            roles.add(getString(R.string.braille_role_list));
-        } else if (node.getCollectionInfo() != null) {
-            roles.add(getString(R.string.braille_role_collection));
-        }
-        if (BrailleNodeUtils.isPager(node)) {
-            roles.add(getString(R.string.braille_role_pager));
-        }
-        if (node.isEditable()) {
-            roles.add(getString(R.string.braille_role_edit_text));
-        } else if (BrailleNodeUtils.isFormField(node)) {
-            roles.add(getString(R.string.braille_role_form_field));
-        }
-        if (BrailleNodeUtils.isLink(node)) {
-            roles.add(getString(R.string.braille_role_link));
-        }
-        if (BrailleNodeUtils.isImage(node)) {
-            roles.add(getString(R.string.braille_role_image));
-        }
-        if (BrailleNodeUtils.isTab(node)) {
-            roles.add(getString(R.string.braille_role_tab));
-        }
-        if (BrailleNodeUtils.isSlider(node)) {
-            roles.add(getString(R.string.braille_role_slider));
-        } else if (BrailleNodeUtils.isProgressIndicator(node)) {
-            roles.add(getString(R.string.braille_role_progress));
-        }
-        if (node.isCheckable()) {
-            roles.add(node.isChecked()
-                    ? getString(R.string.braille_role_checked)
-                    : getString(R.string.braille_role_unchecked));
-        }
-        if (cls.contains("Button")) {
-            roles.add(getString(R.string.braille_role_button));
-        } else if (cls.contains("WebView")) {
-            roles.add(getString(R.string.braille_role_webview));
-        } else if (node.isClickable()) {
-            roles.add(getString(R.string.braille_role_control));
-        }
-        return TextUtils.join(", ", roles);
-    }
-
-    private CharSequence buildPrimaryLabelAndValue(AccessibilityNodeInfo node,
-            CharSequence label, CharSequence value, boolean valueFromEvent,
-            CharSequence liveRegionAnnouncement) {
-        if (node == null) {
-            return null;
-        }
-        if (valueFromEvent && !TextUtils.isEmpty(liveRegionAnnouncement)
-                && !TextUtils.isEmpty(value)
-                && liveRegionAnnouncement.toString().contains(value.toString())) {
-            value = null;
-        }
-        if (!TextUtils.isEmpty(label) && !TextUtils.isEmpty(value)
-                && !TextUtils.equals(label, value)) {
-            return label + ": " + value;
-        }
-        if (!TextUtils.isEmpty(value)) {
-            return value;
-        }
-        if (!TextUtils.isEmpty(label)) {
-            return label;
-        }
-        CharSequence hint = BrailleNodeUtils.getHintText(node);
-        if (!TextUtils.isEmpty(hint)) {
-            return getString(R.string.braille_service_hint_template, hint);
-        }
-        if (node.isEditable()) {
-            return getString(R.string.braille_service_empty_field);
-        }
-        return null;
-    }
-
-    private CharSequence buildSecondaryMetadata(AccessibilityNodeInfo node) {
-        if (node == null) {
-            return null;
-        }
-        List<CharSequence> metadata = new ArrayList<CharSequence>();
-        if (!node.isEnabled()) {
-            metadata.add(getString(R.string.braille_state_disabled));
-        }
-        if (node.isSelected()) {
-            metadata.add(getString(R.string.braille_state_selected));
-        }
-        if (BrailleNodeUtils.hasAction(node, AccessibilityNodeInfo.ACTION_COLLAPSE)) {
-            metadata.add(getString(R.string.braille_state_expanded));
-        } else if (BrailleNodeUtils.hasAction(node, AccessibilityNodeInfo.ACTION_EXPAND)) {
-            metadata.add(getString(R.string.braille_state_collapsed));
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && node.isScreenReaderFocusable()) {
-            metadata.add(getString(R.string.braille_state_reader_focusable));
-        }
-        CharSequence paneTitle = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
-                ? node.getPaneTitle() : null;
-        if (!TextUtils.isEmpty(paneTitle)) {
-            metadata.add(getString(R.string.braille_service_pane_template,
-                    paneTitle));
-        }
-        CharSequence error = node.getError();
-        if (!TextUtils.isEmpty(error)) {
-            metadata.add(getString(R.string.braille_service_error_template, error));
-        }
-        CharSequence collection = BrailleNodeUtils.buildCollectionDescription(this, node);
-        if (!TextUtils.isEmpty(collection)) {
-            metadata.add(collection);
-        }
-        CharSequence progress = BrailleNodeUtils.buildRangeDescription(this, node);
-        if (!TextUtils.isEmpty(progress)) {
-            metadata.add(progress);
-        }
-        return metadata.isEmpty() ? null : TextUtils.join(", ", metadata);
-    }
-
-    private CharSequence buildLiveRegionAnnouncement(AccessibilityNodeInfo node,
-            AccessibilityEvent event) {
-        if (!BrailleNodeUtils.isLiveRegionEvent(node, event) || event == null
-                || event.getText() == null
-                || event.getText().isEmpty()) {
-            return null;
-        }
-        CharSequence announcement = TextUtils.join(" ", event.getText());
-        return TextUtils.isEmpty(announcement) ? null : getString(
-                R.string.braille_service_live_region_template, announcement);
     }
 
     private boolean matchesSemanticTarget(AccessibilityNodeInfo node,
@@ -1512,12 +1215,6 @@ public class BrailleAccessibilityService extends AccessibilityService
                     || BrailleNodeUtils.isPager(node);
         default:
             return false;
-        }
-    }
-
-    private void addPart(List<CharSequence> parts, CharSequence value) {
-        if (!TextUtils.isEmpty(value)) {
-            parts.add(value);
         }
     }
 }

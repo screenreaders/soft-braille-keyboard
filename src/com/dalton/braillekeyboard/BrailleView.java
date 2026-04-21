@@ -550,7 +550,7 @@ public class BrailleView extends View {
     private boolean setPad(int id, int width, int height, boolean autoRotate) {
         final int TOTAL_DOTS = 6;
         final int ONE_SIDE = 3;
-        final int activeDots = countDotsDown(dotsDown);
+        final int activeDots = BrailleViewTouchUtils.countDotsDown(dotsDown);
         // For whatever reason we won't be able to set a pad
         if (requiredTouchTime > System.currentTimeMillis()
                 || (activeDots != ONE_SIDE && activeDots != TOTAL_DOTS)) {
@@ -573,7 +573,7 @@ public class BrailleView extends View {
             dotsDown[ONE_SIDE + i] = new Coords(ONE_SIDE + id, coord.x, coord.y);
         }
 
-        if (countDotsDown(dotsDown) == TOTAL_DOTS) {
+        if (BrailleViewTouchUtils.countDotsDown(dotsDown) == TOTAL_DOTS) {
             setDotsSevenEight(false, false);
             return applySixDotCalibration(buildCalibrationDots(TOTAL_DOTS), width,
                     height);
@@ -794,30 +794,9 @@ public class BrailleView extends View {
         updateSystemGestureExclusion();
     }
 
-    private static int countDotsDown(Coords[] dots) {
-        int count = 0;
-        for (Coords coords : dots) {
-            if (coords != null) {
-                ++count;
-            }
-        }
-        return count;
-    }
-
     private static boolean updatePointer(Coords[] coords, int id, int x, int y,
             boolean reset) {
-        for (int i = 0; i < coords.length; i++) {
-            if (coords[i] != null) {
-                if (coords[i].id == id) {
-                    if (reset) {
-                        coords[i] = new Coords(id, x, y);
-                    }
-                    coords[i].setSecondCords(x, y);
-                    return true;
-                }
-            }
-        }
-        return false;
+        return BrailleViewTouchUtils.updatePointer(coords, id, x, y, reset);
     }
 
     private Swipe handledSwipeAction(Coords[] coords, boolean swap) {
@@ -887,7 +866,7 @@ public class BrailleView extends View {
 
     private boolean handleVoiceInput() {
         if (System.currentTimeMillis() > requiredTouchTime
-                && countDotsDown(dotsDown) == 1
+                && BrailleViewTouchUtils.countDotsDown(dotsDown) == 1
                 && Options.getBooleanPreference(
                         getContext(),
                         R.string.pref_voice_shortcut_key,
@@ -912,7 +891,8 @@ public class BrailleView extends View {
 
     private boolean isCalibrationGestureActive() {
         return System.currentTimeMillis() > requiredTouchTime
-                && (countDotsDown(dotsDown) >= 3 || !lastDotList.isEmpty());
+                && (BrailleViewTouchUtils.countDotsDown(dotsDown) >= 3
+                        || !lastDotList.isEmpty());
     }
 
     private void announceTalkBackHint(String message) {
