@@ -575,10 +575,7 @@ public class BrailleAccessibilityService extends AccessibilityService
     }
 
     private boolean moveFocus(boolean forward) {
-        AccessibilityNodeInfo node = obtainCurrentFocusedNode();
-        if (node == null) {
-            node = obtainStoredFocusedNode();
-        }
+        AccessibilityNodeInfo node = obtainCurrentOrStoredFocusedNode();
         if (node == null) {
             return false;
         }
@@ -586,13 +583,7 @@ public class BrailleAccessibilityService extends AccessibilityService
                 forward ? View.FOCUS_FORWARD : View.FOCUS_BACKWARD);
         boolean handled = false;
         if (target != null) {
-            handled = target.performAction(
-                    AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS)
-                    || target.performAction(AccessibilityNodeInfo.ACTION_FOCUS);
-            if (handled) {
-                panOffset = 0;
-                updateDisplayedContent(AccessibilityNodeInfo.obtain(target), null);
-            }
+            handled = focusAndRender(target);
             target.recycle();
         }
         node.recycle();
@@ -612,9 +603,7 @@ public class BrailleAccessibilityService extends AccessibilityService
                         AccessibilityNodeInfo.MOVEMENT_GRANULARITY_LINE);
                 boolean handled = editableNode.performAction(action, arguments);
                 if (handled) {
-                    panOffset = 0;
-                    updateDisplayedContent(AccessibilityNodeInfo.obtain(editableNode),
-                            null);
+                    renderFocusedNode(editableNode);
                 }
                 return handled;
             } finally {
@@ -629,9 +618,8 @@ public class BrailleAccessibilityService extends AccessibilityService
         while (node != null) {
             int action = forward ? AccessibilityNodeInfo.ACTION_SCROLL_FORWARD
                     : AccessibilityNodeInfo.ACTION_SCROLL_BACKWARD;
-            if ((node.getActions() & action) != 0 && node.performAction(action)) {
-                panOffset = 0;
-                updateDisplayedContent(null, null);
+            if (performActionIfSupported(node, action)) {
+                renderFocusedNode(null);
                 node.recycle();
                 return true;
             }
@@ -643,10 +631,7 @@ public class BrailleAccessibilityService extends AccessibilityService
     }
 
     private boolean navigateHtmlElement(boolean forward, String element) {
-        AccessibilityNodeInfo node = obtainStoredFocusedNode();
-        if (node == null) {
-            node = obtainCurrentFocusedNode();
-        }
+        AccessibilityNodeInfo node = obtainCurrentOrStoredFocusedNode();
         if (node == null) {
             return false;
         }
@@ -660,8 +645,7 @@ public class BrailleAccessibilityService extends AccessibilityService
                             : AccessibilityNodeInfo.ACTION_PREVIOUS_HTML_ELEMENT,
                     arguments);
             if (handled) {
-                panOffset = 0;
-                updateDisplayedContent(null, null);
+                renderFocusedNode(null);
             }
             return handled;
         } finally {
@@ -704,9 +688,7 @@ public class BrailleAccessibilityService extends AccessibilityService
             while (index >= 0 && index < nodes.size()) {
                 AccessibilityNodeInfo candidate = nodes.get(index);
                 if (focusNodeOrDescendant(candidate)) {
-                    panOffset = 0;
-                    updateDisplayedContent(AccessibilityNodeInfo.obtain(candidate),
-                            null);
+                    renderFocusedNode(candidate);
                     return true;
                 }
                 index += forward ? 1 : -1;
@@ -820,15 +802,7 @@ public class BrailleAccessibilityService extends AccessibilityService
                 return false;
             }
             try {
-                boolean handled = target.performAction(
-                        AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS)
-                        || target.performAction(AccessibilityNodeInfo.ACTION_FOCUS);
-                if (handled) {
-                    panOffset = 0;
-                    updateDisplayedContent(AccessibilityNodeInfo.obtain(target),
-                            null);
-                }
-                return handled;
+                return focusAndRender(target);
             } finally {
                 target.recycle();
             }
@@ -902,7 +876,7 @@ public class BrailleAccessibilityService extends AccessibilityService
         try {
             boolean handled = node.performAction(action);
             if (handled) {
-                updateDisplayedContent(null, null);
+                renderFocusedNode(null);
             }
             return handled;
         } finally {
@@ -974,9 +948,7 @@ public class BrailleAccessibilityService extends AccessibilityService
             if (handled) {
                 int nextCursor = start + replacement.length();
                 setSelection(editableNode, nextCursor, nextCursor);
-                panOffset = 0;
-                updateDisplayedContent(AccessibilityNodeInfo.obtain(editableNode),
-                        null);
+                renderFocusedNode(editableNode);
             }
             return handled;
         } finally {
@@ -1018,9 +990,7 @@ public class BrailleAccessibilityService extends AccessibilityService
                     AccessibilityNodeInfo.ACTION_SET_TEXT, arguments);
             if (handled) {
                 setSelection(editableNode, start, start);
-                panOffset = 0;
-                updateDisplayedContent(AccessibilityNodeInfo.obtain(editableNode),
-                        null);
+                renderFocusedNode(editableNode);
             }
             return handled;
         } finally {
@@ -1085,6 +1055,36 @@ public class BrailleAccessibilityService extends AccessibilityService
             node = parent;
         }
         return node;
+    }
+
+    private AccessibilityNodeInfo obtainCurrentOrStoredFocusedNode() {
+        AccessibilityNodeInfo node = obtainCurrentFocusedNode();
+        return node != null ? node : obtainStoredFocusedNode();
+    }
+
+    private boolean focusAndRender(AccessibilityNodeInfo node) {
+        if (!requestAccessibilityFocus(node)) {
+            return false;
+        }
+        renderFocusedNode(node);
+        return true;
+    }
+
+    private boolean requestAccessibilityFocus(AccessibilityNodeInfo node) {
+        return node != null
+                && (node.performAction(AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS)
+                        || node.performAction(AccessibilityNodeInfo.ACTION_FOCUS));
+    }
+
+    private boolean performActionIfSupported(AccessibilityNodeInfo node, int action) {
+        return node != null && (node.getActions() & action) != 0
+                && node.performAction(action);
+    }
+
+    private void renderFocusedNode(AccessibilityNodeInfo node) {
+        panOffset = 0;
+        updateDisplayedContent(node == null ? null : AccessibilityNodeInfo.obtain(node),
+                null);
     }
 
     private AccessibilityNodeInfo obtainCurrentFocusedNode() {
