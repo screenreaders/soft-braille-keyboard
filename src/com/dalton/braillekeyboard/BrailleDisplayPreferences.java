@@ -61,33 +61,20 @@ public final class BrailleDisplayPreferences {
     }
 
     public static String getLastConnectedDeviceAddress(Context context) {
-        try {
-            return getPreferences(context).getString(PREF_LAST_CONNECTED_DEVICE,
-                    null);
-        } catch (ClassCastException e) {
-            return null;
-        }
+        return getStringPreference(context, PREF_LAST_CONNECTED_DEVICE);
     }
 
     public static void setLastConnectedDeviceAddress(Context context,
             String address) {
-        SharedPreferences.Editor editor = getPreferences(context).edit();
-        editor.putString(PREF_LAST_CONNECTED_DEVICE, address);
-        editor.apply();
+        putStringPreference(context, PREF_LAST_CONNECTED_DEVICE, address);
     }
 
     public static String getPreferredDeviceAddress(Context context) {
-        try {
-            return getPreferences(context).getString(PREF_PREFERRED_DEVICE, null);
-        } catch (ClassCastException e) {
-            return null;
-        }
+        return getStringPreference(context, PREF_PREFERRED_DEVICE);
     }
 
     public static void setPreferredDeviceAddress(Context context, String address) {
-        SharedPreferences.Editor editor = getPreferences(context).edit();
-        editor.putString(PREF_PREFERRED_DEVICE, address);
-        editor.apply();
+        putStringPreference(context, PREF_PREFERRED_DEVICE, address);
     }
 
     public static void clearPreferredDeviceAddress(Context context) {
@@ -100,12 +87,7 @@ public final class BrailleDisplayPreferences {
         if (address == null || address.length() == 0) {
             return null;
         }
-        try {
-            return getPreferences(context).getString(prefixedDeviceKey(address),
-                    null);
-        } catch (ClassCastException e) {
-            return null;
-        }
+        return getStringPreference(context, prefixedDeviceKey(address));
     }
 
     public static void setDeviceTable(Context context, String address,
@@ -113,13 +95,7 @@ public final class BrailleDisplayPreferences {
         if (address == null || address.length() == 0) {
             return;
         }
-        SharedPreferences.Editor editor = getPreferences(context).edit();
-        if (tableId == null || tableId.length() == 0) {
-            editor.remove(prefixedDeviceKey(address));
-        } else {
-            editor.putString(prefixedDeviceKey(address), tableId);
-        }
-        editor.apply();
+        putOrRemoveStringPreference(context, prefixedDeviceKey(address), tableId);
     }
 
     public static void clearDeviceTable(Context context, String address) {
@@ -298,45 +274,27 @@ public final class BrailleDisplayPreferences {
     }
 
     public static String getServiceStatus(Context context) {
-        try {
-            return getPreferences(context).getString(PREF_SERVICE_STATUS, null);
-        } catch (ClassCastException e) {
-            return null;
-        }
+        return getStringPreference(context, PREF_SERVICE_STATUS);
     }
 
     public static void setServiceStatus(Context context, String status) {
-        SharedPreferences.Editor editor = getPreferences(context).edit();
-        editor.putString(PREF_SERVICE_STATUS, status);
-        editor.apply();
+        putStringPreference(context, PREF_SERVICE_STATUS, status);
     }
 
     public static String getServiceContent(Context context) {
-        try {
-            return getPreferences(context).getString(PREF_SERVICE_CONTENT, null);
-        } catch (ClassCastException e) {
-            return null;
-        }
+        return getStringPreference(context, PREF_SERVICE_CONTENT);
     }
 
     public static void setServiceContent(Context context, String content) {
-        SharedPreferences.Editor editor = getPreferences(context).edit();
-        editor.putString(PREF_SERVICE_CONTENT, content);
-        editor.apply();
+        putStringPreference(context, PREF_SERVICE_CONTENT, content);
     }
 
     public static String getServiceCommand(Context context) {
-        try {
-            return getPreferences(context).getString(PREF_SERVICE_COMMAND, null);
-        } catch (ClassCastException e) {
-            return null;
-        }
+        return getStringPreference(context, PREF_SERVICE_COMMAND);
     }
 
     public static void setServiceCommand(Context context, String command) {
-        SharedPreferences.Editor editor = getPreferences(context).edit();
-        editor.putString(PREF_SERVICE_COMMAND, command);
-        editor.apply();
+        putStringPreference(context, PREF_SERVICE_COMMAND, command);
     }
 
     public static String exportProfileBundle(Context context) throws JSONException {
@@ -406,6 +364,32 @@ public final class BrailleDisplayPreferences {
     private static SharedPreferences getPreferences(Context context) {
         return PreferenceManager.getDefaultSharedPreferences(
                 context.getApplicationContext());
+    }
+
+    private static String getStringPreference(Context context, String key) {
+        try {
+            return getPreferences(context).getString(key, null);
+        } catch (ClassCastException e) {
+            return null;
+        }
+    }
+
+    private static void putStringPreference(Context context, String key,
+            String value) {
+        SharedPreferences.Editor editor = getPreferences(context).edit();
+        editor.putString(key, value);
+        editor.apply();
+    }
+
+    private static void putOrRemoveStringPreference(Context context, String key,
+            String value) {
+        SharedPreferences.Editor editor = getPreferences(context).edit();
+        if (value == null || value.length() == 0) {
+            editor.remove(key);
+        } else {
+            editor.putString(key, value);
+        }
+        editor.apply();
     }
 
     private static void clearProfileKeys(SharedPreferences preferences,

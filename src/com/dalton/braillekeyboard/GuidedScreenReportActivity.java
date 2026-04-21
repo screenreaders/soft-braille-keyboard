@@ -40,10 +40,7 @@ public class GuidedScreenReportActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_guided_screen_report);
         setTitle(R.string.screen_report_title);
-        statusView = (TextView) findViewById(R.id.screen_report_status);
-        startButton = (Button) findViewById(R.id.screen_report_start_button);
-        shareButton = (Button) findViewById(R.id.screen_report_share_button);
-        sendButton = (Button) findViewById(R.id.screen_report_send_button);
+        bindViews();
         buildSteps();
         updateButtons();
     }
@@ -105,30 +102,19 @@ public class GuidedScreenReportActivity extends Activity {
 
     private void buildSteps() {
         steps.clear();
-        steps.add(new ScreenStep(getString(R.string.screen_report_step_main),
-                new Intent(this, MainActivity.class)));
-        steps.add(new ScreenStep(getString(R.string.screen_report_step_setup),
-                new Intent(this, SetupWizardActivity.class)));
-        steps.add(new ScreenStep(getString(R.string.screen_report_step_settings),
-                new Intent(this, PreferenceIME.class)));
-        steps.add(new ScreenStep(getString(R.string.screen_report_step_tts),
-                new Intent(this, TtsSettingsActivity.class)));
-        steps.add(new ScreenStep(getString(R.string.screen_report_step_profiles),
-                new Intent(this, BrailleProfilesActivity.class)));
-        steps.add(new ScreenStep(getString(R.string.screen_report_step_tables),
-                new Intent(this, BrailleTableTestActivity.class)));
-        steps.add(new ScreenStep(getString(R.string.screen_report_step_keyboard_test),
-                new Intent(this, BrailleKeyboardTestActivity.class)));
-        steps.add(new ScreenStep(getString(R.string.screen_report_step_learning),
-                new Intent(this, BrailleLearnActivity.class)));
-        steps.add(new ScreenStep(getString(R.string.screen_report_step_notes),
-                new Intent(this, BrailleNotesActivity.class)));
-        steps.add(new ScreenStep(getString(R.string.screen_report_step_display),
-                new Intent(this, BrailleDisplayActivity.class)));
-        steps.add(new ScreenStep(getString(R.string.screen_report_step_help),
-                new Intent(this, QuickStartActivity.class)));
-        steps.add(new ScreenStep(getString(R.string.screen_report_step_support),
-                new Intent(this, SupportReportActivity.class)));
+        addStep(R.string.screen_report_step_main, MainActivity.class);
+        addStep(R.string.screen_report_step_setup, SetupWizardActivity.class);
+        addStep(R.string.screen_report_step_settings, PreferenceIME.class);
+        addStep(R.string.screen_report_step_tts, TtsSettingsActivity.class);
+        addStep(R.string.screen_report_step_profiles, BrailleProfilesActivity.class);
+        addStep(R.string.screen_report_step_tables, BrailleTableTestActivity.class);
+        addStep(R.string.screen_report_step_keyboard_test,
+                BrailleKeyboardTestActivity.class);
+        addStep(R.string.screen_report_step_learning, BrailleLearnActivity.class);
+        addStep(R.string.screen_report_step_notes, BrailleNotesActivity.class);
+        addStep(R.string.screen_report_step_display, BrailleDisplayActivity.class);
+        addStep(R.string.screen_report_step_help, QuickStartActivity.class);
+        addStep(R.string.screen_report_step_support, SupportReportActivity.class);
     }
 
     private void runNextStep() {
@@ -145,12 +131,7 @@ public class GuidedScreenReportActivity extends Activity {
         Intent intent = new Intent(step.intent);
         intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
         startActivity(intent);
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                captureStep(step);
-            }
-        }, STEP_DELAY_MS);
+        postDelayedCapture(step);
     }
 
     private void captureStep(final ScreenStep step) {
@@ -166,26 +147,14 @@ public class GuidedScreenReportActivity extends Activity {
                     public void onSaved(File file) {
                         stepLog.append(step.title).append(": OK -> ")
                                 .append(file.getName()).append('\n');
-                        currentStep++;
-                        handler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                runNextStep();
-                            }
-                        }, 400L);
+                        advanceAfterCapture();
                     }
 
                     @Override
                     public void onError(String reason) {
                         stepLog.append(step.title).append(": ERROR -> ")
                                 .append(reason).append('\n');
-                        currentStep++;
-                        handler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                runNextStep();
-                            }
-                        }, 400L);
+                        advanceAfterCapture();
                     }
                 });
     }
@@ -227,6 +196,37 @@ public class GuidedScreenReportActivity extends Activity {
         if (!running && statusView != null && TextUtils.isEmpty(statusView.getText())) {
             statusView.setText(R.string.screen_report_intro);
         }
+    }
+
+    private void bindViews() {
+        statusView = (TextView) findViewById(R.id.screen_report_status);
+        startButton = (Button) findViewById(R.id.screen_report_start_button);
+        shareButton = (Button) findViewById(R.id.screen_report_share_button);
+        sendButton = (Button) findViewById(R.id.screen_report_send_button);
+    }
+
+    private void addStep(int titleRes, Class<?> activityClass) {
+        steps.add(new ScreenStep(getString(titleRes),
+                new Intent(this, activityClass)));
+    }
+
+    private void postDelayedCapture(final ScreenStep step) {
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                captureStep(step);
+            }
+        }, STEP_DELAY_MS);
+    }
+
+    private void advanceAfterCapture() {
+        currentStep++;
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                runNextStep();
+            }
+        }, 400L);
     }
 
     private void uploadReportZip(final File zipFile, final boolean manualRetry) {

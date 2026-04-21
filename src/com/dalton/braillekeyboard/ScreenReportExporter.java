@@ -35,14 +35,8 @@ public final class ScreenReportExporter {
 
     public static void writeTextFile(File file, String content)
             throws IOException {
-        FileOutputStream stream = new FileOutputStream(file);
-        try {
-            stream.write((content == null ? "" : content)
-                    .getBytes(StandardCharsets.UTF_8));
-            stream.flush();
-        } finally {
-            stream.close();
-        }
+        writeBytes(file, (content == null ? "" : content)
+                .getBytes(StandardCharsets.UTF_8));
     }
 
     public static File zipDirectory(File directory) throws IOException {
@@ -72,16 +66,7 @@ public final class ScreenReportExporter {
             }
             String relativePath = root.toURI().relativize(file.toURI()).getPath();
             zipStream.putNextEntry(new ZipEntry(relativePath));
-            FileInputStream input = new FileInputStream(file);
-            try {
-                int read;
-                while ((read = input.read(buffer)) != -1) {
-                    zipStream.write(buffer, 0, read);
-                }
-            } finally {
-                input.close();
-                zipStream.closeEntry();
-            }
+            copyFileToZip(file, zipStream, buffer);
         }
     }
 
@@ -107,5 +92,29 @@ public final class ScreenReportExporter {
         String normalized = value.trim().toLowerCase(Locale.US)
                 .replaceAll("[^a-z0-9]+", "-");
         return normalized.length() == 0 ? "screen" : normalized;
+    }
+
+    private static void writeBytes(File file, byte[] bytes) throws IOException {
+        FileOutputStream stream = new FileOutputStream(file);
+        try {
+            stream.write(bytes);
+            stream.flush();
+        } finally {
+            stream.close();
+        }
+    }
+
+    private static void copyFileToZip(File file, ZipOutputStream zipStream,
+            byte[] buffer) throws IOException {
+        FileInputStream input = new FileInputStream(file);
+        try {
+            int read;
+            while ((read = input.read(buffer)) != -1) {
+                zipStream.write(buffer, 0, read);
+            }
+        } finally {
+            input.close();
+            zipStream.closeEntry();
+        }
     }
 }

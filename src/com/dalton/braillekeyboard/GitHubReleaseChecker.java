@@ -125,18 +125,10 @@ final class GitHubReleaseChecker {
         if (repoInfo == null) {
             throw new IOException("Invalid GitHub repository URL.");
         }
-        String apiUrl = "https://api.github.com/repos/" + repoInfo.owner + "/"
-                + repoInfo.repo + "/releases/latest";
         HttpURLConnection connection = null;
         InputStream stream = null;
         try {
-            connection = (HttpURLConnection) new URL(apiUrl).openConnection();
-            connection.setConnectTimeout(CONNECT_TIMEOUT_MS);
-            connection.setReadTimeout(READ_TIMEOUT_MS);
-            connection.setRequestProperty("Accept",
-                    "application/vnd.github+json");
-            connection.setRequestProperty("User-Agent",
-                    "SoftBrailleKeyboard/" + BuildConfig.VERSION_NAME);
+            connection = openReleaseConnection(repoInfo);
             int responseCode = connection.getResponseCode();
             if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
                 return null;
@@ -156,17 +148,25 @@ final class GitHubReleaseChecker {
             return new ReleaseInfo(tagName, name, body, htmlUrl,
                     findApkUrl(object.optJSONArray("assets")));
         } finally {
-            if (stream != null) {
-                try {
-                    stream.close();
-                } catch (IOException e) {
-                    // Ignore close failure.
-                }
-            }
+            closeQuietly(stream);
             if (connection != null) {
                 connection.disconnect();
             }
         }
+    }
+
+    private static HttpURLConnection openReleaseConnection(RepoInfo repoInfo)
+            throws IOException {
+        String apiUrl = "https://api.github.com/repos/" + repoInfo.owner + "/"
+                + repoInfo.repo + "/releases/latest";
+        HttpURLConnection connection = (HttpURLConnection) new URL(apiUrl)
+                .openConnection();
+        connection.setConnectTimeout(CONNECT_TIMEOUT_MS);
+        connection.setReadTimeout(READ_TIMEOUT_MS);
+        connection.setRequestProperty("Accept", "application/vnd.github+json");
+        connection.setRequestProperty("User-Agent",
+                "SoftBrailleKeyboard/" + BuildConfig.VERSION_NAME);
+        return connection;
     }
 
     static boolean isNewerThanInstalled(ReleaseInfo releaseInfo,
@@ -214,12 +214,26 @@ final class GitHubReleaseChecker {
 
     private static String readFully(InputStream stream) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
-        StringBuilder builder = new StringBuilder();
-        String line;
-        while ((line = reader.readLine()) != null) {
-            builder.append(line).append('\n');
+        try {
+            StringBuilder builder = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                builder.append(line).append('\n');
+            }
+            return builder.toString();
+        } finally {
+            closeQuietly(reader);
         }
-        return builder.toString();
+    }
+
+    private static void closeQuietly(java.io.Closeable closeable) {
+        if (closeable != null) {
+            try {
+                closeable.close();
+            } catch (IOException e) {
+                // Ignore close failure.
+            }
+        }
     }
 
     private static String sanitizeForFilename(String value) {
