@@ -36,6 +36,7 @@ import com.googlecode.eyesfree.braille.translate.TableInfo;
 import com.googlecode.eyesfree.braille.translate.TranslationResult;
 import com.googlecode.eyesfree.braille.translate.TranslatorClient;
 import com.googlecode.eyesfree.braille.translate.TranslatorClient.OnInitListener;
+import com.googlecode.eyesfree.braille.service.translate.TableList;
 
 /**
  * Acts as a layer of abstraction between the Android BrailleTranslator service
@@ -474,13 +475,27 @@ public class BrailleParser {
     private void ready(Context context, int translatorClientStatus) {
         if (client != null
                 && translatorClientStatus == TranslatorClient.SUCCESS) {
-            status = STATUS_OK;
             tables = client.getTables();
+            if (tables == null || tables.isEmpty()) {
+                tables = loadFallbackTables(context);
+            }
+            status = STATUS_OK;
             setTranslator(context);
         } else {
-            status = STATUS_ERROR;
+            tables = loadFallbackTables(context);
+            status = tables == null || tables.isEmpty()
+                    ? STATUS_ERROR : STATUS_TABLE_ERROR;
         }
         listener.onTranslatorReady(status);
+    }
+
+    private List<TableInfo> loadFallbackTables(Context context) {
+        try {
+            TableList tableList = new TableList(context.getResources());
+            return new ArrayList<TableInfo>(tableList.getTables());
+        } catch (RuntimeException e) {
+            return null;
+        }
     }
 
     // Sets the translator to the active table.
